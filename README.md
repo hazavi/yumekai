@@ -1,36 +1,127 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+<div align="center">
 
-## Getting Started
+# 🍥 Yumekai Anime UI
 
-First, run the development server:
+Modern glassmorphism + neon anime streaming interface inspired by hianime.to – built with **Next.js App Router** and **Tailwind CSS v4**.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+![UI Preview (placeholder)](./public/next.svg)
+
+</div>
+
+## ✨ Features
+
+- Dark atmospheric gradient background with layered blurred radial glows
+- Sticky frosted glass navigation bar + responsive mobile menu
+- Neon-accent rounded search bar with focus glow
+- Hero carousel (auto-play) with frosted glass overlay panel + active slide glow
+- Toggle group (Recently Added / Popular) with animated glass highlight
+- Responsive anime card grid (2–6 columns) with:  
+	- Poster w/ subtle scale hover  
+	- Frosted episode tag  
+	- SUB/DUB badge  
+	- Neon outline glow on hover
+- Reusable design tokens + utility classes (`glass`, `neon-ring`, `frost-tag`, etc.)
+- Accessible semantic structure and progressive enhancement
+
+## 🗂 Project Structure (Key)
+
+```
+app/
+	layout.tsx        # Global fonts, background layers
+	page.tsx          # Home composition (SSR data fetch)
+components/         # UI building blocks
+	Navbar.tsx
+	HeroCarousel.tsx
+	AnimeCard.tsx
+	AnimeGrid.tsx
+	ToggleGroup.tsx
+	SearchBar.tsx
+	SectionHeader.tsx
+lib/
+	api.ts            # API helpers & TypeScript models
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🔌 Data Source (Anime Scraper API)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Base URL: `https://aniscraper-eta.vercel.app`
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Used endpoints:
 
-## Learn More
+| Endpoint | Purpose |
+|----------|---------|
+| `/spotlight-slider` | Hero carousel items |
+| `/trending` | Trending grid |
+| `/recently-updated` | Latest episodes grid |
+| `/top-airing`, `/most-popular`, `/top-anime` | (Future sections) |
 
-To learn more about Next.js, take a look at the following resources:
+`lib/api.ts` contains strongly typed wrappers with light error handling.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🚀 Getting Started
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Install deps & run dev server:
 
-## Deploy on Vercel
+```bash
+npm install
+npm run dev
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Open http://localhost:3000
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🛠 Tech Stack
+
+- Next.js 15 (App Router)
+- React 19
+- Tailwind CSS v4 (@import usage)
+- next/font (Inter + Poppins)
+
+## 🎨 Design System Utilities
+
+Custom utility classes in `app/globals.css`:
+
+| Class | Description |
+|-------|-------------|
+| `glass`, `glass-soft`, `glass-strong` | Frosted translucent panels |
+| `neon-ring` | Gradient outer glow ring border |
+| `pill` | Pill-shaped frosted interactive element |
+| `frost-tag` | Small blurred label badge |
+| `animate-glow` | Soft pulsing opacity animation |
+| `text-gradient` | Purple→blue gradient text |
+| `container-padded` | Responsive layout container |
+| `carousel-slide-active` | Active hero slide accent |
+
+## 🧭 Next Improvements (TODO)
+
+- Implement Popular toggle content switch
+- Add schedule page consuming `/schedule/week`
+- Anime details page using dynamic route & `/[slug]`
+- Watch page integrating `/watch/{slug}` episode list
+- Add skeleton loaders & error boundaries
+- Persistent user theme + preferences (future)
+
+## ♿ Accessibility Notes
+
+- Semantic buttons/links, focus-friendly design
+- Motion reduced: disables certain animations with `prefers-reduced-motion`
+- High contrast neon accents on dark base
+
+## 🧪 Testing (Suggested)
+
+Add component + integration tests (e.g., Playwright or React Testing Library) for:  
+- Hero carousel cycling  
+- API fetch states  
+- Toggle group state transitions
+
+## 🐛 Troubleshooting
+
+| Issue | Fix |
+|-------|-----|
+| Fonts not loading | Ensure network access; rebuild | 
+| API error | Endpoint down → check network tab / console | 
+| Carousel flicker | Verify only one active slide opacity 100 | 
+
+## 📄 License
+
+Educational / demo interface. Ensure you have streaming rights before attaching real media sources.
+
+---
+Built with ✨ by adapting a minimal Next.js starter into a styled anime UI.

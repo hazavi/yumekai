@@ -103,7 +103,7 @@ export function TopAnimeCategories({ topAiring, mostPopular, mostFavorite, compl
         </div>
 
         {/* Content - connected to tabs */}
-        <div className="bg-[#1a1a1a] rounded-lg rounded-tl-none border border-white/10 p-4" style={{
+        <div className="bg-[#1a1a1a] rounded-lg p-4" style={{
           borderTop: 'none'
         }}>
           {currentData.length > 0 ? (

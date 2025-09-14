@@ -275,12 +275,19 @@ export function AnimeListTemplate({
             )}
 
             {/* TopAnimeCategories Component */}
-            <TopAnimeCategories 
-              topAiring={topAnimeCategoriesData?.topAiring || []}
-              mostPopular={topAnimeCategoriesData?.mostPopular || []}
-              mostFavorite={topAnimeCategoriesData?.mostFavorite || []}
-              completed={topAnimeCategoriesData?.completed || []}
-            />
+            {topAnimeCategoriesData && (
+              topAnimeCategoriesData.topAiring.length > 0 ||
+              topAnimeCategoriesData.mostPopular.length > 0 ||
+              topAnimeCategoriesData.mostFavorite.length > 0 ||
+              topAnimeCategoriesData.completed.length > 0
+            ) && (
+              <TopAnimeCategories 
+                topAiring={topAnimeCategoriesData?.topAiring || []}
+                mostPopular={topAnimeCategoriesData?.mostPopular || []}
+                mostFavorite={topAnimeCategoriesData?.mostFavorite || []}
+                completed={topAnimeCategoriesData?.completed || []}
+              />
+            )}
 
             {/* Genres Component */}
             {genresData && genresData.length > 0 && (

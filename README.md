@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🍥 Yumekai Anime UI
+# 🍥 Yumekai Anime 
 
 Modern glassmorphism + neon anime streaming interface inspired by hianime.to – built with **Next.js App Router** and **Tailwind CSS v4**.
 

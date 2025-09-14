@@ -64,8 +64,8 @@ export default async function Home() {
           </Suspense>
         </section>
         
-        {/* Trending Section */}
-        <Trending items={trending.slice(0,12)} />
+  {/* Trending Section - pass full list so component can derive ranks 1..10 correctly */}
+  <Trending items={trending} />
         
         <div className="container-padded mt-16">
           <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-6 xl:gap-8 items-start">

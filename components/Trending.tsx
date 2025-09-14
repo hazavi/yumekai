@@ -16,32 +16,47 @@ export function Trending({ items, title = "Trending" }: TrendingProps) {
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null); // will be unused after instant show but kept for safety
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  // Pre-process items: dedupe by url (first occurrence), validate & sort by numeric rank ascending
+  // Pre-process items: group all candidates per rank (1..10) then pick the best for each rank.
+  // "Best" means: exact qtip.title match (case-insensitive) > has qtip with description > any qtip > fallback first.
   const processedItems = useMemo(() => {
-    // Group by url
-    const groups = new Map<string, TrendingItem[]>();
-    for (const it of items) {
-      if (!it || !it.url) continue;
-      const list = groups.get(it.url) || [];
-      list.push(it);
-      groups.set(it.url, list);
+    const rankGroups: Record<number, TrendingItem[]> = {};
+    const parseRank = (r: string | undefined) => {
+      if (!r) return NaN;
+      const n = parseInt(r.replace(/[^0-9]/g, ''), 10);
+      return Number.isFinite(n) ? n : NaN;
+    };
+
+    for (const raw of items) {
+      if (!raw) continue;
+      const num = parseRank(raw.rank);
+      if (!num || num < 1 || num > 10) continue;
+      if (!rankGroups[num]) rankGroups[num] = [];
+      rankGroups[num].push(raw);
     }
-    const picked: TrendingItem[] = [];
-    for (const [url, list] of groups) {
-      if (list.length === 1) {
-        picked.push(list[0]);
-        continue;
-      }
-      // Prefer entry whose qtip.title matches its title (case-insensitive) and has a non-empty qtip.description
-      const exact = list.find(l => l.qtip && l.qtip.title && l.title && l.qtip.title.toLowerCase() === l.title.toLowerCase() && l.qtip.description);
-      picked.push(exact || list[0]);
+
+    const chooseBest = (candidates: TrendingItem[]): TrendingItem | null => {
+      if (!candidates || !candidates.length) return null;
+      // exact match with description
+      const exact = candidates.find(c => c.qtip && c.qtip.title && c.title && c.qtip.title.trim().toLowerCase() === c.title.trim().toLowerCase() && !!c.qtip.description);
+      if (exact) return exact;
+      // exact match (no description requirement)
+      const exactNoDesc = candidates.find(c => c.qtip && c.qtip.title && c.title && c.qtip.title.trim().toLowerCase() === c.title.trim().toLowerCase());
+      if (exactNoDesc) return exactNoDesc;
+      // has qtip with description
+      const withDesc = candidates.find(c => c.qtip && c.qtip.description);
+      if (withDesc) return withDesc;
+      // any qtip
+      const anyQtip = candidates.find(c => c.qtip);
+      if (anyQtip) return anyQtip;
+      return candidates[0];
+    };
+
+    const ordered: TrendingItem[] = [];
+    for (let r = 1; r <= 10; r++) {
+      const best = chooseBest(rankGroups[r] || []);
+      if (best) ordered.push(best);
     }
-    picked.sort((a, b) => {
-      const ra = parseInt(a.rank.replace(/[^0-9]/g, "")) || 9999;
-      const rb = parseInt(b.rank.replace(/[^0-9]/g, "")) || 9999;
-      return ra - rb;
-    });
-    return picked.slice(0, 12);
+    return ordered;
   }, [items]);
 
   const itemsPerView = 6;
@@ -49,6 +64,16 @@ export function Trending({ items, title = "Trending" }: TrendingProps) {
 
   const handleMouseEnter = (e: React.MouseEvent, anime: TrendingItem) => {
     if (!anime.qtip) return;
+    
+    // Soft validation: log mismatches but still show popup (previously we blocked which hid rank 10 popup)
+    if (anime.qtip.title && anime.title) {
+      const qtipTitle = anime.qtip.title.toLowerCase().trim();
+      const animeTitle = anime.title.toLowerCase().trim();
+      if (qtipTitle !== animeTitle) {
+        console.debug(`[Trending] qtip/title mismatch: card="${anime.title}" qtip.title="${anime.qtip.title}"`);
+      }
+    }
+    
     if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
     const rect = e.currentTarget.getBoundingClientRect();
     const x = rect.left + rect.width / 2;

@@ -5,7 +5,7 @@ import type { AnimeDetailsInfo } from '@/models'
 import { mapAnimeDetails } from '@/models/mappers'
 
 type Props = {
-  params: { slug: string }
+  params: Promise<{ slug: string }>
 }
 
 function slugToTitle(raw: string): string {
@@ -24,8 +24,9 @@ function slugToTitle(raw: string): string {
   return titleCased
 }
 
-export function generateMetadata({ params }: Props): Metadata {
-  const title = slugToTitle(params.slug)
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const resolvedParams = await params;
+  const title = slugToTitle(resolvedParams.slug)
   return {
     title: `${title} - Yumekai`,
     description: 'Watch anime online',
@@ -70,8 +71,9 @@ async function fetchTopAnimeData() {
 }
 
 export default async function AnimeDetailPage({ params }: Props) {
+  const resolvedParams = await params;
   const [animeInfo, topAnimeData] = await Promise.all([
-    fetchAnimeInfo(params.slug),
+    fetchAnimeInfo(resolvedParams.slug),
     fetchTopAnimeData()
   ]);
   

@@ -45,11 +45,13 @@ export default async function GenrePage({
   params,
   searchParams,
 }: {
-  params: { genre: string };
-  searchParams: { page?: string };
+  params: Promise<{ genre: string }>;
+  searchParams: Promise<{ page?: string }>;
 }) {
-  const genre = decodeURIComponent(params.genre);
-  const page = parseInt(searchParams.page || '1', 10);
+  const resolvedParams = await params;
+  const resolvedSearchParams = await searchParams;
+  const genre = decodeURIComponent(resolvedParams.genre);
+  const page = parseInt(resolvedSearchParams.page || '1', 10);
   const { listData, topAnimeData, genresData, topAnimeCategoriesData } = await getGenreData(genre, page);
 
   // Capitalize first letter of each word for display
@@ -65,7 +67,7 @@ export default async function GenrePage({
       topAnimeData={topAnimeData}
       topAnimeCategoriesData={topAnimeCategoriesData}
       genresData={genresData}
-      basePath={`/genre/${params.genre}`}
+      basePath={`/genre/${resolvedParams.genre}`}
     />
   );
 }

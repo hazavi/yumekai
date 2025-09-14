@@ -258,15 +258,15 @@ export function AnimeListTemplate({
             {topAnimeData && (
               <TopAnime 
                 data={{
-                  top_today: topAnimeData.top_today.slice(0, 10).map((anime, index) => ({
+                  top_today: (topAnimeData.top_today || []).slice(0, 10).map((anime, index) => ({
                     ...anime,
                     rank: (index + 1).toString()
                   })),
-                  top_week: topAnimeData.top_week.slice(0, 10).map((anime, index) => ({
+                  top_week: (topAnimeData.top_week || []).slice(0, 10).map((anime, index) => ({
                     ...anime,
                     rank: (index + 1).toString()
                   })),
-                  top_month: topAnimeData.top_month.slice(0, 10).map((anime, index) => ({
+                  top_month: (topAnimeData.top_month || []).slice(0, 10).map((anime, index) => ({
                     ...anime,
                     rank: (index + 1).toString()
                   }))

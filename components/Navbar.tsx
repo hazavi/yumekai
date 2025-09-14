@@ -1,12 +1,14 @@
 "use client";
-import Link from "next/link";
+// Using plain anchor tags for hard reload navigation
 import { useState, useEffect } from "react";
 import { SearchBar, NavItem } from ".";
 
 const navItems = [
   { href: "/", label: "Home" },
-  { href: "/anime", label: "Anime" },
-  { href: "/popular", label: "Popular" },
+  { href: "/most-popular", label: "Popular" },
+  { href: "/most-favorite", label: "Favorite" },
+  { href: "/tv", label: "TV" },
+  { href: "/movie", label: "Movie" },
   { href: "/schedule", label: "Schedule" },
 ];
 
@@ -40,9 +42,9 @@ export function Navbar() {
             <span className="block w-5 h-0.5 bg-white mb-1" />
             <span className="block w-5 h-0.5 bg-white" />
           </button>
-          <Link href="/" className="flex items-center" aria-label="Home">
+          <a href="/" className="flex items-center" aria-label="Home">
             <img src="/yumelogo.png" alt="YumeKai" className="h-16 w-auto object-contain" />
-          </Link>
+          </a>
         </div>
         <nav className="hidden lg:flex items-center gap-6 text-sm">
           {navItems.map(item => (
@@ -56,14 +58,14 @@ export function Navbar() {
       {openMobile && (
         <div className="lg:hidden mt-2 rounded-2xl backdrop-blur-xl bg-black/50 border border-white/10 py-3 px-4 flex flex-col gap-2 shadow-lg">
           {navItems.map(item => (
-            <Link
+            <a
               key={item.href}
               href={item.href}
               className="px-2 py-2 text-sm text-white/80 hover:text-white border-b last:border-b-0 border-white/10"
               onClick={() => setOpenMobile(false)}
             >
               {item.label}
-            </Link>
+            </a>
           ))}
         </div>
       )}

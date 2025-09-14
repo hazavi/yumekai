@@ -44,9 +44,10 @@ async function getMovieData(page: number = 1) {
 export default async function MoviePage({
   searchParams,
 }: {
-  searchParams: { page?: string };
+  searchParams: Promise<{ page?: string }>;
 }) {
-  const page = parseInt(searchParams.page || '1', 10);
+  const resolvedSearchParams = await searchParams;
+  const page = parseInt(resolvedSearchParams.page || '1', 10);
   const { listData, topAnimeData, genresData, topAnimeCategoriesData } = await getMovieData(page);
 
   return (

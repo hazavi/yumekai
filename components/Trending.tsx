@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useRef, useMemo } from "react";
-import type { TrendingItem } from "@/lib/api";
+import type { TrendingItem } from "@/models";
 import { AnimeInfoPopup } from "./AnimeInfoPopup";
 
 interface TrendingProps { items: TrendingItem[]; title?: string; }

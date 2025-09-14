@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { QtipData } from "@/lib/api";
+import type { QtipData } from "@/models";
 
 interface AnimeInfoPopupProps {
   qtip: QtipData;

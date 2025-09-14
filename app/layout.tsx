@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Poppins } from "next/font/google";
+import { Navbar } from "@/components/Navbar";
 import "./globals.css";
 
 // Modern clean fonts
@@ -45,6 +46,7 @@ export default function RootLayout({
       >
         {/* Pure black canvas for seamless hero blend */}
         <div className="fixed inset-0 -z-10 bg-black" />
+        <Navbar />
         {children}
       </body>
     </html>

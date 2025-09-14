@@ -1,100 +1,17 @@
+import { 
+  QtipData,
+  PaginatedResult,
+  BasicAnime,
+  UpdatedAnime,
+  SpotlightItem,
+  TrendingItem,
+  TopAnimeData,
+  Genre,
+  AnimeDetailsInfo,
+  AnimeCardData
+} from "@/models";
+
 const BASE_URL = "https://aniscraper-eta.vercel.app";
-
-export interface QtipData {
-  aired?: string;
-  description?: string;
-  dub?: string;
-  eps?: string | null;
-  genres?: string[];
-  japanese?: string;
-  quality?: string;
-  rating?: string;
-  status?: string;
-  sub?: string;
-  synonyms?: string;
-  title?: string;
-  type?: string;
-  watch_url?: string;
-}
-
-export interface PaginatedResult<T> {
-  page?: number;
-  pagination?: { active: boolean; href: string; text: string }[];
-  results: T[];
-}
-
-export interface BasicAnime {
-  link: string; // slug like "/one-piece"
-  thumbnail: string;
-  title: string;
-  type: string; // TV, Movie, etc.
-  qtip?: QtipData;
-}
-
-export interface UpdatedAnime extends BasicAnime {
-  description?: string;
-  dub?: string; // SUB / DUB
-  duration?: string; // e.g. 24m
-  latest_episode?: string; // e.g. EP 1100
-  qtip?: QtipData;
-}
-
-export interface SpotlightItem {
-  date?: string;
-  description?: string;
-  detail_link: string; // slug for details
-  dub_ep?: string;
-  duration?: string;
-  eps?: string | null;
-  quality?: string;
-  spotlight?: string; // "#1 Spotlight" etc
-  sub_ep?: string;
-  thumbnail: string;
-  title: string;
-  type: string;
-  watch_link: string; // /watch/slug
-  qtip?: QtipData;
-}
-export type TrendingItem = {
-  jname: string;
-  poster: string;
-  qtip?: QtipData;
-  rank: string;
-  title: string;
-  url: string;
-};
-
-export interface TopAnimeGroups {
-  today: BasicAnime[];
-  week: BasicAnime[];
-  month: BasicAnime[];
-}
-
-export interface TopAnimeData {
-  top_today: (BasicAnime & { rank: string })[];
-  top_week: (BasicAnime & { rank: string })[];
-  top_month: (BasicAnime & { rank: string })[];
-}
-
-export interface Genre {
-  name: string;
-  slug: string;
-  url: string;
-}
-
-export interface AnimeDetailsInfo {
-  description: string;
-  genres: string[];
-  info: Record<string, string | string[]>;
-  link: string;
-  quality: string;
-  sub_count: string; // SUB
-  thumbnail: string;
-  title: string;
-  watch_link: string; // /watch/slug
-  recommendations?: BasicAnime[];
-  qtip?: QtipData;
-}
 
 async function fetchJSON<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE_URL}${path}`, {
@@ -128,7 +45,13 @@ export const api = {
   completed: (page = 1) => fetchJSON<PaginatedResult<BasicAnime>>(`/completed?page=${page}`),
   topAnime: () => fetchJSON<TopAnimeData>(`/top-anime`),
   genres: () => fetchJSON<{ genres: Genre[] }>(`/genres`),
+  genreAnime: (genre: string, page = 1) => fetchJSON<PaginatedResult<BasicAnime>>(`/genre/${encodeURIComponent(genre)}?page=${page}`),
+  tv: (page = 1) => fetchJSON<PaginatedResult<BasicAnime>>(`/tv?page=${page}`),
+  movie: (page = 1) => fetchJSON<PaginatedResult<BasicAnime>>(`/movie?page=${page}`),
+  ova: (page = 1) => fetchJSON<PaginatedResult<BasicAnime>>(`/ova?page=${page}`),
+  ona: (page = 1) => fetchJSON<PaginatedResult<BasicAnime>>(`/ona?page=${page}`),
+  special: (page = 1) => fetchJSON<PaginatedResult<BasicAnime>>(`/special?page=${page}`),
   details: (slug: string) => fetchJSON<AnimeDetailsInfo>(`${slug.startsWith('/') ? '' : '/'}${slug}`),
 };
 
-export type { BasicAnime as AnimeCardData };
+export type { AnimeCardData };

@@ -3,7 +3,7 @@
 import { useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import type { BasicAnime } from "@/lib/api";
+import type { BasicAnime } from "@/models";
 import { AnimeInfoPopup } from "./AnimeInfoPopup";
 
 interface TopAnimeCategoriesProps {

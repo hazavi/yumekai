@@ -2,7 +2,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState, useRef } from "react";
-import type { SpotlightItem } from "@/lib/api";
+import type { SpotlightItem } from "@/models";
 import { PlayIcon, TvIcon, ClockIcon, CalendarIcon } from "./icons";
 
 interface HeroCarouselProps { items: SpotlightItem[]; intervalMs?: number; }

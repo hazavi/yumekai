@@ -1,4 +1,3 @@
-import { Navbar } from "@/components/Navbar";
 import { HeroCarousel } from "@/components/HeroCarousel";
 import { Trending } from "@/components/Trending";
 import { LatestEpisodeGrid } from "@/components/LatestEpisodeGrid";
@@ -8,7 +7,7 @@ import { TopAnime } from "@/components/TopAnime";
 import { TopAnimeCategories } from "@/components/TopAnimeCategories";
 import { Genres } from "@/components/Genres";
 import { api } from "@/lib/api";
-import type { SpotlightItem, TrendingItem, UpdatedAnime, BasicAnime, TopAnimeData, Genre } from "@/lib/api";
+import type { SpotlightItem, TrendingItem, UpdatedAnime, BasicAnime, TopAnimeData, Genre } from "@/models";
 import { Suspense } from "react";
 
 function ensureArray<T>(val: unknown): T[] {
@@ -60,7 +59,6 @@ export default async function Home() {
   const { spotlight, trending, updated, recentlyAdded, topUpcoming, topAnime, genres, topAiring, mostPopular, mostFavorite, completed } = await fetchHomeData();
   return (
     <div className="relative">
-      <Navbar />
       <main className="pb-20">
     {/* Hero Full-Bleed */}
   <section className="pt-20">

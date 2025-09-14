@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import type { Genre } from "@/lib/api";
+import type { Genre } from "@/models";
 
 interface GenresProps {
   genres: Genre[];

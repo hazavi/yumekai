@@ -124,6 +124,8 @@ export const api = {
   topUpcoming: () => fetchJSON<{ results: BasicAnime[] }>(`/top-upcoming`),
   topAiring: (page = 1) => fetchJSON<PaginatedResult<BasicAnime>>(`/top-airing?page=${page}`),
   mostPopular: (page = 1) => fetchJSON<PaginatedResult<BasicAnime>>(`/most-popular?page=${page}`),
+  mostFavorite: (page = 1) => fetchJSON<PaginatedResult<BasicAnime>>(`/most-favorite?page=${page}`),
+  completed: (page = 1) => fetchJSON<PaginatedResult<BasicAnime>>(`/completed?page=${page}`),
   topAnime: () => fetchJSON<TopAnimeData>(`/top-anime`),
   genres: () => fetchJSON<{ genres: Genre[] }>(`/genres`),
   details: (slug: string) => fetchJSON<AnimeDetailsInfo>(`${slug.startsWith('/') ? '' : '/'}${slug}`),

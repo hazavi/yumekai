@@ -5,6 +5,7 @@ import { LatestEpisodeGrid } from "@/components/LatestEpisodeGrid";
 import { RecentlyAdded } from "@/components/RecentlyAdded";
 import { TopUpcoming } from "@/components/TopUpcoming";
 import { TopAnime } from "@/components/TopAnime";
+import { TopAnimeCategories } from "@/components/TopAnimeCategories";
 import { Genres } from "@/components/Genres";
 import { api } from "@/lib/api";
 import type { SpotlightItem, TrendingItem, UpdatedAnime, BasicAnime, TopAnimeData, Genre } from "@/lib/api";
@@ -22,7 +23,7 @@ function ensureArray<T>(val: unknown): T[] {
 }
 
 async function fetchHomeData() {
-  const [spotlightRaw, trendingRaw, updatedRaw, recentlyAddedRaw, topUpcomingRaw, topAnimeRaw, genresRaw] = await Promise.all([
+  const [spotlightRaw, trendingRaw, updatedRaw, recentlyAddedRaw, topUpcomingRaw, topAnimeRaw, genresRaw, topAiringRaw, mostPopularRaw, mostFavoriteRaw, completedRaw] = await Promise.all([
     api.spotlightSlider().catch(() => []),
     api.trending().catch(() => []),
     api.recentlyUpdated().then(r => r.results).catch(() => []),
@@ -30,6 +31,10 @@ async function fetchHomeData() {
     api.topUpcoming().then(r => r.results).catch(() => []),
     api.topAnime().catch(() => ({ top_today: [], top_week: [], top_month: [] })),
     api.genres().then(r => r.genres).catch(() => []),
+    api.topAiring().then(r => r.results).catch(() => []),
+    api.mostPopular().then(r => r.results).catch(() => []),
+    api.mostFavorite().then(r => r.results).catch(() => []),
+    api.completed().then(r => r.results).catch(() => []),
   ]);
   const spotlight = ensureArray<SpotlightItem>(spotlightRaw);
   // Handle trending data - it might be wrapped in { trending: [...] }
@@ -44,11 +49,15 @@ async function fetchHomeData() {
   const topUpcoming = ensureArray<BasicAnime>(topUpcomingRaw);
   const topAnime = topAnimeRaw as TopAnimeData;
   const genres = ensureArray<Genre>(genresRaw);
-  return { spotlight, trending, updated, recentlyAdded, topUpcoming, topAnime, genres };
+  const topAiring = ensureArray<BasicAnime>(topAiringRaw);
+  const mostPopular = ensureArray<BasicAnime>(mostPopularRaw);
+  const mostFavorite = ensureArray<BasicAnime>(mostFavoriteRaw);
+  const completed = ensureArray<BasicAnime>(completedRaw);
+  return { spotlight, trending, updated, recentlyAdded, topUpcoming, topAnime, genres, topAiring, mostPopular, mostFavorite, completed };
 }
 
 export default async function Home() {
-  const { spotlight, trending, updated, recentlyAdded, topUpcoming, topAnime, genres } = await fetchHomeData();
+  const { spotlight, trending, updated, recentlyAdded, topUpcoming, topAnime, genres, topAiring, mostPopular, mostFavorite, completed } = await fetchHomeData();
   return (
     <div className="relative">
       <Navbar />
@@ -64,8 +73,8 @@ export default async function Home() {
           </Suspense>
         </section>
         
-  {/* Trending Section - pass full list so component can derive ranks 1..10 correctly */}
-  <Trending items={trending} />
+        {/* Trending Section - pass full list so component can derive ranks 1..10 correctly */}
+        <Trending items={trending} />
         
         <div className="container-padded mt-16">
           <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-6 xl:gap-8 items-start">
@@ -84,6 +93,14 @@ export default async function Home() {
             <div className="xl:top-24 space-y-6">
               {/* Top Anime */}
               <TopAnime data={topAnime} />
+              
+              {/* Top Anime Categories */}
+              <TopAnimeCategories 
+                topAiring={topAiring}
+                mostPopular={mostPopular}
+                mostFavorite={mostFavorite}
+                completed={completed}
+              />
               
               {/* Genres */}
               <Genres genres={genres} />

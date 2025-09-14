@@ -10,6 +10,7 @@ export * from './SectionHeader';
 export * from './SectionGrid';
 export * from './Trending';
 export * from './TopAnime';
+export * from './TopAnimeCategories';
 export * from './Genres';
 export * from './LatestEpisode';
 export * from './LatestEpisodeGrid';

@@ -1,6 +1,5 @@
 "use client";
 import Image from "next/image";
-import Link from "next/link";
 import { useEffect, useState, useRef } from "react";
 import type { SpotlightItem } from "@/models";
 import { PlayIcon, TvIcon, ClockIcon, CalendarIcon } from "./icons";
@@ -210,14 +209,14 @@ export function HeroCarousel({ items, intervalMs = 6000 }: HeroCarouselProps) {
                       <p className="text-sm text-white/70 leading-relaxed line-clamp-4 mb-8 max-w-xl">{item.description}</p>
                     )}
                     <div className="flex items-center gap-4">
-                      <Link
+                      <a
                         href={item.watch_link || item.detail_link || "/"}
                         className="inline-flex items-center gap-2 px-6 h-11 rounded-full bg-white text-black font-medium text-sm hover:bg-white/90 transition shadow"
                       >
                         <PlayIcon className="h-4 w-4" />
                         Watch Now
-                      </Link>
-                      <Link
+                      </a>
+                      <a
                         href={item.detail_link || "/"}
                         className="inline-flex items-center gap-1 px-5 h-11 rounded-full text-white font-medium text-sm transition bg-white/5 hover:bg-white/10 backdrop-blur-sm ring-1 ring-white/15 hover:ring-white/25 shadow-[0_2px_6px_-1px_rgba(0,0,0,0.6)]"
                       >
@@ -233,7 +232,7 @@ export function HeroCarousel({ items, intervalMs = 6000 }: HeroCarouselProps) {
                         >
                           <path d="m9 18 6-6-6-6"/>
                         </svg>
-                      </Link>
+                      </a>
                     </div>
                   </div>
                 </div>

@@ -1,6 +1,5 @@
 "use client";
 import { useState } from "react";
-import Link from "next/link";
 import { SearchIcon } from "./icons";
 
 export function SearchBar() {
@@ -28,7 +27,7 @@ export function SearchBar() {
       {query && (
         <div className="absolute left-0 top-full mt-2 w-full backdrop-blur-xl bg-black/50 border border-white/10 rounded-xl p-3 text-xs hidden group-focus-within:block">
           <p className="opacity-70">No live search implemented yet.</p>
-          <Link href="#" className="mt-2 inline-block text-white/60 hover:text-white font-medium">Advanced search →</Link>
+          <a href="#" className="mt-2 inline-block text-white/60 hover:text-white font-medium">Advanced search →</a>
         </div>
       )}
     </form>

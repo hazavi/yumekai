@@ -2,7 +2,6 @@
 
 import { AnimeGrid } from "./AnimeGrid";
 import { AnimeCardData } from "@/lib/api";
-import Link from "next/link";
 
 interface SectionGridProps {
   title: string;
@@ -18,12 +17,12 @@ export function SectionGrid({ title, href, anime, badgeType = 'latest', emptyLab
       {/* Section Header */}
       <div className="flex items-center justify-between gap-4 mb-6">
         <h2 className="text-xl sm:text-2xl font-bold font-poppins">{title}</h2>
-        <Link 
+        <a 
           href={href} 
           className="hidden md:inline-flex items-center text-[12px] font-medium text-fuchsia-300/80 hover:text-fuchsia-200 transition"
         >
           View more <span className="ml-1">›</span>
-        </Link>
+        </a>
       </div>
       
       {/* Grid */}

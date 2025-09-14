@@ -1,6 +1,5 @@
 "use client";
 import Image from "next/image";
-import Link from "next/link";
 import { useState } from "react";
 import { AnimeInfoPopup } from "./AnimeInfoPopup";
 import { TopAnime } from "./TopAnime";
@@ -14,6 +13,7 @@ interface AnimeInfo {
   genres: string[];
   info: {
     Japanese?: string;
+    Synonyms?: string;
     Aired?: string;
     Duration?: string;
     Premiered?: string;
@@ -74,9 +74,9 @@ export function AnimeInfoPage({ animeInfo, topAnimeData }: AnimeInfoPageProps) {
               {index === breadcrumbs.length - 1 ? (
                 <span className="text-white">{breadcrumb.label}</span>
               ) : (
-                <Link href={breadcrumb.href} className="hover:text-white transition-colors">
+                <a href={breadcrumb.href} className="hover:text-white transition-colors">
                   {breadcrumb.label}
-                </Link>
+                </a>
               )}
             </div>
           ))}
@@ -133,7 +133,7 @@ export function AnimeInfoPage({ animeInfo, topAnimeData }: AnimeInfoPageProps) {
 
                 {/* Action Buttons */}
                 <div className="flex flex-wrap gap-3 mb-6">
-                  <Link
+                  <a
                     href={animeInfo.watch_link || "#"}
                     className="inline-flex items-center gap-2 px-6 h-11 rounded-full bg-white text-black font-medium text-sm hover:bg-white/90 transition shadow"
                   >
@@ -141,7 +141,7 @@ export function AnimeInfoPage({ animeInfo, topAnimeData }: AnimeInfoPageProps) {
                       <path d="M8 5v10l8-5z"/>
                     </svg>
                     Watch Now
-                  </Link>
+                  </a>
                   <button className="inline-flex items-center gap-1 px-5 h-11 rounded-full text-white font-medium text-sm transition bg-white/5 hover:bg-white/10 backdrop-blur-sm ring-1 ring-white/15 hover:ring-white/25">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -178,7 +178,12 @@ export function AnimeInfoPage({ animeInfo, topAnimeData }: AnimeInfoPageProps) {
                     <span className="text-white">{animeInfo.info.Japanese}</span>
                   </div>
                 )}
-                
+                {animeInfo.info?.Synonyms && (
+                  <div className="text-sm">
+                    <span className="text-white/60">Synonyms: </span>
+                    <span className="text-white">{animeInfo.info.Synonyms}</span>
+                  </div>
+                )}
                 {animeInfo.info.Aired && (
                   <div className="text-sm">
                     <span className="text-white/60">Aired: </span>

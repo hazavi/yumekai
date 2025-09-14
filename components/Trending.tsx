@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { useState, useRef, useMemo } from "react";
 import type { TrendingItem } from "@/models";
 import { AnimeInfoPopup } from "./AnimeInfoPopup";
@@ -185,7 +184,7 @@ export function Trending({ items, title = "Trending" }: TrendingProps) {
                   </div>
                   
                   {/* Anime Card - Smaller poster */}
-                  <Link 
+                  <a 
                     href={linkUrl} 
                     className="block relative h-[240px] w-[160px] overflow-hidden bg-black/20"
                     onMouseEnter={(e) => handleMouseEnter(e, anime)}
@@ -198,7 +197,7 @@ export function Trending({ items, title = "Trending" }: TrendingProps) {
                       sizes="160px" 
                       className="object-cover transition-transform duration-300 group-hover:scale-105"
                     />
-                  </Link>
+                  </a>
                 </div>
               );
             })}

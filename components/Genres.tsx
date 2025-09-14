@@ -1,6 +1,4 @@
 "use client";
-
-import Link from "next/link";
 import { useState } from "react";
 import type { Genre } from "@/models";
 
@@ -35,13 +33,13 @@ export function Genres({ genres, title = "Genres", initialCount = 12 }: GenresPr
         {/* Genre Grid */}
         <div className="grid grid-cols-2 gap-2 mb-4">
         {visibleGenres.map((genre) => (
-          <Link
+          <a
             key={genre.slug}
             href={genre.url}
             className="group relative px-2 py-2 text-xs font-medium text-white/80 bg-[linear-gradient(to_right,rgba(255,255,255,0.08),rgba(255,255,255,0.03))] ring-1 ring-white/10 rounded-lg backdrop-blur-sm transition-all duration-200 hover:bg-[linear-gradient(to_right,rgba(147,51,234,0.25),rgba(147,51,234,0.08))] hover:ring-purple-500/40 hover:text-white"
           >
             <span className="block text-center leading-tight whitespace-nowrap overflow-hidden text-ellipsis">{genre.name}</span>
-          </Link>
+          </a>
         ))}
       </div>
 

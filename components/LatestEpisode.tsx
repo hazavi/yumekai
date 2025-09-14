@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { useState, useRef } from "react";
 import { AnimeCardData } from "@/lib/api";
 import { AnimeInfoPopup } from "./AnimeInfoPopup";
@@ -53,7 +52,7 @@ export function LatestEpisode({ anime, showMeta = true }: LatestEpisodeProps) {
         onMouseEnter={handleImageMouseEnter}
         onMouseLeave={handleImageMouseLeave}
       >
-        <Link href={slug} className="block aspect-[3/4] relative">
+  <a href={slug} className="block aspect-[3/4] relative">
           <Image
             src={anime.thumbnail}
             alt={anime.title}
@@ -95,17 +94,17 @@ export function LatestEpisode({ anime, showMeta = true }: LatestEpisodeProps) {
               )}
             </div>
           )}
-        </Link>
+  </a>
       </div>
       {showMeta && (
         <div className="mt-2 px-1">
-          <Link 
+          <a 
             href={slug} 
             className="block text-sm font-medium text-white/90 truncate hover:text-white transition-colors"
             title={anime.title}
           >
             {anime.title}
-          </Link>
+          </a>
           <div className="flex items-center gap-1 mt-1 text-[11px] text-white/60">
             {anime.type && <span className="uppercase tracking-wide">{anime.type}</span>}
             {anime.type && anime.duration && <span>•</span>}

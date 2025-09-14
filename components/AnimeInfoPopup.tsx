@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import type { QtipData } from "@/models";
 
 interface AnimeInfoPopupProps {
@@ -180,7 +179,7 @@ export function AnimeInfoPopup({ qtip, poster, slug, isVisible, position, isSide
         
         {/* Watch Now Button */}
         <div className="p-4 pt-0">
-          <Link 
+          <a 
             href={qtip.watch_url || slug} 
             className="pointer-events-auto block w-full"
           >
@@ -190,7 +189,7 @@ export function AnimeInfoPopup({ qtip, poster, slug, isVisible, position, isSide
               </svg>
               Watch Now
             </button>
-          </Link>
+          </a>
         </div>
       </div>
     </div>

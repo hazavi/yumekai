@@ -1,7 +1,6 @@
 "use client";
 import { useState, useRef } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { AnimeCard } from "./AnimeCard";
 import { TopAnime } from "./TopAnime";
 import { TopAnimeCategories } from "./TopAnimeCategories";
@@ -107,13 +106,14 @@ export function AnimeListTemplate({
                         onMouseEnter={(e) => handleMouseEnter(e, anime)}
                         onMouseLeave={handleMouseLeave}
                       >
-                        <Link href={anime.link} className="block aspect-[3/4] relative">
+                        <a href={anime.link} className="block aspect-[3/4] relative">
                           <Image
                             src={anime.thumbnail}
                             alt={anime.title}
                             fill
                             sizes="(max-width:768px) 40vw, (max-width:1200px) 20vw, 15vw"
                             className="object-cover transition-all duration-300 group-hover:blur-sm"
+                            priority={index === 0}
                           />
                           
                           {/* Play button overlay on hover */}
@@ -149,18 +149,18 @@ export function AnimeListTemplate({
                               )}
                             </div>
                           )}
-                        </Link>
+                        </a>
                       </div>
                       
                       {/* Title and Meta Info */}
                       <div className="mt-2 px-1">
-                        <Link 
+                        <a 
                           href={anime.link} 
                           className="block text-sm font-medium text-white/90 truncate hover:text-white transition-colors"
                           title={anime.title}
                         >
                           {anime.title}
-                        </Link>
+                        </a>
                         
                         {/* Description */}
                         {anime.description && (

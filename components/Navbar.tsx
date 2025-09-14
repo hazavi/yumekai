@@ -4,17 +4,24 @@ import { useState, useEffect } from "react";
 import { SearchBar, NavItem } from ".";
 
 const navItems = [
-  { href: "/", label: "Home" },
-  { href: "/most-popular", label: "Popular" },
-  { href: "/most-favorite", label: "Favorite" },
-  { href: "/tv", label: "TV" },
-  { href: "/movie", label: "Movie" },
+  { href: "/most-popular", label: "Most Popular" },
+  { href: "/top-airing", label: "Top Airing" },
   { href: "/schedule", label: "Schedule" },
+];
+
+const dropdownItems = [
+  { href: "/most-favorite", label: "Most Favorite" },
+  { href: "/tv", label: "TV Serie" },
+  { href: "/movie", label: "Movie" },
+  { href: "/ona", label: "ONA" },
+  { href: "/ova", label: "OVA" },
+  { href: "/special", label: "Special" },
 ];
 
 export function Navbar() {
   const [openMobile, setOpenMobile] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   useEffect(() => {
     const onScroll = () => {
@@ -50,6 +57,46 @@ export function Navbar() {
           {navItems.map(item => (
             <NavItem key={item.href} href={item.href}>{item.label}</NavItem>
           ))}
+          
+          {/* Browse Dropdown */}
+          <div 
+            className="relative"
+            onMouseEnter={() => setDropdownOpen(true)}
+            onMouseLeave={() => setDropdownOpen(false)}
+          >
+            <button
+              className={`px-1 py-1 font-medium text-sm tracking-wide transition relative after:absolute after:left-0 after:bottom-0 after:h-[2px] after:rounded-full after:bg-white/80 after:transition-all after:duration-300 flex items-center gap-1 ${
+                dropdownOpen ? "text-white after:w-full" : "text-white/70 hover:text-white after:w-0 hover:after:w-full"
+              }`}
+            >
+              Browse
+              <svg 
+                className={`w-4 h-4 transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`}
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            
+            {/* Dropdown Menu */}
+            {dropdownOpen && (
+              <div className="absolute top-full left-0 pt-2 w-48 z-50">
+                <div className="rounded-xl backdrop-blur-xl bg-black/80 border border-white/10 py-2 shadow-lg">
+                  {dropdownItems.map((item) => (
+                    <a
+                      key={item.href}
+                      href={item.href}
+                      className="block px-4 py-2 text-sm text-white/80 hover:text-white hover:bg-white/5 transition-colors"
+                    >
+                      {item.label}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </nav>
         <div className="ml-auto w-full max-w-sm">
           <SearchBar />
@@ -61,12 +108,27 @@ export function Navbar() {
             <a
               key={item.href}
               href={item.href}
-              className="px-2 py-2 text-sm text-white/80 hover:text-white border-b last:border-b-0 border-white/10"
+              className="px-2 py-2 text-sm text-white/80 hover:text-white border-b border-white/10"
               onClick={() => setOpenMobile(false)}
             >
               {item.label}
             </a>
           ))}
+          
+          {/* Mobile Browse Section */}
+          <div className="border-t border-white/10 pt-2 mt-2">
+            <div className="px-2 py-1 text-xs text-white/60 font-medium">Browse</div>
+            {dropdownItems.map(item => (
+              <a
+                key={item.href}
+                href={item.href}
+                className="px-2 py-2 text-sm text-white/80 hover:text-white pl-4"
+                onClick={() => setOpenMobile(false)}
+              >
+                {item.label}
+              </a>
+            ))}
+          </div>
         </div>
       )}
     </header>

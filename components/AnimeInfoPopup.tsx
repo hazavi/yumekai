@@ -12,7 +12,7 @@ interface AnimeInfoPopupProps {
   isSidebar?: boolean;
 }
 
-export function AnimeInfoPopup({ qtip, poster, slug, isVisible, position, isSidebar = false }: AnimeInfoPopupProps) {
+export function AnimeInfoPopup({ qtip, slug, isVisible, position, isSidebar = false }: AnimeInfoPopupProps) {
   if (!isVisible || !qtip) return null;
 
   // Calculate if popup should appear above or below based on screen position

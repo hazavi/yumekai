@@ -1,8 +1,23 @@
 import { NextResponse } from 'next/server';
 
-const BASE_URL = 'https://aniscraper-eta.vercel.app';
+const getApiUrl = () => {
+  const url = process.env.ANISCRAPER_API_URL;
+  if (!url) {
+    console.error('ANISCRAPER_API_URL environment variable is not set');
+    return null;
+  }
+  return url;
+};
 
 export async function GET() {
+  const BASE_URL = getApiUrl();
+  
+  if (!BASE_URL) {
+    return NextResponse.json(
+      { error: 'API configuration missing' },
+      { status: 500 }
+    );
+  }
   try {
     const url = `${BASE_URL}/schedule/week`;
     

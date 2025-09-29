@@ -1,6 +1,8 @@
 'use client';
 
 import { notFound, useParams, useSearchParams } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
 import { api } from "@/lib/api";
 import { AnimeCard } from "@/components/AnimeCard";
 import { useEffect, useState } from "react";
@@ -332,16 +334,16 @@ export default function WatchPage() {
       <div className="py-4 px-6 border-b border-gray-800/50">
         <div className="container mx-auto">
           <div className="flex items-center text-sm text-gray-400">
-            <a href="/" className="hover:text-white transition-colors duration-300 flex items-center gap-2">
+            <Link href="/" className="hover:text-white transition-colors duration-300 flex items-center gap-2">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
               </svg>
               Home
-            </a>
+            </Link>
             <svg className="w-4 h-4 mx-3 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
-            <a href="/tv" className="hover:text-white transition-colors duration-300">TV</a>
+            <Link href="/tv" className="hover:text-white transition-colors duration-300">TV</Link>
             <svg className="w-4 h-4 mx-3 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
@@ -468,7 +470,7 @@ export default function WatchPage() {
                   Watching Episode {currentEpisode?.episode_nr || currentEpNumber}
                 </h4>
                 <p className="text-gray-400 text-sm">
-                  If current server doesn't work, try other servers below.
+                  If current server doesn&apos;t work, try other servers below.
                 </p>
               </div>
               
@@ -541,9 +543,11 @@ export default function WatchPage() {
                 {/* Anime Poster and Title */}
                 <div className="text-center">
                   <div className="relative group mb-6">
-                    <img
+                    <Image
                       src={data.watch_detail.poster}
                       alt={data.watch_detail.title}
+                      width={400}
+                      height={320}
                       className="w-full h-80 object-cover shadow-2xl border border-gray-800 transition-transform duration-300 group-hover:scale-[1.02]"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -592,7 +596,7 @@ export default function WatchPage() {
                     Synopsis
                   </h3>
                   <p className="text-gray-300 text-sm leading-relaxed">
-                    After the destruction of their hometown, childhood friends Kafka Hibino and Mina Ashiro make a pact to become officers in the Defense Force—a militarized organization tasked with protecting Japan from colossal monsters known as "kaijuu." Decades later, the...
+                    After the destruction of their hometown, childhood friends Kafka Hibino and Mina Ashiro make a pact to become officers in the Defense Force—a militarized organization tasked with protecting Japan from colossal monsters known as &ldquo;kaijuu.&rdquo; Decades later, the...
                   </p>
                 </div>
               </div>

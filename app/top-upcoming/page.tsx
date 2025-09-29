@@ -2,7 +2,7 @@ import { AnimeListTemplate } from "@/components";
 import { mapAnimeListResults } from "@/models/mappers";
 import { api } from "@/lib/api";
 
-async function getTopUpcomingData(page: number = 1) {
+async function getTopUpcomingData() {
   try {
     const [listData, topAnimeData, genresResponse, topAiringData, mostPopularData, mostFavoriteData, completedData] = await Promise.all([
       api.topUpcoming(),
@@ -41,14 +41,8 @@ async function getTopUpcomingData(page: number = 1) {
   }
 }
 
-export default async function TopUpcomingPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ page?: string }>;
-}) {
-  const resolvedSearchParams = await searchParams;
-  const page = parseInt(resolvedSearchParams.page || '1', 10);
-  const { listData, topAnimeData, genresData, topAnimeCategoriesData } = await getTopUpcomingData(page);
+export default async function TopUpcomingPage() {
+  const { listData, topAnimeData, genresData, topAnimeCategoriesData } = await getTopUpcomingData();
 
   return (
     <AnimeListTemplate

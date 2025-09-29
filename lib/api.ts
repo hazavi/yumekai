@@ -1,5 +1,4 @@
 import { 
-  QtipData,
   PaginatedResult,
   BasicAnime,
   UpdatedAnime,
@@ -14,7 +13,16 @@ import {
   WeeklyScheduleResponse
 } from "@/models";
 
-export const BASE_URL = "https://aniscraper-eta.vercel.app";
+const getApiUrl = () => {
+  const url = process.env.NEXT_PUBLIC_ANISCRAPER_API_URL || process.env.ANISCRAPER_API_URL;
+  if (!url) {
+    console.error('API URL not configured. Please set ANISCRAPER_API_URL or NEXT_PUBLIC_ANISCRAPER_API_URL in your environment variables.');
+    return null;
+  }
+  return url;
+};
+
+export const BASE_URL = getApiUrl();
 
 // Simple in-memory cache (client runtime) to avoid spamming API when components re-render
 // Not used server-side persistently (clears on reload). Suitable for short-lived caching.
@@ -50,7 +58,7 @@ async function fetchJSON<T>(path: string, init?: RequestInit, ttlMs: number = DE
       memoryCache.delete(key); // stale
     }
   }
-  let lastError: any = null;
+  let lastError: Error | null = null;
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
       // Compose final URL
@@ -71,6 +79,9 @@ async function fetchJSON<T>(path: string, init?: RequestInit, ttlMs: number = DE
         }
       } else {
         // External API path
+        if (!BASE_URL) {
+          throw new Error('API configuration missing');
+        }
         finalUrl = `${BASE_URL}${path}`;
       }
       
@@ -135,8 +146,8 @@ async function fetchJSON<T>(path: string, init?: RequestInit, ttlMs: number = DE
         memoryCache.set(key, { data: json, expiry: Date.now() + ttlMs });
       }
       return json;
-    } catch (e) {
-      lastError = e;
+    } catch (e: unknown) {
+      lastError = e instanceof Error ? e : new Error(String(e));
       // Debug logging for schedule errors
       if (path.includes('schedule')) {
         console.error(`Schedule API error (attempt ${attempt + 1}):`, e);
@@ -158,9 +169,11 @@ async function fetchJSON<T>(path: string, init?: RequestInit, ttlMs: number = DE
 
 export const api = {
   spotlightSlider: async () => {
-    const data = await fetchJSON<any>(`/spotlight-slider`);
+    const data = await fetchJSON<unknown>(`/spotlight-slider`);
     if (Array.isArray(data)) return data as SpotlightItem[]; // fallback if direct array
-    if (data && Array.isArray(data.results)) return data.results as SpotlightItem[];
+    if (data && typeof data === 'object' && 'results' in data && Array.isArray((data as { results: unknown }).results)) {
+      return (data as { results: SpotlightItem[] }).results;
+    }
     return [];
   },
   trending: () => fetchJSON<TrendingItem[]>(`/trending`, undefined, undefined, { once: true }),
@@ -184,7 +197,67 @@ export const api = {
     const query = ep ? `?ep=${encodeURIComponent(ep)}` : '';
     // Use internal proxy route on client to bypass CORS; server side can still call external
     const internal = `/api/watch/${slug}${query}`;
-    return fetchJSON<any>(internal, undefined, 15_000, { retries: 3 });
+    return fetchJSON<{
+      episodes: Array<{
+        episode_nr: number;
+        id: string;
+        jname: string;
+        real_id: string;
+        servers: {
+          dub: Array<{
+            data_id: string;
+            default: boolean;
+            ifram_src: string;
+            name: string;
+            server_id: string;
+          }>;
+          sub: Array<{
+            data_id: string;
+            default: boolean;
+            ifram_src: string;
+            name: string;
+            server_id: string;
+          }>;
+        };
+        title: string;
+      }>;
+      recommendations: Array<{
+        jname: string;
+        poster: string;
+        qtip: {
+          aired: string;
+          description: string;
+          dub: string | null;
+          eps: string;
+          genres: string[];
+          japanese: string;
+          quality: string;
+          rating: string;
+          status: string;
+          sub: string;
+          synonyms: string | null;
+          title: string;
+          type: string;
+          watch_url: string;
+        };
+        title: string;
+        url: string;
+      }>;
+      total_episodes: number;
+      watch_detail: {
+        content_rating: string;
+        description: string;
+        duration: string;
+        jname: string;
+        poster: string;
+        producers: string[];
+        quality: string;
+        rating: string | null;
+        sub_count: string;
+        title: string;
+        type: string;
+      };
+    }>(internal, undefined, 15_000, { retries: 3 });
   },
   schedule: (date?: string) => {
     const query = date ? `?date=${encodeURIComponent(date)}` : '';

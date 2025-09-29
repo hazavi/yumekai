@@ -1,10 +1,9 @@
 "use client";
 import Image from "next/image";
 import { useState } from "react";
-import { AnimeInfoPopup } from "./AnimeInfoPopup";
 import { TopAnime } from "./TopAnime";
 import { AnimeCard } from "./AnimeCard";
-import type { QtipData } from "@/models";
+import type { QtipData, BasicAnime } from "@/models";
 
 interface AnimeInfo {
   title: string;
@@ -40,10 +39,10 @@ interface AnimeInfo {
 interface AnimeInfoPageProps {
   animeInfo: AnimeInfo;
   topAnimeData?: {
-    topAiring: any[];
-    mostPopular: any[];
-    mostFavorite: any[];
-    completed: any[];
+    topAiring: BasicAnime[];
+    mostPopular: BasicAnime[];
+    mostFavorite: BasicAnime[];
+    completed: BasicAnime[];
   };
 }
 
@@ -113,13 +112,13 @@ export function AnimeInfoPage({ animeInfo, topAnimeData }: AnimeInfoPageProps) {
                   )}
                   {animeInfo.sub_count && animeInfo.sub_count !== "0" && (
                     <span className="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium bg-[linear-gradient(to_right,rgba(147,51,234,0.25),rgba(147,51,234,0.08))] ring-1 ring-purple-500/40 text-purple-200 shadow-[0_0_0_1px_rgba(147,51,234,0.2)] backdrop-blur-sm rounded-full">
-                      <img src="/cc.svg" alt="CC" className="w-3 h-3 brightness-0 invert" />
+                      <Image src="/cc.svg" alt="CC" width={12} height={12} className="w-3 h-3 brightness-0 invert" />
                       {animeInfo.sub_count}
                     </span>
                   )}
                   {animeInfo.dub_count && animeInfo.dub_count !== "0" && (
                     <span className="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium bg-[linear-gradient(to_right,rgba(16,185,129,0.25),rgba(16,185,129,0.08))] ring-1 ring-emerald-500/40 text-emerald-200 shadow-[0_0_0_1px_rgba(16,185,129,0.25)] backdrop-blur-sm rounded-full">
-                      <img src="/mic.svg" alt="MIC" className="w-3 h-3 brightness-0 invert" />
+                      <Image src="/mic.svg" alt="MIC" width={12} height={12} className="w-3 h-3 brightness-0 invert" />
                       {animeInfo.dub_count}
                     </span>
                   )}

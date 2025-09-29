@@ -13,7 +13,7 @@ interface SchedulePageProps {
 export default function SchedulePage({ initialDailyData, initialWeeklyData }: SchedulePageProps) {
   const [viewMode, setViewMode] = useState<'daily' | 'weekly'>('daily');
   const [dailyData, setDailyData] = useState(initialDailyData);
-  const [weeklyData, setWeeklyData] = useState(initialWeeklyData);
+  const [weeklyData] = useState(initialWeeklyData);
   const [selectedDate, setSelectedDate] = useState(() => {
     if (initialDailyData?.current_date) return initialDailyData.current_date;
     if (initialWeeklyData) {
@@ -27,6 +27,12 @@ export default function SchedulePage({ initialDailyData, initialWeeklyData }: Sc
 
   const handleDateChange = async (date: string) => {
     if (date === selectedDate) return;
+    
+    // Only handle date changes in weekly mode
+    if (viewMode === 'daily') {
+      setSelectedDate(date);
+      return;
+    }
     
     setLoading(true);
     setError(null);
@@ -60,7 +66,7 @@ export default function SchedulePage({ initialDailyData, initialWeeklyData }: Sc
 
   const getCurrentSchedule = (): ScheduleItem[] => {
     if (viewMode === 'daily') {
-      // For daily mode, always show today's schedule
+      // For daily mode, always show today's schedule from dailyData
       return dailyData?.schedule || [];
     }
     if (viewMode === 'weekly' && weeklyData) {
@@ -85,7 +91,7 @@ export default function SchedulePage({ initialDailyData, initialWeeklyData }: Sc
     return (
       <div className="text-center py-12">
         <h1 className="text-3xl font-bold text-white mb-4">Schedule Unavailable</h1>
-        <p className="text-white/60">Sorry, we couldn't load the anime schedule at this time.</p>
+        <p className="text-white/60">Sorry, we couldn&apos;t load the anime schedule at this time.</p>
       </div>
     );
   }
@@ -97,7 +103,7 @@ export default function SchedulePage({ initialDailyData, initialWeeklyData }: Sc
         <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">Estimated Schedule</h1>
         <p className="text-white/60 text-sm sm:text-base">
           {viewMode === 'daily' && dailyData?.current_date && (
-            <>Today's anime releases • </>
+            <>Today&apos;s anime releases • </>
           )}
           {dailyData?.timezone && `Times shown in ${dailyData.timezone}`}
         </p>
@@ -112,7 +118,10 @@ export default function SchedulePage({ initialDailyData, initialWeeklyData }: Sc
                 ? 'bg-purple-600 text-white'
                 : 'text-white/70 hover:text-white'
             }`}
-            onClick={() => setViewMode('daily')}
+            onClick={() => {
+              setViewMode('daily');
+              setError(null); // Clear any errors when switching modes
+            }}
           >
             Today
           </button>

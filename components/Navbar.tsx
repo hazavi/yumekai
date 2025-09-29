@@ -1,6 +1,8 @@
 "use client";
 // Using plain anchor tags for hard reload navigation
 import { useState, useEffect } from "react";
+import Link from "next/link";
+import Image from "next/image";
 import { SearchBar, NavItem } from ".";
 
 const navItems = [
@@ -49,9 +51,17 @@ export function Navbar() {
             <span className="block w-5 h-0.5 bg-white mb-1" />
             <span className="block w-5 h-0.5 bg-white" />
           </button>
-          <a href="/" className="flex items-center" aria-label="Home">
-            <img src="/yumelogo.png" alt="YumeKai" className="h-16 w-auto object-contain" />
-          </a>
+          <Link href="/" className="flex items-center" aria-label="Home">
+            <Image 
+              src="/yumelogo.png" 
+              alt="YumeKai" 
+              width={128} 
+              height={64} 
+              style={{ width: 'auto', height: '64px' }}
+              className="object-contain" 
+              priority
+            />
+          </Link>
         </div>
         <nav className="hidden lg:flex items-center gap-6 text-sm">
           {navItems.map(item => (

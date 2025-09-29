@@ -110,7 +110,7 @@ export function TopAnime({ data, title = "Top Anime" }: TopAnimeProps) {
                     <span className="text-[13px] font-bold text-white/80">{displayRank}</span>
                   </div>
                   <a href={linkUrl} className="relative h-16 w-12 overflow-hidden bg-black/20 flex-shrink-0">
-                    <Image src={posterUrl} alt={anime.title} fill sizes="60px" className="object-cover" />
+                    <Image src={posterUrl} alt={anime.title} fill priority={idx < 3} sizes="60px" className="object-cover" />
                     {/* Bottom black vignette */}
                     <div className="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-black/80 to-transparent pointer-events-none" />
                   </a>
@@ -123,13 +123,13 @@ export function TopAnime({ data, title = "Top Anime" }: TopAnimeProps) {
                       <div className="flex items-center gap-1.5 mt-2">
                         {anime.qtip.sub && (
                           <span className="inline-flex items-center gap-1 pl-1.5 pr-2 py-1 rounded-full text-[10px] font-medium bg-[linear-gradient(to_right,rgba(147,51,234,0.25),rgba(147,51,234,0.08))] ring-1 ring-purple-500/40 text-purple-200 backdrop-blur-sm">
-                            <img src="/cc.svg" alt="CC" className="w-3 h-3 brightness-0 invert" />
+                            <Image src="/cc.svg" alt="CC" width={12} height={12} className="w-3 h-3 brightness-0 invert" />
                             {anime.qtip.sub}
                           </span>
                         )}
                         {anime.qtip.dub && (
                           <span className="inline-flex items-center gap-1 pl-1.5 pr-2 py-1 rounded-full text-[10px] font-medium bg-[linear-gradient(to_right,rgba(16,185,129,0.25),rgba(16,185,129,0.08))] ring-1 ring-emerald-500/40 text-emerald-200 backdrop-blur-sm">
-                            <img src="/mic.svg" alt="Mic" className="w-3 h-3 brightness-0 invert" />
+                            <Image src="/mic.svg" alt="Mic" width={12} height={12} className="w-3 h-3 brightness-0 invert" />
                             {anime.qtip.dub}
                           </span>
                         )}

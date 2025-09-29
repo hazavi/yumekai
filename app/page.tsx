@@ -15,7 +15,7 @@ function ensureArray<T>(val: unknown): T[] {
   if (val && typeof val === 'object') {
     // Some endpoints might return an object wrapper unexpectedly; try common keys
     // If it has a 'results' array, use that.
-    const maybe = (val as any).results;
+    const maybe = (val as { results?: unknown }).results;
     if (Array.isArray(maybe)) return maybe as T[];
   }
   return [];
@@ -40,8 +40,8 @@ async function fetchHomeData() {
   let trending: TrendingItem[] = [];
   if (Array.isArray(trendingRaw)) {
     trending = trendingRaw as TrendingItem[];
-  } else if (trendingRaw && typeof trendingRaw === 'object' && Array.isArray((trendingRaw as any).trending)) {
-    trending = (trendingRaw as any).trending as TrendingItem[];
+  } else if (trendingRaw && typeof trendingRaw === 'object' && Array.isArray((trendingRaw as { trending?: TrendingItem[] }).trending)) {
+    trending = (trendingRaw as { trending: TrendingItem[] }).trending;
   }
   const updated = ensureArray<UpdatedAnime>(updatedRaw);
   const recentlyAdded = ensureArray<BasicAnime>(recentlyAddedRaw);

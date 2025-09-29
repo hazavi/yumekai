@@ -12,7 +12,7 @@ interface PaginationProps {
   basePath: string;
 }
 
-export function Pagination({ pagination, currentPage, basePath }: PaginationProps) {
+export function Pagination({ pagination, basePath }: PaginationProps) {
 
   // Normalize an incoming API href (may be relative like '/most-popular?page=2' or missing the page query)
   const buildHref = (item: PaginationItem): string | null => {

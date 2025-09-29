@@ -194,6 +194,7 @@ export function Trending({ items, title = "Trending" }: TrendingProps) {
                       src={posterUrl} 
                       alt={anime.title} 
                       fill 
+                      priority={idx < 3}
                       sizes="160px" 
                       className="object-cover transition-transform duration-300 group-hover:scale-105"
                     />

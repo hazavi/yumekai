@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import Link from "next/link";
 import { api } from "@/lib/api";
 import { DailyScheduleResponse, WeeklyScheduleResponse } from "@/models";
 import SchedulePage from "./SchedulePage";
@@ -37,13 +38,13 @@ export default async function Schedule() {
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center px-4">
           <h1 className="text-2xl font-bold text-white mb-4">Schedule Unavailable</h1>
-          <p className="text-white/60 mb-6">Sorry, we couldn't load the anime schedule at this time.</p>
-          <a 
+          <p className="text-white/60 mb-6">Sorry, we couldn&apos;t load the anime schedule at this time.</p>
+          <Link 
             href="/" 
             className="inline-flex items-center gap-2 bg-purple-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-purple-700 transition-all"
           >
             Return Home
-          </a>
+          </Link>
         </div>
       </div>
     );

@@ -82,7 +82,7 @@ export default async function AnimeDetailPage({ params }: Props) {
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-white mb-4">Anime Not Found</h1>
-          <p className="text-white/60">The anime you're looking for doesn't exist or has been removed.</p>
+          <p className="text-white/60">The anime you&apos;re looking for doesn&apos;t exist or has been removed.</p>
         </div>
       </div>
     )

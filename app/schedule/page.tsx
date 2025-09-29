@@ -10,43 +10,48 @@ export const metadata: Metadata = {
 };
 
 export default async function Schedule() {
+  let dailyData = null;
+  let weeklyData = null;
+  let error = null;
+
   try {
-    const [dailyData, weeklyData] = await Promise.all([
-      api.schedule().catch((error) => {
-        console.warn('Failed to fetch daily schedule:', error);
-        return null;
-      }),
-      api.scheduleWeek().catch((error) => {
-        console.warn('Failed to fetch weekly schedule:', error);
-        return null;
-      })
+    const [dailyResult, weeklyResult] = await Promise.allSettled([
+      api.schedule(),
+      api.scheduleWeek()
     ]);
 
-    return (
-      <div className="min-h-screen bg-black">
-        <div className="container mx-auto px-4 py-6 sm:py-8 max-w-6xl">
-          <SchedulePage 
-            initialDailyData={dailyData as DailyScheduleResponse | null}
-            initialWeeklyData={weeklyData as WeeklyScheduleResponse | null}
-          />
-        </div>
-      </div>
-    );
-  } catch (error) {
-    console.error('Error loading schedule:', error);
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-center px-4">
-          <h1 className="text-2xl font-bold text-white mb-4">Schedule Unavailable</h1>
-          <p className="text-white/60 mb-6">Sorry, we couldn&apos;t load the anime schedule at this time.</p>
-          <Link 
-            href="/" 
-            className="inline-flex items-center gap-2 bg-purple-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-purple-700 transition-all"
-          >
-            Return Home
-          </Link>
-        </div>
-      </div>
-    );
+    if (dailyResult.status === 'fulfilled') {
+      dailyData = dailyResult.value;
+    } else {
+      console.warn('Failed to fetch daily schedule:', dailyResult.reason);
+    }
+
+    if (weeklyResult.status === 'fulfilled') {
+      weeklyData = weeklyResult.value;
+    } else {
+      console.warn('Failed to fetch weekly schedule:', weeklyResult.reason);
+    }
+
+    // If both failed, capture the error for debugging
+    if (!dailyData && !weeklyData) {
+      error = {
+        daily: dailyResult.status === 'rejected' ? dailyResult.reason?.message : 'Unknown error',
+        weekly: weeklyResult.status === 'rejected' ? weeklyResult.reason?.message : 'Unknown error'
+      };
+    }
+  } catch (err) {
+    console.error('Schedule page error:', err);
+    error = { general: err instanceof Error ? err.message : 'Unknown error' };
   }
+
+  return (
+    <div className="min-h-screen bg-black">
+      <div className="container mx-auto px-4 py-6 sm:py-8 max-w-6xl">
+        <SchedulePage 
+          initialDailyData={dailyData as DailyScheduleResponse | null}
+          initialWeeklyData={weeklyData as WeeklyScheduleResponse | null}
+        />
+      </div>
+    </div>
+  );
 }

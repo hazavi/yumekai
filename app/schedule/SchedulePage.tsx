@@ -91,7 +91,21 @@ export default function SchedulePage({ initialDailyData, initialWeeklyData }: Sc
     return (
       <div className="text-center py-12">
         <h1 className="text-3xl font-bold text-white mb-4">Schedule Unavailable</h1>
-        <p className="text-white/60">Sorry, we couldn&apos;t load the anime schedule at this time.</p>
+        <p className="text-white/60 mb-4">Sorry, we couldn&apos;t load the anime schedule at this time.</p>
+        <div className="text-sm text-white/40 mb-6">
+          <p>This might be due to:</p>
+          <ul className="list-disc list-inside mt-2 space-y-1">
+            <li>API server maintenance</li>
+            <li>Network connectivity issues</li>
+            <li>Configuration problems</li>
+          </ul>
+        </div>
+        <button 
+          onClick={() => window.location.reload()} 
+          className="bg-purple-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-purple-700 transition-all"
+        >
+          Try Again
+        </button>
       </div>
     );
   }
@@ -113,7 +127,7 @@ export default function SchedulePage({ initialDailyData, initialWeeklyData }: Sc
       <div className="flex justify-center px-4">
         <div className="bg-[#1a1a1a] rounded-lg p-1 flex w-full max-w-xs">
           <button
-            className={`flex-1 px-4 sm:px-6 py-2 rounded-md text-sm font-medium transition-colors ${
+            className={`flex-1 px-4 sm:px-6 py-2 rounded-lg text-sm font-medium transition-colors ${
               viewMode === 'daily'
                 ? 'bg-purple-600 text-white'
                 : 'text-white/70 hover:text-white'
@@ -126,7 +140,7 @@ export default function SchedulePage({ initialDailyData, initialWeeklyData }: Sc
             Today
           </button>
           <button
-            className={`flex-1 px-4 sm:px-6 py-2 rounded-md text-sm font-medium transition-colors ${
+            className={`flex-1 px-4 sm:px-6 py-2 rounded-lg text-sm font-medium transition-colors ${
               viewMode === 'weekly'
                 ? 'bg-purple-600 text-white'
                 : 'text-white/70 hover:text-white'

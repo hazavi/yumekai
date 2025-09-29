@@ -4,6 +4,7 @@ const getApiUrl = () => {
   const url = process.env.ANISCRAPER_API_URL;
   if (!url) {
     console.error('ANISCRAPER_API_URL environment variable is not set');
+    console.error('Available env vars:', Object.keys(process.env).filter(k => k.includes('API')));
     return null;
   }
   return url;
@@ -13,8 +14,13 @@ export async function GET() {
   const BASE_URL = getApiUrl();
   
   if (!BASE_URL) {
+    console.error('Weekly Schedule API: Missing environment configuration');
     return NextResponse.json(
-      { error: 'API configuration missing' },
+      { 
+        error: 'API configuration missing',
+        details: 'ANISCRAPER_API_URL environment variable not set',
+        help: 'Check Vercel environment variables configuration'
+      },
       { status: 500 }
     );
   }

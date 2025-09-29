@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DailyScheduleResponse, WeeklyScheduleResponse, ScheduleItem } from "@/models";
 import { ScheduleCard, DateSelector } from "@/components";
 import { api } from "@/lib/api";
@@ -24,6 +24,35 @@ export default function SchedulePage({ initialDailyData, initialWeeklyData }: Sc
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isClientFetching, setIsClientFetching] = useState(false);
+
+  // Client-side fallback when server-side data is null
+  useEffect(() => {
+    if (!initialDailyData && !initialWeeklyData && !isClientFetching) {
+      setIsClientFetching(true);
+      setLoading(true);
+      console.log('Server-side data failed, attempting client-side fetch...');
+      
+      Promise.allSettled([
+        api.schedule(),
+        api.scheduleWeek()
+      ]).then(([dailyResult, weeklyResult]) => {
+        if (dailyResult.status === 'fulfilled' && dailyResult.value) {
+          setDailyData(dailyResult.value as DailyScheduleResponse);
+          console.log('Client-side daily data fetched successfully');
+        }
+        if (weeklyResult.status === 'fulfilled' && weeklyResult.value) {
+          // Note: weeklyData is read-only, so we'd need to make it a state if we want to update it
+          console.log('Client-side weekly data fetched successfully');
+        }
+        setLoading(false);
+      }).catch((err) => {
+        console.error('Client-side fetch failed:', err);
+        setError('Failed to fetch schedule data');
+        setLoading(false);
+      });
+    }
+  }, [initialDailyData, initialWeeklyData, isClientFetching]);
 
   const handleDateChange = async (date: string) => {
     if (date === selectedDate) return;
@@ -88,6 +117,16 @@ export default function SchedulePage({ initialDailyData, initialWeeklyData }: Sc
   };
 
   if (!dailyData && !weeklyData) {
+    if (isClientFetching && loading) {
+      return (
+        <div className="text-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4"></div>
+          <h1 className="text-xl font-semibold text-white mb-2">Loading Schedule...</h1>
+          <p className="text-white/60 text-sm">Attempting to fetch schedule data...</p>
+        </div>
+      );
+    }
+
     return (
       <div className="text-center py-12">
         <h1 className="text-3xl font-bold text-white mb-4">Schedule Unavailable</h1>
@@ -100,12 +139,18 @@ export default function SchedulePage({ initialDailyData, initialWeeklyData }: Sc
             <li>Configuration problems</li>
           </ul>
         </div>
-        <button 
-          onClick={() => window.location.reload()} 
-          className="bg-purple-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-purple-700 transition-all"
-        >
-          Try Again
-        </button>
+        <div className="space-y-3">
+          <button 
+            onClick={() => window.location.reload()} 
+            className="bg-purple-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-purple-700 transition-all"
+          >
+            Try Again
+          </button>
+          <div className="text-xs text-white/30">
+            <p>If this persists, the environment variables may not be configured on Vercel.</p>
+            <p>Check <a href="/api/debug" className="underline hover:text-white/50">debug endpoint</a> for more info.</p>
+          </div>
+        </div>
       </div>
     );
   }

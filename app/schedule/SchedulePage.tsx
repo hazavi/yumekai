@@ -14,7 +14,7 @@ interface SchedulePageProps {
 export default function SchedulePage({ initialDailyData, initialWeeklyData }: SchedulePageProps) {
   const [viewMode, setViewMode] = useState<'daily' | 'weekly'>('daily');
   const [dailyData, setDailyData] = useState(initialDailyData);
-  const [weeklyData] = useState(initialWeeklyData);
+  const [weeklyData, setWeeklyData] = useState(initialWeeklyData);
   const [selectedDate, setSelectedDate] = useState(() => {
     if (initialDailyData?.current_date) return initialDailyData.current_date;
     if (initialWeeklyData) {
@@ -29,24 +29,76 @@ export default function SchedulePage({ initialDailyData, initialWeeklyData }: Sc
 
   // Client-side fallback when server-side data is null
   useEffect(() => {
+    console.log('SchedulePage useEffect triggered:', { 
+      initialDailyData: !!initialDailyData, 
+      initialWeeklyData: !!initialWeeklyData, 
+      isClientFetching 
+    });
+    
     if (!initialDailyData && !initialWeeklyData && !isClientFetching) {
       setIsClientFetching(true);
       setLoading(true);
       console.log('Server-side data failed, attempting client-side fetch...');
       
+      // Try internal API routes first
       Promise.allSettled([
         api.schedule(),
         api.scheduleWeek()
       ]).then(([dailyResult, weeklyResult]) => {
+        console.log('Client-side API results:', { 
+          dailyStatus: dailyResult.status, 
+          weeklyStatus: weeklyResult.status 
+        });
+        
+        let hasData = false;
+        
         if (dailyResult.status === 'fulfilled' && dailyResult.value) {
           setDailyData(dailyResult.value as DailyScheduleResponse);
           console.log('Client-side daily data fetched successfully');
+          hasData = true;
+        } else {
+          console.error('Client-side daily fetch failed:', dailyResult);
         }
+        
         if (weeklyResult.status === 'fulfilled' && weeklyResult.value) {
-          // Note: weeklyData is read-only, so we'd need to make it a state if we want to update it
+          setWeeklyData(weeklyResult.value as WeeklyScheduleResponse);
           console.log('Client-side weekly data fetched successfully');
+          hasData = true;
+        } else {
+          console.error('Client-side weekly fetch failed:', weeklyResult);
         }
-        setLoading(false);
+        
+        // If internal API routes failed, try direct external API as last resort
+        if (!hasData) {
+          console.log('Internal API routes failed, trying direct external API...');
+          Promise.allSettled([
+            fetch('https://aniscraper-eta.vercel.app/schedule').then(res => res.json()),
+            fetch('https://aniscraper-eta.vercel.app/schedule/week').then(res => res.json())
+          ]).then(([directDailyResult, directWeeklyResult]) => {
+            console.log('Direct API results:', { 
+              dailyStatus: directDailyResult.status, 
+              weeklyStatus: directWeeklyResult.status 
+            });
+            
+            if (directDailyResult.status === 'fulfilled' && directDailyResult.value) {
+              setDailyData(directDailyResult.value as DailyScheduleResponse);
+              console.log('Direct daily data fetched successfully');
+            }
+            
+            if (directWeeklyResult.status === 'fulfilled' && directWeeklyResult.value) {
+              setWeeklyData(directWeeklyResult.value as WeeklyScheduleResponse);
+              console.log('Direct weekly data fetched successfully');
+            }
+            
+            setLoading(false);
+          }).catch((err) => {
+            console.error('Direct API fetch failed:', err);
+            setError('Failed to fetch schedule data from all sources');
+            setLoading(false);
+          });
+        } else {
+          setLoading(false);
+        }
       }).catch((err) => {
         console.error('Client-side fetch failed:', err);
         setError('Failed to fetch schedule data');

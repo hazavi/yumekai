@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useRef, useMemo } from "react";
+import { useState, useRef, useMemo, useEffect } from "react";
 import type { TrendingItem } from "@/models";
 import { AnimeInfoPopup } from "./AnimeInfoPopup";
 
@@ -12,8 +12,17 @@ export function Trending({ items, title = "Trending" }: TrendingProps) {
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
   const [currentAnime, setCurrentAnime] = useState<TrendingItem | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null); // will be unused after instant show but kept for safety
+  const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (hideTimeoutRef.current) {
+        clearTimeout(hideTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Pre-process items: group all candidates per rank (1..10) then pick the best for each rank.
   // "Best" means: exact qtip.title match (case-insensitive) > has qtip with description > any qtip > fallback first.
@@ -73,17 +82,37 @@ export function Trending({ items, title = "Trending" }: TrendingProps) {
       }
     }
     
-    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    // Clear any pending hide timeout
+    if (hideTimeoutRef.current) {
+      clearTimeout(hideTimeoutRef.current);
+      hideTimeoutRef.current = null;
+    }
     const rect = e.currentTarget.getBoundingClientRect();
     const x = rect.left + rect.width / 2;
     const y = rect.top + rect.height / 2;
     setPopupPosition({ x, y });
     setCurrentAnime(anime);
-    setShowPopup(true); // instant show
+    setShowPopup(true);
   };
 
   const handleMouseLeave = () => {
-    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    // Add a delay before hiding to allow moving to popup
+    hideTimeoutRef.current = setTimeout(() => {
+      setShowPopup(false);
+      setCurrentAnime(null);
+    }, 100);
+  };
+
+  const handlePopupMouseEnter = () => {
+    // Keep popup visible when hovering over it
+    if (hideTimeoutRef.current) {
+      clearTimeout(hideTimeoutRef.current);
+      hideTimeoutRef.current = null;
+    }
+  };
+
+  const handlePopupMouseLeave = () => {
+    // Hide popup when leaving popup area
     setShowPopup(false);
     setCurrentAnime(null);
   };
@@ -215,6 +244,8 @@ export function Trending({ items, title = "Trending" }: TrendingProps) {
           isVisible={showPopup}
           position={popupPosition}
           isSidebar={false}
+          onMouseEnter={handlePopupMouseEnter}
+          onMouseLeave={handlePopupMouseLeave}
         />
       )}
     </>

@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { AnimeCardData } from "@/lib/api";
 import { AnimeInfoPopup } from "./AnimeInfoPopup";
 
@@ -15,13 +15,26 @@ export function AnimeCard({ anime, showMeta = true, badgeType = 'latest' }: Anim
   const [showPopup, setShowPopup] = useState(false);
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
   const cardRef = useRef<HTMLDivElement>(null);
-  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null); // kept for symmetry, no delay now
+  const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const slug = anime.link;
 
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (hideTimeoutRef.current) {
+        clearTimeout(hideTimeoutRef.current);
+      }
+    };
+  }, []);
+
   const handleMouseEnter = (e: React.MouseEvent) => {
     if (!anime.qtip) return;
-    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    // Clear any pending hide timeout
+    if (hideTimeoutRef.current) {
+      clearTimeout(hideTimeoutRef.current);
+      hideTimeoutRef.current = null;
+    }
     const rect = e.currentTarget.getBoundingClientRect();
     const x = rect.left + rect.width / 2;
     const y = rect.top + rect.height / 2;
@@ -30,7 +43,22 @@ export function AnimeCard({ anime, showMeta = true, badgeType = 'latest' }: Anim
   };
 
   const handleMouseLeave = () => {
-    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    // Add a delay before hiding to allow moving to popup
+    hideTimeoutRef.current = setTimeout(() => {
+      setShowPopup(false);
+    }, 100);
+  };
+
+  const handlePopupMouseEnter = () => {
+    // Keep popup visible when hovering over it
+    if (hideTimeoutRef.current) {
+      clearTimeout(hideTimeoutRef.current);
+      hideTimeoutRef.current = null;
+    }
+  };
+
+  const handlePopupMouseLeave = () => {
+    // Hide popup when leaving popup area
     setShowPopup(false);
   };
 
@@ -140,6 +168,8 @@ export function AnimeCard({ anime, showMeta = true, badgeType = 'latest' }: Anim
       slug={slug}
       isVisible={showPopup}
       position={popupPosition}
+      onMouseEnter={handlePopupMouseEnter}
+      onMouseLeave={handlePopupMouseLeave}
     />
   </>
   );

@@ -9,6 +9,7 @@ interface HeroCarouselProps { items: SpotlightItem[]; intervalMs?: number; }
 export function HeroCarousel({ items, intervalMs = 6000 }: HeroCarouselProps) {
   // Filter out malformed entries to prevent runtime errors
   const safeItems = (items || []).filter(it => it && typeof it.detail_link === 'string' && it.detail_link.length > 0 && typeof it.thumbnail === 'string');
+  
   const [index, setIndex] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState(0);
@@ -159,10 +160,11 @@ export function HeroCarousel({ items, intervalMs = 6000 }: HeroCarouselProps) {
 
         {safeItems.map((item, i) => {
           const active = i === index;
+          
           return (
             <div
               key={`${item.detail_link}-${i}`}
-              className={`absolute inset-0 transition-all duration-700 ease-out ${active ? "opacity-100" : "opacity-0"}`}
+              className={`absolute inset-0 transition-all duration-700 ease-out ${active ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"}`}
               style={{
                 transform: active ? `translateX(${dragOffset}px)` : 'translateX(0)',
                 transition: isDragging ? 'none' : 'opacity 700ms ease-out, transform 700ms ease-out'

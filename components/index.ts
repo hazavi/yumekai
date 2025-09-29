@@ -21,3 +21,4 @@ export * from './AnimeListTemplate';
 export * from './Pagination';
 export * from './ScheduleCard';
 export * from './DateSelector';
+export * from './ScrollToTop';

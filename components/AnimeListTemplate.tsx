@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { AnimeCard } from "./AnimeCard";
 import { TopAnime } from "./TopAnime";
@@ -63,11 +63,24 @@ export function AnimeListTemplate({
   const [showPopup, setShowPopup] = useState(false);
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
   const [currentAnime, setCurrentAnime] = useState<AnimeResult | null>(null);
-  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (hideTimeoutRef.current) {
+        clearTimeout(hideTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleMouseEnter = (e: React.MouseEvent, anime: AnimeResult) => {
     if (!anime.qtip) return;
-    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    // Clear any pending hide timeout
+    if (hideTimeoutRef.current) {
+      clearTimeout(hideTimeoutRef.current);
+      hideTimeoutRef.current = null;
+    }
     const rect = e.currentTarget.getBoundingClientRect();
     const x = rect.left;
     const y = rect.top + rect.height / 2;
@@ -77,11 +90,25 @@ export function AnimeListTemplate({
   };
 
   const handleMouseLeave = () => {
-    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
-    hoverTimeoutRef.current = setTimeout(() => {
+    // Add a delay before hiding to allow moving to popup
+    hideTimeoutRef.current = setTimeout(() => {
       setShowPopup(false);
       setCurrentAnime(null);
     }, 100);
+  };
+
+  const handlePopupMouseEnter = () => {
+    // Keep popup visible when hovering over it
+    if (hideTimeoutRef.current) {
+      clearTimeout(hideTimeoutRef.current);
+      hideTimeoutRef.current = null;
+    }
+  };
+
+  const handlePopupMouseLeave = () => {
+    // Hide popup when leaving popup area
+    setShowPopup(false);
+    setCurrentAnime(null);
   };
 
   return (
@@ -304,6 +331,8 @@ export function AnimeListTemplate({
             slug={currentAnime.link}
             isVisible={showPopup}
             position={popupPosition}
+            onMouseEnter={handlePopupMouseEnter}
+            onMouseLeave={handlePopupMouseLeave}
           />
         )}
       </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useEffect, useRef } from "react";
 import type { QtipData } from "@/models";
 
 interface AnimeInfoPopupProps {
@@ -10,9 +11,34 @@ interface AnimeInfoPopupProps {
   isVisible: boolean;
   position: { x: number; y: number };
   isSidebar?: boolean;
+  onMouseEnter?: () => void;
+  onMouseLeave?: () => void;
 }
 
-export function AnimeInfoPopup({ qtip, slug, isVisible, position, isSidebar = false }: AnimeInfoPopupProps) {
+export function AnimeInfoPopup({ qtip, slug, isVisible, position, isSidebar = false, onMouseEnter, onMouseLeave }: AnimeInfoPopupProps) {
+  const popupRef = useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    const handleMouseEnter = () => {
+      if (onMouseEnter) onMouseEnter();
+    };
+    
+    const handleMouseLeave = () => {
+      if (onMouseLeave) onMouseLeave();
+    };
+    
+    const popup = popupRef.current;
+    if (popup) {
+      popup.addEventListener('mouseenter', handleMouseEnter);
+      popup.addEventListener('mouseleave', handleMouseLeave);
+      
+      return () => {
+        popup.removeEventListener('mouseenter', handleMouseEnter);
+        popup.removeEventListener('mouseleave', handleMouseLeave);
+      };
+    }
+  }, [onMouseEnter, onMouseLeave]);
+
   if (!isVisible || !qtip) return null;
 
   // Calculate if popup should appear above or below based on screen position
@@ -55,7 +81,8 @@ export function AnimeInfoPopup({ qtip, slug, isVisible, position, isSidebar = fa
 
   return (
     <div 
-      className="fixed z-50 pointer-events-none"
+      ref={popupRef}
+      className="fixed z-50"
       style={{
         left: adjustedX,
         top: position.y,
@@ -181,9 +208,9 @@ export function AnimeInfoPopup({ qtip, slug, isVisible, position, isSidebar = fa
         <div className="p-4 pt-0">
           <a 
             href={qtip.watch_url || slug} 
-            className="pointer-events-auto block w-full"
+            className="block w-full"
           >
-            <button className="w-full bg-white hover:bg-gray-100 text-black font-semibold py-3 px-4 rounded-md transition-all duration-300 flex items-center justify-center gap-2">
+            <button className="w-full bg-white hover:bg-gray-100 text-black font-semibold py-3 px-4 rounded-md transition-all duration-300 flex items-center justify-center gap-2 hover:cursor-pointer">
               <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
                 <path d="M8 5v14l11-7z"/>
               </svg>

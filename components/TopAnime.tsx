@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import type { TopAnimeData, BasicAnime } from "@/models";
 import { AnimeInfoPopup } from "./AnimeInfoPopup";
 
@@ -22,11 +22,30 @@ export function TopAnime({ data, title = "Top Anime" }: TopAnimeProps) {
   const [showPopup, setShowPopup] = useState(false);
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
   const [currentAnime, setCurrentAnime] = useState<TopAnimeItem | null>(null);
-  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null); // no delay
+  const [isHydrated, setIsHydrated] = useState(false);
+  const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Fix hydration mismatch by ensuring consistent initial render
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (hideTimeoutRef.current) {
+        clearTimeout(hideTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleMouseEnter = (e: React.MouseEvent, anime: TopAnimeItem) => {
     if (!anime.qtip) return;
-    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    // Clear any pending hide timeout
+    if (hideTimeoutRef.current) {
+      clearTimeout(hideTimeoutRef.current);
+      hideTimeoutRef.current = null;
+    }
     const rect = e.currentTarget.getBoundingClientRect();
     const x = rect.left;
     const y = rect.top + rect.height / 2;
@@ -36,7 +55,23 @@ export function TopAnime({ data, title = "Top Anime" }: TopAnimeProps) {
   };
 
   const handleMouseLeave = () => {
-    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    // Add a delay before hiding to allow moving to popup
+    hideTimeoutRef.current = setTimeout(() => {
+      setShowPopup(false);
+      setCurrentAnime(null);
+    }, 100);
+  };
+
+  const handlePopupMouseEnter = () => {
+    // Keep popup visible when hovering over it
+    if (hideTimeoutRef.current) {
+      clearTimeout(hideTimeoutRef.current);
+      hideTimeoutRef.current = null;
+    }
+  };
+
+  const handlePopupMouseLeave = () => {
+    // Hide popup when leaving popup area
     setShowPopup(false);
     setCurrentAnime(null);
   };
@@ -73,19 +108,22 @@ export function TopAnime({ data, title = "Top Anime" }: TopAnimeProps) {
           
           {/* Tab Navigation - smaller and on the right */}
           <div className="flex bg-black/20 rounded-md p-0.5">
-            {tabs.map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
-                className={`px-2 py-1 text-xs font-medium rounded transition-all duration-200 ${
-                  activeTab === tab.key
-                    ? 'bg-[linear-gradient(to_right,rgba(147,51,234,0.3),rgba(147,51,234,0.1))] text-white ring-1 ring-purple-500/40 backdrop-blur-sm'
-                    : 'text-white/70 hover:text-white/90 hover:bg-white/5'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
+            {tabs.map((tab) => {
+              const isActive = isHydrated && activeTab === tab.key;
+              return (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key)}
+                  className={`px-2 py-1 text-xs font-medium rounded transition-all duration-200 hover:cursor-pointer ${
+                    isActive
+                      ? 'bg-[linear-gradient(to_right,rgba(147,51,234,0.3),rgba(147,51,234,0.1))] text-white ring-1 ring-purple-500/40 backdrop-blur-sm'
+                      : 'text-white/70 hover:text-white/90 hover:bg-white/5'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -198,6 +236,8 @@ export function TopAnime({ data, title = "Top Anime" }: TopAnimeProps) {
           isVisible={showPopup}
           position={popupPosition}
           isSidebar={true}
+          onMouseEnter={handlePopupMouseEnter}
+          onMouseLeave={handlePopupMouseLeave}
         />
       )}
     </>

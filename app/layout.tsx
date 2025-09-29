@@ -1,6 +1,7 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import { Inter, Poppins } from "next/font/google";
 import { Navbar } from "@/components/Navbar";
+import { ScrollToTop } from "@/components/ScrollToTop";
 import "./globals.css";
 
 // Modern clean fonts
@@ -19,17 +20,16 @@ const poppins = Poppins({
 
 export const metadata: Metadata = {
   title: {
-    default: "Yumekai Anime",
-    template: "%s | Yumekai Anime",
+    default: "Yumekai",
+    template: "%s | Yumekai",
   },
   description:
-    "Stream trending, top airing, and newly added anime with a sleek glassmorphism interface.",
+    "Stream trending, top airing, and newly added anime.",
   keywords: [
     "anime",
     "streaming",
     "trending anime",
     "top airing",
-    "glassmorphism",
     "yumekai",
   ]
 };
@@ -47,7 +47,21 @@ export default function RootLayout({
         {/* Pure black canvas for seamless hero blend */}
         <div className="fixed inset-0 -z-10 bg-black" />
         <Navbar />
-        {children}
+        <main className="min-h-screen">
+          {children}
+        </main>
+        
+        {/* Footer */}
+        <footer className="bg-black/80 border-t border-white/10 backdrop-blur-sm">
+          <div className="container mx-auto px-4 py-6">
+            <div className="text-center text-sm text-white/60">
+              © {new Date().getFullYear()} Yumekai. All rights reserved.
+            </div>
+          </div>
+        </footer>
+        
+        {/* Scroll to Top Button */}
+        <ScrollToTop />
       </body>
     </html>
   );

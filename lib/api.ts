@@ -190,9 +190,13 @@ async function fetchJSON<T>(path: string, init?: RequestInit, ttlMs: number = DE
 export const api = {
   spotlightSlider: async () => {
     const data = await fetchJSON<unknown>(`/spotlight-slider`);
-    if (Array.isArray(data)) return data as SpotlightItem[]; // fallback if direct array
+    
+    if (Array.isArray(data)) {
+      return data as SpotlightItem[];
+    }
     if (data && typeof data === 'object' && 'results' in data && Array.isArray((data as { results: unknown }).results)) {
-      return (data as { results: SpotlightItem[] }).results;
+      const results = (data as { results: SpotlightItem[] }).results;
+      return results;
     }
     return [];
   },

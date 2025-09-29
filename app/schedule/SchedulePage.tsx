@@ -63,6 +63,13 @@ export default function SchedulePage({ initialDailyData, initialWeeklyData }: Sc
         if (weeklyResult.status === 'fulfilled' && weeklyResult.value) {
           setWeeklyData(weeklyResult.value as WeeklyScheduleResponse);
           console.log('Client-side weekly data fetched successfully');
+          // Update selectedDate to first available date if current selection is invalid
+          const newWeeklyData = weeklyResult.value as WeeklyScheduleResponse;
+          const availableDates = Object.keys(newWeeklyData.week_schedule);
+          if (availableDates.length > 0 && !availableDates.includes(selectedDate)) {
+            setSelectedDate(availableDates[0]);
+            console.log('Updated selectedDate to:', availableDates[0]);
+          }
           hasData = true;
         } else {
           console.error('Client-side weekly fetch failed:', weeklyResult);
@@ -71,9 +78,17 @@ export default function SchedulePage({ initialDailyData, initialWeeklyData }: Sc
         // If internal API routes failed, try direct external API as last resort
         if (!hasData) {
           console.log('Internal API routes failed, trying direct external API...');
+          const externalApiUrl = process.env.NEXT_PUBLIC_ANISCRAPER_API_URL;
+          if (!externalApiUrl) {
+            console.error('No external API URL configured');
+            setError('API configuration missing');
+            setLoading(false);
+            return;
+          }
+          
           Promise.allSettled([
-            fetch('https://aniscraper-eta.vercel.app/schedule').then(res => res.json()),
-            fetch('https://aniscraper-eta.vercel.app/schedule/week').then(res => res.json())
+            fetch(`${externalApiUrl}/schedule`).then(res => res.json()),
+            fetch(`${externalApiUrl}/schedule/week`).then(res => res.json())
           ]).then(([directDailyResult, directWeeklyResult]) => {
             console.log('Direct API results:', { 
               dailyStatus: directDailyResult.status, 
@@ -88,6 +103,13 @@ export default function SchedulePage({ initialDailyData, initialWeeklyData }: Sc
             if (directWeeklyResult.status === 'fulfilled' && directWeeklyResult.value) {
               setWeeklyData(directWeeklyResult.value as WeeklyScheduleResponse);
               console.log('Direct weekly data fetched successfully');
+              // Update selectedDate to first available date if current selection is invalid
+              const newWeeklyData = directWeeklyResult.value as WeeklyScheduleResponse;
+              const availableDates = Object.keys(newWeeklyData.week_schedule);
+              if (availableDates.length > 0 && !availableDates.includes(selectedDate)) {
+                setSelectedDate(availableDates[0]);
+                console.log('Updated selectedDate from direct API to:', availableDates[0]);
+              }
             }
             
             setLoading(false);
@@ -149,11 +171,18 @@ export default function SchedulePage({ initialDailyData, initialWeeklyData }: Sc
   const getCurrentSchedule = (): ScheduleItem[] => {
     if (viewMode === 'daily') {
       // For daily mode, always show today's schedule from dailyData
-      return dailyData?.schedule || [];
+      const schedule = dailyData?.schedule || [];
+      console.log('Daily schedule:', schedule.length, 'items');
+      return schedule;
     }
     if (viewMode === 'weekly' && weeklyData) {
-      return weeklyData.week_schedule[selectedDate]?.schedule || [];
+      const schedule = weeklyData.week_schedule[selectedDate]?.schedule || [];
+      console.log('Weekly schedule for', selectedDate, ':', schedule.length, 'items');
+      console.log('Available dates in weekly data:', Object.keys(weeklyData.week_schedule));
+      console.log('Weekly data structure:', weeklyData.week_schedule[selectedDate]);
+      return schedule;
     }
+    console.log('No schedule data available');
     return [];
   };
 
@@ -212,7 +241,7 @@ export default function SchedulePage({ initialDailyData, initialWeeklyData }: Sc
     <div className="space-y-6 sm:space-y-8 pt-20"> {/* Added pt-20 for navbar spacing */}
       {/* Header */}
       <div className="text-center">
-        <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">Estimated Schedule</h1>
+        <h1 className="text-3xl sm:text-3xl font-bold text-white mb-2">Estimated Schedule</h1>
         <p className="text-white/60 text-sm sm:text-base">
           {viewMode === 'daily' && dailyData?.current_date && (
             <>Today&apos;s anime releases • </>
@@ -225,7 +254,7 @@ export default function SchedulePage({ initialDailyData, initialWeeklyData }: Sc
       <div className="flex justify-center px-4">
         <div className="bg-[#1a1a1a] rounded-lg p-1 flex w-full max-w-xs">
           <button
-            className={`flex-1 px-4 sm:px-6 py-2 rounded-lg text-sm font-medium transition-colors ${
+            className={`flex-1 px-4 sm:px-6 py-2 rounded-lg text-sm font-medium transition-colors hover:cursor-pointer ${
               viewMode === 'daily'
                 ? 'bg-purple-600 text-white'
                 : 'text-white/70 hover:text-white'
@@ -238,7 +267,7 @@ export default function SchedulePage({ initialDailyData, initialWeeklyData }: Sc
             Today
           </button>
           <button
-            className={`flex-1 px-4 sm:px-6 py-2 rounded-lg text-sm font-medium transition-colors ${
+            className={`flex-1 px-4 sm:px-6 py-2 rounded-lg text-sm font-medium transition-colors hover:cursor-pointer ${
               viewMode === 'weekly'
                 ? 'bg-purple-600 text-white'
                 : 'text-white/70 hover:text-white'
@@ -284,7 +313,9 @@ export default function SchedulePage({ initialDailyData, initialWeeklyData }: Sc
       )}
 
       {/* Schedule Content */}
-      <div className="space-y-4 px-4 sm:px-0 max-w-2xl mx-auto">
+      <div className={`space-y-4 mx-auto ${
+        viewMode === 'weekly' ? 'px-4 max-w-2xl' : 'px-4 sm:px-0 max-w-2xl'
+      }`}>
         {loading ? (
           <div className="text-center py-16">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4"></div>

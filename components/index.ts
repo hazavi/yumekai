@@ -19,3 +19,5 @@ export * from './RecentlyAdded';
 export * from './TopUpcoming';
 export * from './AnimeListTemplate';
 export * from './Pagination';
+export * from './ScheduleCard';
+export * from './DateSelector';

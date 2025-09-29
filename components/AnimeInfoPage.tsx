@@ -184,35 +184,35 @@ export function AnimeInfoPage({ animeInfo, topAnimeData }: AnimeInfoPageProps) {
                     <span className="text-white">{animeInfo.info.Synonyms}</span>
                   </div>
                 )}
-                {animeInfo.info.Aired && (
+                {animeInfo.info?.Aired && (
                   <div className="text-sm">
                     <span className="text-white/60">Aired: </span>
                     <span className="text-white">{animeInfo.info.Aired}</span>
                   </div>
                 )}
                 
-                {animeInfo.info.Premiered && (
+                {animeInfo.info?.Premiered && (
                   <div className="text-sm">
                     <span className="text-white/60">Premiered: </span>
                     <span className="text-white">{animeInfo.info.Premiered}</span>
                   </div>
                 )}
                 
-                {animeInfo.info.Duration && (
+                {animeInfo.info?.Duration && (
                   <div className="text-sm">
                     <span className="text-white/60">Duration: </span>
                     <span className="text-white">{animeInfo.info.Duration}</span>
                   </div>
                 )}
                 
-                {animeInfo.info.Status && (
+                {animeInfo.info?.Status && (
                   <div className="text-sm">
                     <span className="text-white/60">Status: </span>
                     <span className="text-white">{animeInfo.info.Status}</span>
                   </div>
                 )}
                 
-                {animeInfo.info["MAL Score"] && (
+                {animeInfo.info?.["MAL Score"] && (
                   <div className="text-sm">
                     <span className="text-white/60">MAL Score: </span>
                     <span className="text-white">{animeInfo.info["MAL Score"]}</span>
@@ -235,14 +235,14 @@ export function AnimeInfoPage({ animeInfo, topAnimeData }: AnimeInfoPageProps) {
                   </div>
                 )}
                 
-                {animeInfo.info.Studios && animeInfo.info.Studios.length > 0 && (
+                {animeInfo.info?.Studios && animeInfo.info.Studios.length > 0 && (
                   <div className="text-sm">
                     <span className="text-white/60">Studios: </span>
                     <span className="text-white">{animeInfo.info.Studios.join(", ")}</span>
                   </div>
                 )}
                 
-                {animeInfo.info.Producers && animeInfo.info.Producers.length > 0 && (
+                {animeInfo.info?.Producers && animeInfo.info.Producers.length > 0 && (
                   <div className="text-sm">
                     <span className="text-white/60">Producers: </span>
                     <span className="text-white">{animeInfo.info.Producers.join(", ")}</span>

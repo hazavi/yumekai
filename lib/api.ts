@@ -70,9 +70,29 @@ async function fetchJSON<T>(path: string, init?: RequestInit, ttlMs: number = DE
         // Internal API route - need full URL for server-side requests
         if (typeof window === 'undefined') {
           // Server-side: construct full URL
-          const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
-          const host = process.env.VERCEL_URL || process.env.NEXT_PUBLIC_VERCEL_URL || 'localhost:3000';
-          finalUrl = `${protocol}://${host}${path}`;
+          const vercelUrl = process.env.VERCEL_URL;
+          const publicVercelUrl = process.env.NEXT_PUBLIC_VERCEL_URL;
+          
+          // Debug logging for environment detection
+          if (path.includes('schedule')) {
+            console.log('Environment check:', { 
+              nodeEnv: process.env.NODE_ENV, 
+              vercelUrl, 
+              publicVercelUrl 
+            });
+          }
+          
+          // Always use HTTP for localhost in development
+          if (!vercelUrl && !publicVercelUrl) {
+            finalUrl = `http://localhost:3000${path}`;
+          } else if (process.env.NODE_ENV === 'production' && (vercelUrl || publicVercelUrl)) {
+            const protocol = 'https';
+            const host = vercelUrl || publicVercelUrl;
+            finalUrl = `${protocol}://${host}${path}`;
+          } else {
+            // Fallback to HTTP localhost
+            finalUrl = `http://localhost:3000${path}`;
+          }
         } else {
           // Client-side: relative path is fine
           finalUrl = path;

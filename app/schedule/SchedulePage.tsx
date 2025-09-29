@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { DailyScheduleResponse, WeeklyScheduleResponse, ScheduleItem } from "@/models";
 import { ScheduleCard, DateSelector } from "@/components";
 import { api } from "@/lib/api";
@@ -148,7 +149,7 @@ export default function SchedulePage({ initialDailyData, initialWeeklyData }: Sc
           </button>
           <div className="text-xs text-white/30">
             <p>If this persists, the environment variables may not be configured on Vercel.</p>
-            <p>Check <a href="/api/debug" className="underline hover:text-white/50">debug endpoint</a> for more info.</p>
+            <p>Check <Link href="/api/debug" className="underline hover:text-white/50">debug endpoint</Link> for more info.</p>
           </div>
         </div>
       </div>

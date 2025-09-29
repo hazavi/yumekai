@@ -1,5 +1,4 @@
 import { Metadata } from "next";
-import Link from "next/link";
 import { api } from "@/lib/api";
 import { DailyScheduleResponse, WeeklyScheduleResponse } from "@/models";
 import SchedulePage from "./SchedulePage";
@@ -9,10 +8,12 @@ export const metadata: Metadata = {
   description: "Check the daily and weekly anime release schedule with air times and episodes.",
 };
 
+// Force dynamic rendering - don't statically generate this page
+export const dynamic = 'force-dynamic';
+
 export default async function Schedule() {
   let dailyData = null;
   let weeklyData = null;
-  let error = null;
 
   try {
     const [dailyResult, weeklyResult] = await Promise.allSettled([
@@ -31,17 +32,8 @@ export default async function Schedule() {
     } else {
       console.warn('Failed to fetch weekly schedule:', weeklyResult.reason);
     }
-
-    // If both failed, capture the error for debugging
-    if (!dailyData && !weeklyData) {
-      error = {
-        daily: dailyResult.status === 'rejected' ? dailyResult.reason?.message : 'Unknown error',
-        weekly: weeklyResult.status === 'rejected' ? weeklyResult.reason?.message : 'Unknown error'
-      };
-    }
   } catch (err) {
     console.error('Schedule page error:', err);
-    error = { general: err instanceof Error ? err.message : 'Unknown error' };
   }
 
   return (

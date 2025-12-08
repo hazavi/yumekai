@@ -157,7 +157,7 @@ export function AnimeInfoPage({ animeInfo, topAnimeData }: AnimeInfoPageProps) {
                   {animeInfo.description && animeInfo.description.length > 200 && (
                     <button
                       onClick={() => setShowFullDescription(!showFullDescription)}
-                      className="text-purple-400 hover:text-purple-300 mt-2 text-sm font-medium"
+                      className="text-purple-400 hover:cursor-pointer hover:text-purple-300 mt-2 text-sm font-medium"
                     >
                       {showFullDescription ? "- Less" : "+ More"}
                     </button>

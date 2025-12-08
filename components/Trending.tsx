@@ -159,7 +159,7 @@ export function Trending({ items, title = "Trending" }: TrendingProps) {
           <button
             onClick={handlePrevious}
             disabled={currentIndex === 0}
-            className="absolute -left-6 top-1/2 -translate-y-1/2 z-10 w-8 h-8 text-white/70 hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            className="absolute -left-6 top-1/2 -translate-y-1/2 z-10 w-8 h-8 text-white/70 hover:cursor-pointer hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="w-full h-full">
               <path d="m15 18-6-6 6-6"/>
@@ -170,7 +170,7 @@ export function Trending({ items, title = "Trending" }: TrendingProps) {
           <button
             onClick={handleNext}
             disabled={currentIndex >= maxIndex}
-            className="absolute -right-6 top-1/2 -translate-y-1/2 z-10 w-8 h-8 text-white/70 hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            className="absolute -right-6 top-1/2 -translate-y-1/2 z-10 w-8 h-8 text-white/70 hover:cursor-pointer hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="w-full h-full">
               <path d="m9 18 6-6-6-6"/>

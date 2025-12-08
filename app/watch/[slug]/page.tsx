@@ -211,10 +211,10 @@ export default function WatchPage() {
           </div>
         </div>
 
-        <div className="container mx-auto px-6 py-8">
-          <div className="grid grid-cols-12 gap-8">
+        <div className="container mx-auto px-3 md:px-6 py-4 md:py-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-8">
             {/* Left Sidebar Skeleton - Episodes List */}
-            <div className="col-span-3">
+            <div className="lg:col-span-3 order-2 lg:order-1">
               <div className="bg-black/40 backdrop-blur-md border border-white/10 rounded-2xl p-6 shadow-2xl">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-3">
@@ -246,7 +246,7 @@ export default function WatchPage() {
             </div>
 
             {/* Main Content Skeleton */}
-            <div className="col-span-6">
+            <div className="lg:col-span-6 order-1 lg:order-2">
               {/* Video Player Skeleton */}
               <div className="relative group">
                 <div className="bg-black/40 backdrop-blur-md border border-white/10 rounded-2xl shadow-2xl overflow-hidden">
@@ -327,7 +327,7 @@ export default function WatchPage() {
             </div>
 
             {/* Right Sidebar Skeleton - Anime Details */}
-            <div className="col-span-3">
+            <div className="lg:col-span-3 order-3">
               <div className="bg-black rounded-2xl p-4 shadow-2xl">
                 {/* Anime Poster Skeleton */}
                 <div className="mb-4">
@@ -483,31 +483,31 @@ export default function WatchPage() {
         </div>
       </div>
 
-      <div className="container mx-auto px-6 py-8">
+      <div className="container mx-auto px-3 md:px-6 py-4 md:py-8">
         <div
-          className={`grid ${isExpanded ? "grid-cols-1" : "grid-cols-12"} ${
-            isExpanded ? "gap-8" : ""
-          }`}
+          className={`grid ${
+            isExpanded ? "grid-cols-1" : "grid-cols-1 lg:grid-cols-12"
+          } gap-4 md:gap-6`}
         >
           {/* Left Sidebar - Episodes List */}
           <div
             className={`${
-              isExpanded ? "order-2" : "col-span-3"
+              isExpanded ? "order-2" : "lg:col-span-3 order-2 lg:order-1"
             } transition-all duration-500 ${lightsOff ? "opacity-20" : ""}`}
           >
-            <div className="bg-black p-6 shadow-2xl">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-white font-bold text-xl flex items-center gap-3">
+            <div className="bg-black p-3 md:p-6 shadow-2xl rounded-xl">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 md:mb-6 gap-3">
+                <h3 className="text-white font-bold text-lg md:text-xl flex items-center gap-2 md:gap-3">
                   Episodes
-                  <span className="text-sm text-gray-400 font-normal">
+                  <span className="text-xs md:text-sm text-gray-400 font-normal">
                     ({data.total_episodes})
                   </span>
                 </h3>
-                <div className="relative">
+                <div className="relative w-full sm:w-auto">
                   <input
                     type="number"
                     placeholder="Find Episode #"
-                    className="w-35 px-3 py-2 text-sm bg-black rounded-md border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 transition-all duration-300 appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
+                    className="w-full sm:w-35 px-2 md:px-3 py-1.5 md:py-2 text-xs md:text-sm bg-black rounded-md border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 transition-all duration-300 appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
                     min="1"
                     max={data.total_episodes}
                     onInput={(e) => {
@@ -547,7 +547,7 @@ export default function WatchPage() {
                 </div>
               </div>
 
-              <div className="space-y-0 max-h-[500px] overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-black">
+              <div className="space-y-0 max-h-[300px] md:max-h-[500px] overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-black">
                 {Array.from(
                   { length: data.total_episodes },
                   (_, i) => i + 1
@@ -565,14 +565,14 @@ export default function WatchPage() {
                             ? decodeHtmlEntities(episode.title)
                             : `Episode ${episodeNum}`
                         }
-                        className={`group flex items-center gap-3 px-4 py-3 text-sm transition-all duration-300 hover:scale-[1.01] border-l-4 ${
+                        className={`group flex items-center gap-2 md:gap-3 px-2 md:px-4 py-2 md:py-3 text-xs md:text-sm transition-all duration-300 hover:scale-[1.01] border-l-2 md:border-l-4 ${
                           episodeNum === currentEpNumber
                             ? "bg-purple-600/20 text-white border-l-purple-500 shadow-lg shadow-purple-600/10"
                             : "text-gray-300 hover:text-white hover:bg-gray-900/60 border-l-transparent hover:border-l-gray-600"
                         }`}
                       >
                         <div
-                          className={`flex items-center justify-center w-8 h-8 rounded-lg text-xs font-bold transition-all duration-300 flex-shrink-0 ${
+                          className={`flex items-center justify-center w-6 h-6 md:w-8 md:h-8 rounded-lg text-[10px] md:text-xs font-bold transition-all duration-300 flex-shrink-0 ${
                             episodeNum === currentEpNumber
                               ? "bg-purple-600 text-white shadow-lg"
                               : "bg-gray-800 text-gray-400 group-hover:bg-gray-700 group-hover:text-gray-300"
@@ -603,7 +603,7 @@ export default function WatchPage() {
 
           {/* Main Content */}
           <div
-            className={`${isExpanded ? "order-1" : "col-span-6"} ${
+            className={`${isExpanded ? "order-1" : "lg:col-span-6 order-1"} ${
               lightsOff ? "relative z-20" : ""
             }`}
           >
@@ -627,9 +627,10 @@ export default function WatchPage() {
                       className="w-full h-full"
                       frameBorder="0"
                       allowFullScreen
-                      sandbox="allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-orientation-lock"
-                      referrerPolicy="no-referrer"
-                      allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+                      sandbox="allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-orientation-lock allow-presentation allow-top-navigation allow-modals allow-popups allow-popups-to-escape-sandbox allow-downloads"
+                      referrerPolicy="origin"
+                      allow="autoplay *; encrypted-media *; fullscreen *; picture-in-picture *; accelerometer *; gyroscope *; clipboard-write *; web-share *"
+                      loading="eager"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-gray-900">
@@ -659,13 +660,13 @@ export default function WatchPage() {
 
             {/* Video Control Bar */}
             <div
-              className={`bg-black/40 backdrop-blur-md border border-white/10 rounded-xl p-2 shadow-2xl mt-4 transition-all duration-500 ${
+              className={`bg-black/40 backdrop-blur-md border border-white/10 rounded-xl p-2 md:p-3 shadow-2xl mt-3 md:mt-4 transition-all duration-500 ${
                 lightsOff ? "relative z-20" : ""
               } ${isExpanded ? "max-w-5xl mx-auto" : ""}`}
             >
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 sm:gap-0">
                 {/* Left Side - Expand and Lights Controls */}
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 md:gap-3">
                   {/* Expand/Contract */}
                   <button
                     onClick={() => setIsExpanded(!isExpanded)}
@@ -730,7 +731,7 @@ export default function WatchPage() {
                 </div>
 
                 {/* Right Side - Episode Navigation */}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-1 sm:flex-initial">
                   {/* Previous Episode */}
                   <Link
                     href={
@@ -799,14 +800,14 @@ export default function WatchPage() {
 
             {/* Server Selection */}
             <div
-              className={`bg-black/40 backdrop-blur-md border border-white/10 rounded-xl p-4 shadow-2xl mt-4 transition-all duration-500 ${
+              className={`bg-black/40 backdrop-blur-md border border-white/10 rounded-xl p-3 md:p-4 shadow-2xl mt-3 md:mt-4 transition-all duration-500 ${
                 lightsOff ? "opacity-30" : ""
               } ${isExpanded ? "max-w-5xl mx-auto" : ""}`}
             >
-              <div className="grid grid-cols-3 gap-6">
+              <div className="flex flex-col md:grid md:grid-cols-3 gap-3 md:gap-6">
                 {/* Left Column - Episode Info (Narrower) */}
-                <div className="text-white col-span-1">
-                  <h4 className="text-base font-bold mb-1 flex items-center gap-2">
+                <div className="text-white md:col-span-1">
+                  <h4 className="text-sm md:text-base font-bold mb-1 flex items-center gap-2">
                     <div className="p-1.5 bg-gradient-to-br from-purple-800 to-purple-900 rounded-lg shadow-lg">
                       <svg
                         className="w-4 h-4 text-white"
@@ -830,7 +831,7 @@ export default function WatchPage() {
                 </div>
 
                 {/* Right Column - Server Buttons (Wider) */}
-                <div className="space-y-3 col-span-2">
+                <div className="space-y-2 md:space-y-3 md:col-span-2">
                   {/* SUB Servers */}
                   {currentEpisode?.servers?.sub && (
                     <div className="flex items-center gap-3">
@@ -940,28 +941,28 @@ export default function WatchPage() {
           </div>
 
           {/* Right Sidebar - Anime Details */}
-          <div className={isExpanded ? "order-3" : "col-span-3"}>
+          <div className={isExpanded ? "order-3" : "lg:col-span-3 order-3"}>
             {data.watch_detail && (
-              <div className="bg-black rounded-2xl p-4 shadow-2xl">
+              <div className="bg-black rounded-xl md:rounded-2xl p-3 md:p-4 shadow-2xl">
                 {/* Anime Poster and Title */}
-                <div className="mb-4">
-                  <div className="mb-4">
-                    <div className="relative group mb-4">
+                <div className="mb-3 md:mb-4">
+                  <div className="flex md:flex-col gap-3 md:gap-0 mb-3 md:mb-4">
+                    <div className="relative group mb-0 md:mb-4 flex-shrink-0">
                       <Image
                         src={data.watch_detail.poster}
                         alt={data.watch_detail.title}
                         width={120}
                         height={180}
-                        className="w-32 h-48 object-cover shadow-lg transition-all duration-300 group-hover:scale-[1.02]"
+                        className="w-20 h-28 md:w-32 md:h-48 object-cover shadow-lg transition-all duration-300 "
                       />
                     </div>
-                    <div>
-                      <h2 className="text-lg font-bold text-white mb-3 leading-tight">
+                    <div className="flex-1 min-w-0">
+                      <h2 className="text-sm md:text-lg font-bold text-white mb-2 md:mb-3 leading-tight line-clamp-2">
                         {data.watch_detail.title}
                       </h2>
 
                       {/* Badges */}
-                      <div className="flex flex-wrap gap-1 mb-2">
+                      <div className="flex flex-wrap gap-0.5 md:gap-1 mb-2">
                         <span className="inline-flex items-center px-1.5 py-0.5 bg-[linear-gradient(to_right,rgba(75,85,99,0.25),rgba(75,85,99,0.08))] ring-1 ring-gray-500/40 text-gray-200 shadow-[0_0_0_1px_rgba(75,85,99,0.2)] backdrop-blur-sm rounded text-xs font-medium">
                           {data.watch_detail.content_rating}
                         </span>
@@ -1006,8 +1007,8 @@ export default function WatchPage() {
 
                 {/* Description */}
                 <div>
-                  <div className="bg-black/80 rounded-lg p-3">
-                    <div className="text-white/90 text-sm leading-relaxed max-h-28 overflow-y-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
+                  <div className="bg-black/80 rounded-lg p-2 md:p-3">
+                    <div className="text-white/90 text-xs md:text-sm leading-relaxed max-h-20 md:max-h-28 overflow-y-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
                       {data.watch_detail.description ||
                         "No description available."}
                     </div>
@@ -1016,8 +1017,8 @@ export default function WatchPage() {
 
                 {/* Other Seasons */}
                 {data.other_seasons && data.other_seasons.length > 0 && (
-                  <div className="mt-4">
-                    <h3 className="text-white font-semibold mb-3 text-sm">
+                  <div className="mt-3 md:mt-4">
+                    <h3 className="text-white font-semibold mb-2 md:mb-3 text-xs md:text-sm">
                       Other Seasons
                     </h3>
                     <div className="space-y-2 max-h-[125px] overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
@@ -1069,14 +1070,14 @@ export default function WatchPage() {
         {/* Recommendations - Full Width */}
         {data.recommendations && data.recommendations.length > 0 && (
           <div
-            className={`mt-8 transition-all duration-500 ${
+            className={`mt-6 md:mt-8 transition-all duration-500 ${
               lightsOff ? "opacity-20" : ""
             }`}
           >
-            <h2 className="text-2xl font-bold text-white mb-6">
+            <h2 className="text-xl md:text-2xl font-bold text-white mb-4 md:mb-6">
               You might also like
             </h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4">
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-3 md:gap-4">
               {data.recommendations.slice(0, 16).map((rec, index) => (
                 <AnimeCard
                   key={index}

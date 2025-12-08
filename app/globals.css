@@ -48,6 +48,7 @@ body {
 }
 .glass-soft { backdrop-filter: blur(6px); background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.10); border-radius: 0.5rem; }
 .glass-strong { backdrop-filter: blur(20px); background: rgba(255,255,255,0.10); border: 1px solid rgba(255,255,255,0.15); border-radius: 1rem; }
+.glass-dark { backdrop-filter: blur(20px); background: rgba(0, 0, 0, 0.); border: 1px solid rgba(255,255,255,0.15); border-radius: 1rem; }
 
 /* Neon ring accent */
 .neon-ring {
@@ -89,6 +90,10 @@ body {
 /* Glow animation */
 @keyframes glowPulse { 0%,100% { opacity: .55; } 50% { opacity: 1; } }
 .animate-glow { animation: glowPulse 3.5s var(--ease-soft) infinite; }
+
+/* Fade in animation */
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+.animate-fadeIn { animation: fadeIn 0.2s var(--ease-soft) forwards; }
 
 /* Card hover */
 .card-hover { transition: transform .3s var(--ease-soft), box-shadow .35s var(--ease-soft), filter .35s var(--ease-soft); }

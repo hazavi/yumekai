@@ -1,127 +1,165 @@
-<div align="center">
+# Yumekai
 
-# 🍥 Yumekai Anime 
+A modern anime streaming platform built with Next.js 16, featuring a sleek glassmorphism design with neon accents.
 
-Modern glassmorphism + neon anime streaming interface inspired by hianime.to – built with **Next.js App Router** and **Tailwind CSS v4**.
+---
 
-![UI Preview (placeholder)](./public/next.svg)
+## Overview
 
-</div>
+Yumekai is a full-featured anime streaming interface that combines elegant design with powerful functionality. The platform offers seamless browsing, watching, and scheduling capabilities with an immersive user experience inspired by modern anime streaming sites.
 
-## ✨ Features
+---
 
-- Dark atmospheric gradient background with layered blurred radial glows
-- Sticky frosted glass navigation bar + responsive mobile menu
-- Neon-accent rounded search bar with focus glow
-- Hero carousel (auto-play) with frosted glass overlay panel + active slide glow
-- Toggle group (Recently Added / Popular) with animated glass highlight
-- Responsive anime card grid (2–6 columns) with:  
-	- Poster w/ subtle scale hover  
-	- Frosted episode tag  
-	- SUB/DUB badge  
-	- Neon outline glow on hover
-- Reusable design tokens + utility classes (`glass`, `neon-ring`, `frost-tag`, etc.)
-- Accessible semantic structure and progressive enhancement
+## Features
 
-## 🗂 Project Structure (Key)
+### Design & UI
+
+- Dark atmospheric gradient background with layered radial glows
+- Sticky frosted glass navigation bar with responsive mobile menu
+- Neon-accent search bar with focus effects
+- Auto-playing hero carousel with glass overlay panels
+- Toggle group controls (Recently Added / Popular) with animated highlights
+- Responsive anime card grid (2–6 columns)
+  - Poster images with subtle hover scaling
+  - Frosted episode tags
+  - SUB/DUB indicator badges
+  - Neon outline glow on hover
+
+### Architecture
+
+- Server-side rendering (SSR) with Next.js App Router
+- TypeScript for type safety
+- Reusable design tokens and utility classes
+- Semantic HTML structure for accessibility
+- Progressive enhancement support
+
+---
+
+## Project Structure
 
 ```
 app/
-	layout.tsx        # Global fonts, background layers
-	page.tsx          # Home composition (SSR data fetch)
-components/         # UI building blocks
-	Navbar.tsx
-	HeroCarousel.tsx
-	AnimeCard.tsx
-	AnimeGrid.tsx
-	ToggleGroup.tsx
-	SearchBar.tsx
-	SectionHeader.tsx
+  layout.tsx          # Global fonts, background layers
+  page.tsx            # Home page with SSR data fetching
+  watch/[slug]/       # Watch page with video player
+  schedule/           # Schedule page with daily/weekly views
+  genre/[genre]/      # Genre-specific anime listings
+
+components/           # Reusable UI components
+  Navbar.tsx
+  HeroCarousel.tsx
+  AnimeCard.tsx
+  AnimeGrid.tsx
+  ToggleGroup.tsx
+  SearchBar.tsx
+  ScheduleCard.tsx
+
 lib/
-	api.ts            # API helpers & TypeScript models
+  api.ts              # API client with TypeScript types
+
+models/
+  anime.ts            # Type definitions and interfaces
 ```
-
-## 🔌 Data Source (Anime Scraper API)
-
-Base URL: `https://aniscraper-eta.vercel.app`
-
-Used endpoints:
-
-| Endpoint | Purpose |
-|----------|---------|
-| `/spotlight-slider` | Hero carousel items |
-| `/trending` | Trending grid |
-| `/recently-updated` | Latest episodes grid |
-| `/top-airing`, `/most-popular`, `/top-anime` | (Future sections) |
-
-`lib/api.ts` contains strongly typed wrappers with light error handling.
-
-## 🚀 Getting Started
-
-Install deps & run dev server:
-
-```bash
-npm install
-npm run dev
-```
-
-Open http://localhost:3000
-
-## 🛠 Tech Stack
-
-- Next.js 15 (App Router)
-- React 19
-- Tailwind CSS v4 (@import usage)
-- next/font (Inter + Poppins)
-
-## 🎨 Design System Utilities
-
-Custom utility classes in `app/globals.css`:
-
-| Class | Description |
-|-------|-------------|
-| `glass`, `glass-soft`, `glass-strong` | Frosted translucent panels |
-| `neon-ring` | Gradient outer glow ring border |
-| `pill` | Pill-shaped frosted interactive element |
-| `frost-tag` | Small blurred label badge |
-| `animate-glow` | Soft pulsing opacity animation |
-| `text-gradient` | Purple→blue gradient text |
-| `container-padded` | Responsive layout container |
-| `carousel-slide-active` | Active hero slide accent |
-
-## 🧭 Next Improvements (TODO)
-
-- Implement Popular toggle content switch
-- Add schedule page consuming `/schedule/week`
-- Anime details page using dynamic route & `/[slug]`
-- Watch page integrating `/watch/{slug}` episode list
-- Add skeleton loaders & error boundaries
-- Persistent user theme + preferences (future)
-
-## ♿ Accessibility Notes
-
-- Semantic buttons/links, focus-friendly design
-- Motion reduced: disables certain animations with `prefers-reduced-motion`
-- High contrast neon accents on dark base
-
-## 🧪 Testing (Suggested)
-
-Add component + integration tests (e.g., Playwright or React Testing Library) for:  
-- Hero carousel cycling  
-- API fetch states  
-- Toggle group state transitions
-
-## 🐛 Troubleshooting
-
-| Issue | Fix |
-|-------|-----|
-| Fonts not loading | Ensure network access; rebuild | 
-| API error | Endpoint down → check network tab / console | 
-| Carousel flicker | Verify only one active slide opacity 100 | 
-
-## 📄 License
-
-Educational / demo interface. Ensure you have streaming rights before attaching real media sources.
 
 ---
-Built with ✨ by adapting a minimal Next.js starter into a styled anime UI.
+
+## Core Functionality
+
+### Watch Page
+
+- Integrated video player with iframe support
+- Episode list with navigation
+- Server switching (SUB/DUB)
+- Episode search and jump functionality
+- Expandable video mode
+- "Lights off" mode for immersive viewing
+- Other seasons navigation
+- Related anime recommendations
+
+### Schedule Page
+
+- Daily and weekly schedule views
+
+### Homepage
+
+- Dynamic spotlight carousel with featured anime
+- Trending anime section with real-time updates
+- Recently updated episodes grid
+- Genre-based navigation and filtering
+- Fully responsive grid layouts (mobile to desktop)
+
+### Browse & Discover
+
+- Multiple category pages (Top Airing, Most Popular, Most Favorite, Completed)
+- Genre-specific listings with pagination
+- Recently added and recently updated sections
+- Advanced search functionality
+- Quick navigation with breadcrumb trails
+
+---
+
+## Tech Stack
+
+| Technology       | Version | Purpose                              |
+| ---------------- | ------- | ------------------------------------ |
+| **Next.js**      | 16.0.7  | App Router, SSR, and routing         |
+| **React**        | 19.1.0  | UI components and state management   |
+| **TypeScript**   | 5.x     | Type safety and developer experience |
+| **Tailwind CSS** | 4.x     | Utility-first styling                |
+| **ESLint**       | 9.x     | Code quality and consistency         |
+
+### Key Dependencies
+
+- `next/font` for optimized font loading (Inter & Poppins)
+- Turbopack for faster development builds
+- Custom API client with TypeScript interfaces
+
+---
+
+## API Integration
+
+The platform integrates with a custom anime scraper API providing:
+
+- Real-time anime data and metadata
+- Episode information and streaming sources
+- Schedule data (daily and weekly)
+- Genre classifications
+- Search and filtering capabilities
+
+All endpoints are fully typed with TypeScript interfaces for type safety.
+
+---
+
+## Accessibility
+
+- **Semantic HTML:** Proper heading hierarchy and landmark regions
+- **Keyboard Navigation:** Full keyboard support for all interactive elements
+- **Focus Management:** Clear focus indicators and logical tab order
+- **ARIA Labels:** Screen reader support for complex components
+- **Motion Preferences:** Respects `prefers-reduced-motion` for animations
+- **Contrast:** High contrast neon accents on dark backgrounds for readability
+
+---
+
+## Performance
+
+- Server-side rendering (SSR) for optimal initial load
+- Image optimization with Next.js Image component
+- Lazy loading for below-the-fold content
+- API response caching with configurable TTL
+- Turbopack for rapid development builds
+
+---
+
+## Browser Support
+
+- Chrome/Edge (latest 2 versions)
+- Firefox (latest 2 versions)
+- Safari (latest 2 versions)
+- Mobile browsers (iOS Safari, Chrome Android)
+
+---
+
+## License
+
+This project is for educational and demonstration purposes. All anime content and metadata are provided through third-party.

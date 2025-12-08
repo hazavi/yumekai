@@ -288,6 +288,7 @@ export const api = {
     return fetchJSON<DailyScheduleResponse | DateScheduleResponse>(`/api/schedule${query}`);
   },
   scheduleWeek: () => fetchJSON<WeeklyScheduleResponse>(`/api/schedule/week`),
+  search: (query: string) => fetchJSON<{ results: BasicAnime[] }>(`/api/search?keyword=${encodeURIComponent(query)}`),
 };
 
 export type { AnimeCardData };

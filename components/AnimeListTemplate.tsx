@@ -51,15 +51,15 @@ interface AnimeListTemplateProps {
   basePath: string;
 }
 
-export function AnimeListTemplate({ 
-  title, 
-  data, 
-  topAnimeData, 
+export function AnimeListTemplate({
+  title,
+  data,
+  topAnimeData,
   topAnimeCategoriesData,
   genresData,
-  basePath 
+  basePath,
 }: AnimeListTemplateProps) {
-  const { results, pagination, page } = data;
+  const { results = [], pagination = [], page = 1 } = data || {};
   const [showPopup, setShowPopup] = useState(false);
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
   const [currentAnime, setCurrentAnime] = useState<AnimeResult | null>(null);
@@ -128,12 +128,15 @@ export function AnimeListTemplate({
                 <div className="grid grid-cols-4 gap-6">
                   {results.slice(0, 4).map((anime, index) => (
                     <div key={index} className="relative">
-                      <div 
+                      <div
                         className="relative overflow-hidden bg-black/20 backdrop-blur-sm group"
                         onMouseEnter={(e) => handleMouseEnter(e, anime)}
                         onMouseLeave={handleMouseLeave}
                       >
-                        <a href={anime.link} className="block aspect-[3/4] relative">
+                        <a
+                          href={anime.link}
+                          className="block aspect-[3/4] relative"
+                        >
                           <Image
                             src={anime.thumbnail}
                             alt={anime.title}
@@ -142,7 +145,7 @@ export function AnimeListTemplate({
                             className="object-cover transition-all duration-300 group-hover:blur-sm"
                             priority={index === 0}
                           />
-                          
+
                           {/* Play button overlay on hover */}
                           <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/20">
                             <div className="flex items-center justify-center w-16 h-16 hover:transition-all duration-300 hover:scale-110">
@@ -155,49 +158,65 @@ export function AnimeListTemplate({
                               />
                             </div>
                           </div>
-                          
+
                           {/* Bottom black vignette */}
                           <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/80 to-transparent pointer-events-none" />
-                          
+
                           {/* Badges */}
                           {(anime.dub || anime.latest_episode) && (
                             <div className="absolute bottom-2 left-2 flex items-center gap-2">
                               {/* SUB badge with CC icon and episode number */}
                               <span className="inline-flex items-center gap-1 pl-1.5 pr-2 py-0.5 rounded-full text-[11px] font-medium bg-[linear-gradient(to_right,rgba(147,51,234,0.25),rgba(147,51,234,0.08))] ring-1 ring-purple-500/40 text-purple-200 shadow-[0_0_0_1px_rgba(147,51,234,0.2)] backdrop-blur-sm">
-                                <Image src="/cc.svg" alt="CC" width={14} height={14} className="w-3.5 h-3.5 brightness-0 invert" />
-                                {anime.latest_episode || 'SUB'}
+                                <Image
+                                  src="/cc.svg"
+                                  alt="CC"
+                                  width={14}
+                                  height={14}
+                                  className="w-3.5 h-3.5 brightness-0 invert"
+                                />
+                                {anime.latest_episode || "SUB"}
                               </span>
                               {/* DUB badge with mic icon */}
                               {anime.dub && (
                                 <span className="inline-flex items-center gap-1 pl-1.5 pr-2 py-0.5 rounded-full text-[11px] font-medium bg-[linear-gradient(to_right,rgba(16,185,129,0.25),rgba(16,185,129,0.08))] ring-1 ring-emerald-500/40 text-emerald-200 shadow-[0_0_0_1px_rgba(16,185,129,0.25)] backdrop-blur-sm">
-                                <Image src="/mic.svg" alt="Mic" width={14} height={14} className="w-3.5 h-3.5 brightness-0 invert" />
-                                   {anime.dub}
+                                  <Image
+                                    src="/mic.svg"
+                                    alt="Mic"
+                                    width={14}
+                                    height={14}
+                                    className="w-3.5 h-3.5 brightness-0 invert"
+                                  />
+                                  {anime.dub}
                                 </span>
                               )}
                             </div>
                           )}
                         </a>
                       </div>
-                      
+
                       {/* Title and Meta Info */}
                       <div className="mt-2 px-1">
-                        <a 
-                          href={anime.link} 
+                        <a
+                          href={anime.link}
                           className="block text-sm font-medium text-white/90 truncate hover:text-white transition-colors"
                           title={anime.title}
                         >
                           {anime.title}
                         </a>
-                        
+
                         {/* Description */}
                         {anime.description && (
                           <p className="text-gray-400 text-xs leading-relaxed line-clamp-3 mt-2">
                             {anime.description}
                           </p>
                         )}
-                        
+
                         <div className="flex items-center gap-1 mt-2 text-[11px] text-white/60">
-                          {anime.type && <span className="uppercase tracking-wide">{anime.type}</span>}
+                          {anime.type && (
+                            <span className="uppercase tracking-wide">
+                              {anime.type}
+                            </span>
+                          )}
                           {anime.type && anime.duration && <span>•</span>}
                           {anime.duration && <span>{anime.duration}</span>}
                         </div>
@@ -221,7 +240,7 @@ export function AnimeListTemplate({
                     qtip: anime.qtip,
                     latest_episode: anime.latest_episode,
                     dub: anime.dub,
-                    duration: anime.duration || "24m"
+                    duration: anime.duration || "24m",
                   };
 
                   return (
@@ -249,7 +268,7 @@ export function AnimeListTemplate({
                     qtip: anime.qtip,
                     latest_episode: anime.latest_episode,
                     dub: anime.dub,
-                    duration: anime.duration || "24m"
+                    duration: anime.duration || "24m",
                   };
 
                   return (
@@ -272,7 +291,7 @@ export function AnimeListTemplate({
             )}
 
             {/* Pagination */}
-            <Pagination 
+            <Pagination
               pagination={pagination}
               currentPage={page}
               basePath={basePath}
@@ -283,38 +302,43 @@ export function AnimeListTemplate({
           <div className="lg:col-span-1 space-y-8">
             {/* TopAnime Component */}
             {topAnimeData && (
-              <TopAnime 
+              <TopAnime
                 data={{
-                  top_today: (topAnimeData.top_today || []).slice(0, 10).map((anime, index) => ({
-                    ...anime,
-                    rank: (index + 1).toString()
-                  })),
-                  top_week: (topAnimeData.top_week || []).slice(0, 10).map((anime, index) => ({
-                    ...anime,
-                    rank: (index + 1).toString()
-                  })),
-                  top_month: (topAnimeData.top_month || []).slice(0, 10).map((anime, index) => ({
-                    ...anime,
-                    rank: (index + 1).toString()
-                  }))
+                  top_today: (topAnimeData.top_today || [])
+                    .slice(0, 10)
+                    .map((anime, index) => ({
+                      ...anime,
+                      rank: (index + 1).toString(),
+                    })),
+                  top_week: (topAnimeData.top_week || [])
+                    .slice(0, 10)
+                    .map((anime, index) => ({
+                      ...anime,
+                      rank: (index + 1).toString(),
+                    })),
+                  top_month: (topAnimeData.top_month || [])
+                    .slice(0, 10)
+                    .map((anime, index) => ({
+                      ...anime,
+                      rank: (index + 1).toString(),
+                    })),
                 }}
               />
             )}
 
             {/* TopAnimeCategories Component */}
-            {topAnimeCategoriesData && (
-              topAnimeCategoriesData.topAiring.length > 0 ||
-              topAnimeCategoriesData.mostPopular.length > 0 ||
-              topAnimeCategoriesData.mostFavorite.length > 0 ||
-              topAnimeCategoriesData.completed.length > 0
-            ) && (
-              <TopAnimeCategories 
-                topAiring={topAnimeCategoriesData?.topAiring || []}
-                mostPopular={topAnimeCategoriesData?.mostPopular || []}
-                mostFavorite={topAnimeCategoriesData?.mostFavorite || []}
-                completed={topAnimeCategoriesData?.completed || []}
-              />
-            )}
+            {topAnimeCategoriesData &&
+              (topAnimeCategoriesData.topAiring.length > 0 ||
+                topAnimeCategoriesData.mostPopular.length > 0 ||
+                topAnimeCategoriesData.mostFavorite.length > 0 ||
+                topAnimeCategoriesData.completed.length > 0) && (
+                <TopAnimeCategories
+                  topAiring={topAnimeCategoriesData?.topAiring || []}
+                  mostPopular={topAnimeCategoriesData?.mostPopular || []}
+                  mostFavorite={topAnimeCategoriesData?.mostFavorite || []}
+                  completed={topAnimeCategoriesData?.completed || []}
+                />
+              )}
 
             {/* Genres Component */}
             {genresData && genresData.length > 0 && (

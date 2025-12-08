@@ -40,7 +40,7 @@ export function Navbar() {
 
   return (
     <header className={`fixed left-1/2 -translate-x-1/2 z-40 transition-all duration-300 top-4 w-[min(1200px,95%)] px-3`}>      
-      <div className={`flex items-center gap-6 rounded-full px-5 md:px-8 backdrop-blur-xs shadow-[0_4px_25px_-8px_rgba(0,0,0,0.6)] transition-colors duration-300 h-[60px] ${scrolled ? 'bg-black/65' : 'bg-black/40'}`}>        
+      <div className={`flex items-center gap-6 rounded-full px-5 md:px-8 backdrop-blur-sm shadow-[0_4px_25px_-8px_rgba(0,0,0,0.6)] transition-colors duration-300 h-[60px] ${scrolled ? 'bg-black/80' : 'bg-black/40'}`}>        
         <div className="flex items-center gap-3">
           <button
             className="lg:hidden px-3 py-2 rounded-md text-white/70 hover:text-white focus:outline-none focus:ring-2 focus:ring-white/20"

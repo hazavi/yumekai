@@ -13,17 +13,22 @@ interface PaginationProps {
 }
 
 export function Pagination({ pagination, basePath }: PaginationProps) {
-
   // Normalize an incoming API href (may be relative like '/most-popular?page=2' or missing the page query)
   const buildHref = (item: PaginationItem): string | null => {
+    // Numeric buttons: derive target page from text even if href is missing
+    const targetPage = !isNaN(Number(item.text))
+      ? Number(item.text)
+      : undefined;
+    if (targetPage) {
+      // Check if basePath already has query params
+      const separator = basePath.includes("?") ? "&" : "?";
+      return `${basePath}${separator}page=${targetPage}`;
+    }
+
     if (!item.href) return null;
 
     // If the API already provides a query param keep it.
-    if (item.href.includes('?')) return item.href;
-
-    // Numeric buttons: derive target page from text. Arrows will carry href from API normally.
-    const targetPage = !isNaN(Number(item.text)) ? Number(item.text) : undefined;
-    if (targetPage) return `${basePath}?page=${targetPage}`;
+    if (item.href.includes("?")) return item.href;
 
     // Fallback to original href
     return item.href;
@@ -33,8 +38,8 @@ export function Pagination({ pagination, basePath }: PaginationProps) {
     const href = buildHref(item);
     if (!href) return;
     // Always trigger a full page reload
-    const finalHref = href.includes('?') ? href : `${href}?page=${item.text}`;
-    if (typeof window !== 'undefined') {
+    const finalHref = href.includes("?") ? href : `${href}?page=${item.text}`;
+    if (typeof window !== "undefined") {
       window.location.href = finalHref;
     }
   };
@@ -48,8 +53,12 @@ export function Pagination({ pagination, basePath }: PaginationProps) {
       <nav className="flex items-center space-x-1">
         {pagination.map((item, index) => {
           const isNumber = !isNaN(Number(item.text));
-          const isArrow = item.text === "›" || item.text === "‹" || item.text === "»" || item.text === "«";
-          
+          const isArrow =
+            item.text === "›" ||
+            item.text === "‹" ||
+            item.text === "»" ||
+            item.text === "«";
+
           if (item.active) {
             return (
               <span
@@ -80,8 +89,8 @@ export function Pagination({ pagination, basePath }: PaginationProps) {
               data-href={resolvedHref || undefined}
               className={`px-4 py-2 text-sm font-medium transition-all duration-200 ${
                 isNumber || isArrow
-                  ? "text-white/70 hover:text-white hover:bg-white/10 rounded-md hover:scale-105"
-                  : "text-white/70 hover:text-white hover:bg-white/10 rounded-md hover:scale-105"
+                  ? "text-white/70 hover:text-white hover:cursor-pointer hover:bg-white/10 rounded-md hover:scale-105"
+                  : "text-white/70 hover:text-white hover:cursor-pointer hover:bg-white/10 rounded-md hover:scale-105"
               }`}
             >
               {item.text}

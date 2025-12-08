@@ -36,7 +36,7 @@ export function ScrollToTop() {
         <button
           type="button"
           onClick={scrollToTop}
-          className="bg-black/60 hover:bg-black/80 text-white p-3 rounded-full shadow-lg backdrop-blur-sm border border-white/20 transition-all duration-300 hover:scale-110 hover:shadow-xl group"
+          className="bg-black/60 hover:bg-black/80 text-white p-3 rounded-full shadow-lg backdrop-blur-sm border border-white/20 transition-all duration-300 hover:cursor-pointer hover:scale-110 hover:shadow-xl group"
           aria-label="Scroll to top"
         >
           <svg

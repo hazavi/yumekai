@@ -20,7 +20,16 @@ import { useEffect, useState } from "react";
  * implications depending on content source. For now this is a lightweight defensive layer.
  */
 
-interface ServerData {
+interface ServerItem {
+  data_id: string;
+  default: boolean;
+  ifram_src: string;
+  name: string;
+  server_id: string;
+}
+
+// Also support simple server object with src for backward compatibility
+interface SimpleServer {
   src: string;
 }
 
@@ -32,8 +41,8 @@ interface Episode {
   s_id?: string;
   jname?: string;
   servers: {
-    dub?: ServerData;
-    sub?: ServerData;
+    dub?: ServerItem[] | SimpleServer;
+    sub?: ServerItem[] | SimpleServer;
   };
   title: string;
 }
@@ -91,7 +100,7 @@ async function getWatchData(
   ep?: string
 ): Promise<WatchData | null> {
   try {
-    return (await api.watch(slug, ep)) as any;
+    return (await api.watch(slug, ep)) as WatchData;
   } catch (error) {
     console.error("Error fetching watch data:", error);
     return null;
@@ -140,13 +149,29 @@ export default function WatchPage() {
                 (episode) => episode.episode_nr === currentEpNumber
               ) || watchData.episodes[0];
 
+            console.log("Current episode:", currentEpisode);
+
             // Use iframe_src if available, otherwise check servers
             if (currentEpisode?.iframe_src) {
               setCurrentIframeSrc(currentEpisode.iframe_src);
-            } else if (currentEpisode?.servers?.sub?.src) {
-              setCurrentIframeSrc(currentEpisode.servers.sub.src);
-            } else if (currentEpisode?.servers?.dub?.src) {
-              setCurrentIframeSrc(currentEpisode.servers.dub.src);
+            } else if (currentEpisode?.servers?.sub) {
+              // Check if it's an array or simple object
+              if (Array.isArray(currentEpisode.servers.sub)) {
+                if (currentEpisode.servers.sub[0]?.ifram_src) {
+                  setCurrentIframeSrc(currentEpisode.servers.sub[0].ifram_src);
+                }
+              } else if ("src" in currentEpisode.servers.sub) {
+                setCurrentIframeSrc(currentEpisode.servers.sub.src);
+              }
+            } else if (currentEpisode?.servers?.dub) {
+              // Check if it's an array or simple object
+              if (Array.isArray(currentEpisode.servers.dub)) {
+                if (currentEpisode.servers.dub[0]?.ifram_src) {
+                  setCurrentIframeSrc(currentEpisode.servers.dub[0].ifram_src);
+                }
+              } else if ("src" in currentEpisode.servers.dub) {
+                setCurrentIframeSrc(currentEpisode.servers.dub.src);
+              }
             }
           }
         }
@@ -234,46 +259,67 @@ export default function WatchPage() {
                 </div>
               </div>
 
-              {/* Server Selection Skeleton */}
-              <div className="bg-black/40 backdrop-blur-md border border-white/10 rounded-2xl p-6 shadow-2xl mt-6">
-                <div className="mb-6">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="w-10 h-10 bg-white/10 animate-pulse rounded-xl"></div>
-                    <div className="w-40 h-5 bg-white/10 animate-pulse rounded-lg"></div>
+              {/* Video Control Bar Skeleton */}
+              <div className="bg-black/40 backdrop-blur-md border border-white/10 rounded-xl p-2 shadow-2xl mt-4">
+                <div className="flex items-center justify-between">
+                  {/* Left Side - Control Buttons Skeleton */}
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-white/10 animate-pulse rounded-lg"></div>
+                    <div className="w-8 h-8 bg-white/10 animate-pulse rounded-lg"></div>
                   </div>
-                  <div className="w-64 h-4 bg-white/10 animate-pulse rounded-lg"></div>
+
+                  {/* Right Side - Navigation Buttons Skeleton */}
+                  <div className="flex items-center gap-2">
+                    <div className="w-16 h-7 bg-white/10 animate-pulse rounded-lg"></div>
+                    <div className="w-16 h-7 bg-white/10 animate-pulse rounded-lg"></div>
+                  </div>
                 </div>
+              </div>
 
-                <div className="grid grid-cols-2 gap-6">
-                  {/* SUB Servers Skeleton */}
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-white/10 animate-pulse rounded-xl"></div>
-                      <div className="w-16 h-4 bg-white/10 animate-pulse rounded-lg"></div>
+              {/* Server Selection Skeleton */}
+              <div className="bg-black/40 backdrop-blur-md border border-white/10 rounded-xl p-4 shadow-2xl mt-4">
+                <div className="grid grid-cols-3 gap-6">
+                  {/* Left Column - Episode Info Skeleton */}
+                  <div className="col-span-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className="w-8 h-8 bg-white/10 animate-pulse rounded-lg"></div>
+                      <div className="w-20 h-5 bg-white/10 animate-pulse rounded-lg"></div>
                     </div>
-                    <div className="flex gap-3 flex-wrap">
-                      {Array.from({ length: 3 }, (_, i) => (
-                        <div
-                          key={i}
-                          className="w-12 h-8 bg-white/10 animate-pulse rounded-xl"
-                        ></div>
-                      ))}
-                    </div>
+                    <div className="w-48 h-3 bg-white/10 animate-pulse rounded"></div>
                   </div>
 
-                  {/* DUB Servers Skeleton */}
-                  <div className="space-y-4">
+                  {/* Right Column - Server Buttons Skeleton */}
+                  <div className="col-span-2 space-y-3">
+                    {/* SUB Servers Skeleton */}
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-white/10 animate-pulse rounded-xl"></div>
-                      <div className="w-14 h-4 bg-white/10 animate-pulse rounded-lg"></div>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <div className="w-4 h-4 bg-white/10 animate-pulse rounded"></div>
+                        <div className="w-8 h-4 bg-white/10 animate-pulse rounded"></div>
+                      </div>
+                      <div className="flex gap-2 flex-wrap">
+                        {Array.from({ length: 2 }, (_, i) => (
+                          <div
+                            key={i}
+                            className="w-14 h-7 bg-white/10 animate-pulse rounded-sm"
+                          ></div>
+                        ))}
+                      </div>
                     </div>
-                    <div className="flex gap-3 flex-wrap">
-                      {Array.from({ length: 3 }, (_, i) => (
-                        <div
-                          key={i}
-                          className="w-12 h-8 bg-white/10 animate-pulse rounded-xl"
-                        ></div>
-                      ))}
+
+                    {/* DUB Servers Skeleton */}
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <div className="w-4 h-4 bg-white/10 animate-pulse rounded"></div>
+                        <div className="w-8 h-4 bg-white/10 animate-pulse rounded"></div>
+                      </div>
+                      <div className="flex gap-2 flex-wrap">
+                        {Array.from({ length: 2 }, (_, i) => (
+                          <div
+                            key={i}
+                            className="w-14 h-7 bg-white/10 animate-pulse rounded-sm"
+                          ></div>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -452,7 +498,6 @@ export default function WatchPage() {
             <div className="bg-black p-6 shadow-2xl">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-white font-bold text-xl flex items-center gap-3">
-                  
                   Episodes
                   <span className="text-sm text-gray-400 font-normal">
                     ({data.total_episodes})
@@ -787,7 +832,7 @@ export default function WatchPage() {
                 {/* Right Column - Server Buttons (Wider) */}
                 <div className="space-y-3 col-span-2">
                   {/* SUB Servers */}
-                  {currentEpisode?.servers?.sub?.src && (
+                  {currentEpisode?.servers?.sub && (
                     <div className="flex items-center gap-3">
                       <h5 className="text-white font-medium text-sm flex items-center gap-2 flex-shrink-0">
                         <Image
@@ -800,24 +845,46 @@ export default function WatchPage() {
                         SUB
                       </h5>
                       <div className="flex gap-2 flex-wrap">
-                        <button
-                          onClick={() =>
-                            setCurrentIframeSrc(currentEpisode.servers.sub!.src)
-                          }
-                          className={`px-3 py-1.5 text-xs font-medium transition-all duration-300 hover:cursor-pointer rounded-sm border ${
-                            currentIframeSrc === currentEpisode.servers.sub.src
-                              ? "bg-gradient-to-r from-blue-500 to-cyan-500 text-white border-blue-400 shadow-md"
-                              : "bg-white/5 text-white/70 hover:text-white hover:bg-blue-500/10 border-white/10 hover:border-blue-400/50"
-                          }`}
-                        >
-                          HD-1
-                        </button>
+                        {Array.isArray(currentEpisode.servers.sub) ? (
+                          currentEpisode.servers.sub.map((server, idx) => (
+                            <button
+                              key={server.server_id}
+                              onClick={() =>
+                                setCurrentIframeSrc(server.ifram_src)
+                              }
+                              className={`px-3 py-1.5 text-xs font-medium transition-all duration-300 hover:cursor-pointer rounded-sm border ${
+                                currentIframeSrc === server.ifram_src
+                                  ? "bg-gradient-to-r from-blue-500 to-cyan-500 text-white border-blue-400 shadow-md"
+                                  : "bg-white/5 text-white/70 hover:text-white hover:bg-blue-500/10 border-white/10 hover:border-blue-400/50"
+                              }`}
+                            >
+                              {server.name || `HD-${idx + 1}`}
+                            </button>
+                          ))
+                        ) : currentEpisode.servers.sub &&
+                          "src" in currentEpisode.servers.sub ? (
+                          <button
+                            onClick={() =>
+                              setCurrentIframeSrc(
+                                (currentEpisode.servers.sub as SimpleServer).src
+                              )
+                            }
+                            className={`px-3 py-1.5 text-xs font-medium transition-all duration-300 hover:cursor-pointer rounded-sm border ${
+                              currentIframeSrc ===
+                              (currentEpisode.servers.sub as SimpleServer).src
+                                ? "bg-gradient-to-r from-blue-500 to-cyan-500 text-white border-blue-400 shadow-md"
+                                : "bg-white/5 text-white/70 hover:text-white hover:bg-blue-500/10 border-white/10 hover:border-blue-400/50"
+                            }`}
+                          >
+                            HD-1
+                          </button>
+                        ) : null}
                       </div>
                     </div>
                   )}
 
                   {/* DUB Servers */}
-                  {currentEpisode?.servers?.dub?.src && (
+                  {currentEpisode?.servers?.dub && (
                     <div className="flex items-center gap-3">
                       <h5 className="text-white font-medium text-sm flex items-center gap-2 flex-shrink-0">
                         <Image
@@ -830,18 +897,40 @@ export default function WatchPage() {
                         DUB
                       </h5>
                       <div className="flex gap-2 flex-wrap">
-                        <button
-                          onClick={() =>
-                            setCurrentIframeSrc(currentEpisode.servers.dub!.src)
-                          }
-                          className={`px-3 py-1.5 text-xs font-medium transition-all duration-300 hover:cursor-pointer rounded-sm border ${
-                            currentIframeSrc === currentEpisode.servers.dub.src
-                              ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white border-green-400 shadow-md"
-                              : "bg-white/5 text-white/70 hover:text-white hover:bg-green-500/10 border-white/10 hover:border-green-400/50"
-                          }`}
-                        >
-                          HD-1
-                        </button>
+                        {Array.isArray(currentEpisode.servers.dub) ? (
+                          currentEpisode.servers.dub.map((server, idx) => (
+                            <button
+                              key={server.server_id}
+                              onClick={() =>
+                                setCurrentIframeSrc(server.ifram_src)
+                              }
+                              className={`px-3 py-1.5 text-xs font-medium transition-all duration-300 hover:cursor-pointer rounded-sm border ${
+                                currentIframeSrc === server.ifram_src
+                                  ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white border-green-400 shadow-md"
+                                  : "bg-white/5 text-white/70 hover:text-white hover:bg-green-500/10 border-white/10 hover:border-green-400/50"
+                              }`}
+                            >
+                              {server.name || `HD-${idx + 1}`}
+                            </button>
+                          ))
+                        ) : currentEpisode.servers.dub &&
+                          "src" in currentEpisode.servers.dub ? (
+                          <button
+                            onClick={() =>
+                              setCurrentIframeSrc(
+                                (currentEpisode.servers.dub as SimpleServer).src
+                              )
+                            }
+                            className={`px-3 py-1.5 text-xs font-medium transition-all duration-300 hover:cursor-pointer rounded-sm border ${
+                              currentIframeSrc ===
+                              (currentEpisode.servers.dub as SimpleServer).src
+                                ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white border-green-400 shadow-md"
+                                : "bg-white/5 text-white/70 hover:text-white hover:bg-green-500/10 border-white/10 hover:border-green-400/50"
+                            }`}
+                          >
+                            HD-1
+                          </button>
+                        ) : null}
                       </div>
                     </div>
                   )}

@@ -81,6 +81,9 @@ export default function WatchPage() {
   const [currentIframeSrc, setCurrentIframeSrc] = useState<string>("");
   const [isExpanded, setIsExpanded] = useState(false);
   const [lightsOff, setLightsOff] = useState(false);
+  const [episodeSortOrder, setEpisodeSortOrder] = useState<"asc" | "desc">(
+    "asc"
+  );
   const fetchingRef = useState<{ key: string; done: boolean }>({
     key: "",
     done: false,
@@ -154,30 +157,28 @@ export default function WatchPage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-8">
             {/* Left Sidebar Skeleton - Episodes List */}
             <div className="lg:col-span-3 order-2 lg:order-1">
-              <div className="bg-black/40 backdrop-blur-md border border-white/10 rounded-2xl p-6 shadow-2xl">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-white/10 animate-pulse rounded-xl"></div>
-                    <div>
-                      <div className="w-20 h-5 bg-white/10 animate-pulse rounded-lg mb-1"></div>
-                      <div className="w-8 h-3 bg-white/10 animate-pulse rounded"></div>
-                    </div>
+              <div className="p-4 md:p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <div className="w-20 h-5 bg-white/10 animate-pulse rounded-lg mb-1"></div>
+                    <div className="w-28 h-3 bg-white/10 animate-pulse rounded"></div>
                   </div>
-                  <div className="w-32 h-10 bg-white/10 animate-pulse rounded-xl"></div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-16 h-7 bg-white/10 animate-pulse rounded-md"></div>
+                    <div className="w-12 h-7 bg-white/10 animate-pulse rounded-md"></div>
+                  </div>
                 </div>
 
-                <div className="space-y-0 max-h-[500px] overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-black">
-                  {Array.from({ length: 12 }, (_, i) => (
-                    <div key={i}>
-                      <div className="flex items-center gap-3 px-4 py-3 text-sm border-l-4 border-l-transparent">
-                        <div className="w-8 h-8 bg-white/10 animate-pulse rounded-lg flex-shrink-0"></div>
-                        <div className="flex-1 min-w-0">
-                          <div className="w-full h-4 bg-white/10 animate-pulse rounded"></div>
-                        </div>
+                <div className="space-y-1 max-h-[500px] overflow-y-auto">
+                  {Array.from({ length: 10 }, (_, i) => (
+                    <div
+                      key={i}
+                      className="flex items-center gap-3 px-3 py-3 bg-white/[0.03] border border-white/[0.05] rounded-xl"
+                    >
+                      <div className="w-9 h-9 bg-white/10 animate-pulse rounded-full flex-shrink-0"></div>
+                      <div className="flex-1 min-w-0">
+                        <div className="w-3/4 h-4 bg-white/10 animate-pulse rounded"></div>
                       </div>
-                      {i < 11 && (
-                        <div className="border-b border-gray-800/50 mx-4"></div>
-                      )}
                     </div>
                   ))}
                 </div>
@@ -434,106 +435,198 @@ export default function WatchPage() {
               isExpanded ? "order-2" : "lg:col-span-3 order-2 lg:order-1"
             } transition-all duration-500 ${lightsOff ? "opacity-20" : ""}`}
           >
-            <div className="bg-black p-3 md:p-6 shadow-2xl rounded-xl">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 md:mb-6 gap-3">
-                <h3 className="text-white font-bold text-lg md:text-xl flex items-center gap-2 md:gap-3">
-                  Episodes
-                  <span className="text-xs md:text-sm text-gray-400 font-normal">
-                    ({data.total_episodes})
-                  </span>
-                </h3>
-                <div className="relative w-full sm:w-auto">
-                  <input
-                    type="number"
-                    placeholder="Find Episode #"
-                    className="w-full sm:w-35 px-2 md:px-3 py-1.5 md:py-2 text-xs md:text-sm bg-black rounded-md border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 transition-all duration-300 appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
-                    min="1"
-                    max={data.total_episodes}
-                    onInput={(e) => {
-                      const target = e.target as HTMLInputElement;
-                      const value = parseInt(target.value);
-                      if (
-                        !isNaN(value) &&
-                        value >= 1 &&
-                        value <= data.total_episodes
-                      ) {
-                        const targetElement = document.querySelector(
-                          `[data-episode="${value}"]`
-                        );
-                        if (targetElement) {
-                          targetElement.classList.add(
-                            "animate-pulse",
-                            "bg-yellow-500/30",
-                            "ring-2",
-                            "ring-yellow-400/50"
+            <div className="p-4 md:p-5">
+              {/* Header */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-3">
+                <div>
+                  <h3 className="text-white font-bold text-base md:text-lg">
+                    Episodes
+                  </h3>
+                  <p className="text-white/40 text-xs">
+                    {data.total_episodes} episodes available
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                  {/* Sort Toggle Button */}
+                  <button
+                    onClick={() =>
+                      setEpisodeSortOrder((prev) =>
+                        prev === "asc" ? "desc" : "asc"
+                      )
+                    }
+                    className="flex items-center gap-1 px-2 py-1.5 bg-white/5 border border-white/10 rounded-md text-white/60 hover:text-white/90 hover:bg-white/[0.08] hover:border-purple-500/30 transition-all duration-200 flex-shrink-0"
+                    title={
+                      episodeSortOrder === "asc"
+                        ? "Sorted: 1 → Last"
+                        : "Sorted: Last → 1"
+                    }
+                  >
+                    <svg
+                      className={`w-3 h-3 transition-transform duration-200 ${
+                        episodeSortOrder === "desc" ? "rotate-180" : ""
+                      }`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"
+                      />
+                    </svg>
+                    <span className="text-[10px] font-medium">
+                      {episodeSortOrder === "asc"
+                        ? `1→${data.total_episodes}`
+                        : `${data.total_episodes}→1`}
+                    </span>
+                  </button>
+
+                  {/* Search Input */}
+                  <div className="relative flex-1 sm:flex-none">
+                    <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
+                      <svg
+                        className="w-3 h-3 text-white/30"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                        />
+                      </svg>
+                    </div>
+                    <input
+                      type="number"
+                      placeholder="#"
+                      className="w-full sm:w-16 pl-7 pr-2 py-1.5 text-[10px] bg-white/5 rounded-md border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-purple-500/50 focus:bg-white/10 transition-all duration-300 appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
+                      min="1"
+                      max={data.total_episodes}
+                      onInput={(e) => {
+                        const target = e.target as HTMLInputElement;
+                        const value = parseInt(target.value);
+                        if (
+                          !isNaN(value) &&
+                          value >= 1 &&
+                          value <= data.total_episodes
+                        ) {
+                          const targetElement = document.querySelector(
+                            `[data-episode="${value}"]`
                           );
-                          setTimeout(() => {
-                            targetElement.classList.remove(
+                          if (targetElement) {
+                            targetElement.classList.add(
                               "animate-pulse",
                               "bg-yellow-500/30",
                               "ring-2",
                               "ring-yellow-400/50"
                             );
-                          }, 2000);
-                          targetElement.scrollIntoView({
-                            behavior: "smooth",
-                            block: "center",
-                          });
+                            setTimeout(() => {
+                              targetElement.classList.remove(
+                                "animate-pulse",
+                                "bg-yellow-500/30",
+                                "ring-2",
+                                "ring-yellow-400/50"
+                              );
+                            }, 2000);
+                            targetElement.scrollIntoView({
+                              behavior: "smooth",
+                              block: "center",
+                            });
+                          }
                         }
-                      }
-                    }}
-                  />
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
 
-              <div className="space-y-0 max-h-[300px] md:max-h-[500px] overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-black">
-                {Array.from(
-                  { length: data.total_episodes },
-                  (_, i) => i + 1
-                ).map((episodeNum, index) => {
+              {/* Episode List */}
+              <div className="space-y-1 max-h-[300px] md:max-h-[500px] overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent pr-1">
+                {(() => {
+                  const episodes = Array.from(
+                    { length: data.total_episodes },
+                    (_, i) => i + 1
+                  );
+                  return episodeSortOrder === "desc"
+                    ? episodes.reverse()
+                    : episodes;
+                })().map((episodeNum) => {
                   const episode = data.episodes.find(
                     (ep) => ep.episode_nr === episodeNum
                   );
+                  const isActive = episodeNum === currentEpNumber;
                   return (
-                    <div key={episodeNum}>
-                      <a
-                        href={`/watch/${slug}?ep=${episodeNum}`}
-                        data-episode={episodeNum}
-                        title={
-                          episode
-                            ? decodeHtmlEntities(episode.title)
-                            : `Episode ${episodeNum}`
-                        }
-                        className={`group flex items-center gap-2 md:gap-3 px-2 md:px-4 py-2 md:py-3 text-xs md:text-sm transition-all duration-300 hover:scale-[1.01] border-l-2 md:border-l-4 ${
-                          episodeNum === currentEpNumber
-                            ? "bg-purple-600/20 text-white border-l-purple-500 shadow-lg shadow-purple-600/10"
-                            : "text-gray-300 hover:text-white hover:bg-gray-900/60 border-l-transparent hover:border-l-gray-600"
+                    <a
+                      key={episodeNum}
+                      href={`/watch/${slug}?ep=${episodeNum}`}
+                      data-episode={episodeNum}
+                      title={
+                        episode
+                          ? decodeHtmlEntities(episode.title)
+                          : `Episode ${episodeNum}`
+                      }
+                      className={`group flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-300 ${
+                        isActive
+                          ? "bg-purple-600/15 border border-purple-500/30"
+                          : "bg-white/[0.03] border border-white/[0.05] hover:bg-white/[0.08] hover:border-white/10"
+                      }`}
+                    >
+                      {/* Episode Number Badge */}
+                      <div
+                        className={`flex items-center justify-center w-9 h-9 rounded-full text-sm font-bold flex-shrink-0 transition-all duration-300 ${
+                          isActive
+                            ? "bg-purple-600 text-white"
+                            : "bg-white/[0.08] text-white/50 group-hover:bg-white/[0.12] group-hover:text-white/70"
                         }`}
                       >
-                        <div
-                          className={`flex items-center justify-center w-6 h-6 md:w-8 md:h-8 rounded-lg text-[10px] md:text-xs font-bold transition-all duration-300 flex-shrink-0 ${
-                            episodeNum === currentEpNumber
-                              ? "bg-purple-600 text-white shadow-lg"
-                              : "bg-gray-800 text-gray-400 group-hover:bg-gray-700 group-hover:text-gray-300"
+                        {episodeNum}
+                      </div>
+
+                      {/* Episode Title */}
+                      <div className="flex-1 min-w-0">
+                        <p
+                          className={`text-sm font-medium truncate transition-colors duration-300 ${
+                            isActive
+                              ? "text-white"
+                              : "text-white/60 group-hover:text-white/90"
                           }`}
                         >
-                          {episodeNum}
+                          {episode
+                            ? decodeHtmlEntities(episode.title)
+                            : `Episode ${episodeNum}`}
+                        </p>
+                      </div>
+
+                      {/* Now Playing Indicator */}
+                      {isActive && (
+                        <div className="flex items-center justify-center w-8 h-8 bg-purple-600 rounded-full flex-shrink-0">
+                          <svg
+                            className="w-3.5 h-3.5 text-white ml-0.5"
+                            fill="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path d="M8 6.82v10.36c0 .79.87 1.27 1.54.84l8.14-5.18c.62-.39.62-1.29 0-1.69L9.54 5.98C8.87 5.55 8 6.03 8 6.82z" />
+                          </svg>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium text-white/90 leading-tight truncate">
-                            {episode
-                              ? decodeHtmlEntities(episode.title)
-                              : `Episode ${episodeNum}`}
-                          </div>
-                        </div>
-                        {episodeNum === currentEpNumber && (
-                          <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse flex-shrink-0"></div>
-                        )}
-                      </a>
-                      {index < data.total_episodes - 1 && (
-                        <div className="border-b border-gray-800/50 mx-4"></div>
                       )}
-                    </div>
+
+                      {/* Hover Play Icon */}
+                      {!isActive && (
+                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-white/0 group-hover:bg-white/10 transition-all duration-300 flex-shrink-0">
+                          <svg
+                            className="w-3.5 h-3.5 text-white/0 group-hover:text-white/60 transition-all duration-300 ml-0.5"
+                            fill="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path d="M8 6.82v10.36c0 .79.87 1.27 1.54.84l8.14-5.18c.62-.39.62-1.29 0-1.69L9.54 5.98C8.87 5.55 8 6.03 8 6.82z" />
+                          </svg>
+                        </div>
+                      )}
+                    </a>
                   );
                 })}
               </div>
@@ -670,7 +763,7 @@ export default function WatchPage() {
                 </div>
 
                 {/* Right Side - Episode Navigation */}
-                <div className="flex items-center gap-2 flex-1 sm:flex-initial">
+                <div className="flex items-center gap-2 flex-1 sm:flex-initial justify-end">
                   {/* Previous Episode */}
                   <Link
                     href={
@@ -678,15 +771,15 @@ export default function WatchPage() {
                         ? `/watch/${slug}?ep=${currentEpNumber - 1}`
                         : "#"
                     }
-                    className={`flex items-center gap-1 px-2 py-1.5 rounded-lg transition-all duration-300 text-xs font-medium ${
+                    className={`flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg transition-all duration-300 text-xs font-medium ${
                       currentEpNumber > 1
-                        ? "bg-blue-600/20 text-blue-300 hover:bg-blue-600/30 border border-blue-500/30"
-                        : "bg-gray-800/50 text-gray-500 cursor-not-allowed border border-gray-700/30"
+                        ? "bg-white/10 text-white hover:bg-white/15 border border-white/10"
+                        : "bg-white/5 text-white/30 cursor-not-allowed border border-white/5"
                     }`}
                     onClick={(e) => currentEpNumber <= 1 && e.preventDefault()}
                   >
                     <svg
-                      className="w-3 h-3"
+                      className="w-3.5 h-3.5"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -698,7 +791,7 @@ export default function WatchPage() {
                         d="M15 19l-7-7 7-7"
                       />
                     </svg>
-                    Prev
+                    <span>Prev</span>
                   </Link>
 
                   {/* Next Episode */}
@@ -708,19 +801,19 @@ export default function WatchPage() {
                         ? `/watch/${slug}?ep=${currentEpNumber + 1}`
                         : "#"
                     }
-                    className={`flex items-center gap-1 px-2 py-1.5 rounded-lg transition-all duration-300 text-xs font-medium ${
+                    className={`flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg transition-all duration-300 text-xs font-medium ${
                       currentEpNumber < data.total_episodes
-                        ? "bg-blue-600/20 text-blue-300 hover:bg-blue-600/30 border border-blue-500/30"
-                        : "bg-gray-800/50 text-gray-500 cursor-not-allowed border border-gray-700/30"
+                        ? "bg-white/10 text-white hover:bg-white/15 border border-white/10"
+                        : "bg-white/5 text-white/30 cursor-not-allowed border border-white/5"
                     }`}
                     onClick={(e) =>
                       currentEpNumber >= data.total_episodes &&
                       e.preventDefault()
                     }
                   >
-                    Next
+                    <span>Next</span>
                     <svg
-                      className="w-3 h-3"
+                      className="w-3.5 h-3.5"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -901,14 +994,14 @@ export default function WatchPage() {
                       </h2>
 
                       {/* Badges */}
-                      <div className="flex flex-wrap gap-0.5 md:gap-1 mb-2">
-                        <span className="inline-flex items-center px-1.5 py-0.5 bg-[linear-gradient(to_right,rgba(75,85,99,0.25),rgba(75,85,99,0.08))] ring-1 ring-gray-500/40 text-gray-200 shadow-[0_0_0_1px_rgba(75,85,99,0.2)] backdrop-blur-sm rounded text-xs font-medium">
+                      <div className="flex flex-wrap items-center justify-start gap-1 md:gap-1.5 mb-2">
+                        <span className="inline-flex items-center justify-center px-2 py-1 bg-white/10 border border-white/10 text-white/70 rounded text-xs font-medium">
                           {data.watch_detail.content_rating}
                         </span>
-                        <span className="inline-flex items-center px-1.5 py-0.5 bg-[linear-gradient(to_right,rgba(34,197,94,0.25),rgba(34,197,94,0.08))] ring-1 ring-green-500/40 text-green-200 shadow-[0_0_0_1px_rgba(34,197,94,0.2)] backdrop-blur-sm rounded text-xs font-medium">
+                        <span className="inline-flex items-center justify-center px-2 py-1 bg-green-500/15 border border-green-500/30 text-green-300 rounded text-xs font-medium">
                           {data.watch_detail.quality}
                         </span>
-                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-[linear-gradient(to_right,rgba(147,51,234,0.25),rgba(147,51,234,0.08))] ring-1 ring-purple-500/40 text-purple-200 shadow-[0_0_0_1px_rgba(147,51,234,0.2)] backdrop-blur-sm rounded text-xs font-medium">
+                        <span className="inline-flex items-center justify-center gap-1 px-2 py-1 bg-purple-500/15 border border-purple-500/30 text-purple-300 rounded text-xs font-medium">
                           <Image
                             src="/cc.svg"
                             alt="CC"
@@ -916,10 +1009,10 @@ export default function WatchPage() {
                             height={10}
                             className="brightness-0 invert"
                           />
-                          {data.watch_detail.sub_count}
+                          <span>{data.watch_detail.sub_count}</span>
                         </span>
                         {data.watch_detail.type === "TV" && (
-                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-[linear-gradient(to_right,rgba(16,185,129,0.25),rgba(16,185,129,0.08))] ring-1 ring-emerald-500/40 text-emerald-200 shadow-[0_0_0_1px_rgba(16,185,129,0.25)] backdrop-blur-sm rounded text-xs font-medium">
+                          <span className="inline-flex items-center justify-center gap-1 px-2 py-1 bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 rounded text-xs font-medium">
                             <Image
                               src="/mic.svg"
                               alt="mic"
@@ -927,16 +1020,16 @@ export default function WatchPage() {
                               height={9}
                               className="brightness-0 invert"
                             />
-                            DUB
+                            <span>DUB</span>
                           </span>
                         )}
-                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-[linear-gradient(to_right,rgba(59,130,246,0.25),rgba(59,130,246,0.08))] ring-1 ring-blue-500/40 text-blue-200 shadow-[0_0_0_1px_rgba(59,130,246,0.2)] backdrop-blur-sm rounded text-xs font-medium">
+                        <span className="inline-flex items-center justify-center px-2 py-1 bg-blue-500/15 border border-blue-500/30 text-blue-300 rounded text-xs font-medium">
                           {data.total_episodes}
                         </span>
-                        <span className="inline-flex items-center px-1.5 py-0.5 bg-[linear-gradient(to_right,rgba(168,85,247,0.25),rgba(168,85,247,0.08))] ring-1 ring-purple-500/40 text-purple-200 shadow-[0_0_0_1px_rgba(168,85,247,0.2)] backdrop-blur-sm rounded text-xs font-medium">
+                        <span className="inline-flex items-center justify-center px-2 py-1 bg-purple-500/15 border border-purple-500/30 text-purple-300 rounded text-xs font-medium">
                           {data.watch_detail.type}
                         </span>
-                        <span className="inline-flex items-center px-1.5 py-0.5 bg-[linear-gradient(to_right,rgba(249,115,22,0.25),rgba(249,115,22,0.08))] ring-1 ring-orange-500/40 text-orange-200 shadow-[0_0_0_1px_rgba(249,115,22,0.2)] backdrop-blur-sm rounded text-xs font-medium">
+                        <span className="inline-flex items-center justify-center px-2 py-1 bg-orange-500/15 border border-orange-500/30 text-orange-300 rounded text-xs font-medium">
                           {data.watch_detail.duration}
                         </span>
                       </div>

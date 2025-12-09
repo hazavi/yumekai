@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import { SignupPage } from "./SignupPage";
 
 export const metadata: Metadata = {
-  title: "Sign Up - YumeKai",
+  title: "Sign Up",
   description: "Create a YumeKai account to track your anime and create lists",
 };
 

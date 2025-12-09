@@ -102,22 +102,22 @@ export function SignupPage() {
       </div>
 
       {/* Content */}
-      <div className="flex-1 flex items-center justify-center px-4 py-30">
+      <div className="flex-1 flex items-center justify-center px-4 py-16 md:py-30">
         <div className="w-full max-w-md">
           {/* Card */}
-          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
-            <div className="text-center mb-8">
-              <h1 className="text-2xl font-bold text-white mb-2">
+          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-5 sm:p-8">
+            <div className="text-center mb-6 sm:mb-8">
+              <h1 className="text-xl sm:text-2xl font-bold text-white mb-2">
                 Create an account
               </h1>
-              <p className="text-white/60 text-sm">
+              <p className="text-white/60 text-xs sm:text-sm">
                 Join YumeKai and start tracking anime
               </p>
             </div>
 
             {/* Error Message */}
             {error && (
-              <div className="mb-6 p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm text-center">
+              <div className="mb-4 sm:mb-6 p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-xs sm:text-sm text-center">
                 {error}
               </div>
             )}
@@ -126,7 +126,7 @@ export function SignupPage() {
             <button
               onClick={handleGoogleSignup}
               disabled={isSubmitting}
-              className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-white/10 hover:bg-white/15 border border-white/10 rounded-xl text-white font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer mb-6"
+              className="w-full flex items-center justify-center gap-2 sm:gap-3 px-4 py-2.5 sm:py-3 bg-white/10 hover:bg-white/15 border border-white/10 rounded-xl text-white text-sm sm:text-base font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer mb-4 sm:mb-6"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path
@@ -150,23 +150,23 @@ export function SignupPage() {
             </button>
 
             {/* Divider */}
-            <div className="relative mb-6">
+            <div className="relative mb-4 sm:mb-6">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-white/10"></div>
               </div>
-              <div className="relative flex justify-center text-xs">
-                <span className="px-4 bg-[#0d0d0d] text-white/40">
+              <div className="relative flex justify-center text-[10px] sm:text-xs">
+                <span className="px-3 sm:px-4 bg-[#0d0d0d] text-white/40">
                   or continue with email
                 </span>
               </div>
             </div>
 
             {/* Email Form */}
-            <form onSubmit={handleEmailSignup} className="space-y-4">
+            <form onSubmit={handleEmailSignup} className="space-y-3 sm:space-y-4">
               <div>
                 <label
                   htmlFor="displayName"
-                  className="block text-sm font-medium text-white/70 mb-2"
+                  className="block text-xs sm:text-sm font-medium text-white/70 mb-1.5 sm:mb-2"
                 >
                   Display Name
                 </label>
@@ -177,14 +177,14 @@ export function SignupPage() {
                   onChange={(e) => setDisplayName(e.target.value)}
                   placeholder="Your name"
                   required
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all"
+                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/5 border border-white/10 rounded-xl text-sm sm:text-base text-white placeholder-white/30 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all"
                 />
               </div>
 
               <div>
                 <label
                   htmlFor="email"
-                  className="block text-sm font-medium text-white/70 mb-2"
+                  className="block text-xs sm:text-sm font-medium text-white/70 mb-1.5 sm:mb-2"
                 >
                   Email
                 </label>
@@ -195,14 +195,14 @@ export function SignupPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
                   required
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all"
+                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/5 border border-white/10 rounded-xl text-sm sm:text-base text-white placeholder-white/30 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all"
                 />
               </div>
 
               <div>
                 <label
                   htmlFor="password"
-                  className="block text-sm font-medium text-white/70 mb-2"
+                  className="block text-xs sm:text-sm font-medium text-white/70 mb-1.5 sm:mb-2"
                 >
                   Password
                 </label>
@@ -213,14 +213,14 @@ export function SignupPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   required
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all"
+                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/5 border border-white/10 rounded-xl text-sm sm:text-base text-white placeholder-white/30 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all"
                 />
               </div>
 
               <div>
                 <label
                   htmlFor="confirmPassword"
-                  className="block text-sm font-medium text-white/70 mb-2"
+                  className="block text-xs sm:text-sm font-medium text-white/70 mb-1.5 sm:mb-2"
                 >
                   Confirm Password
                 </label>
@@ -231,14 +231,14 @@ export function SignupPage() {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="••••••••"
                   required
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all"
+                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/5 border border-white/10 rounded-xl text-sm sm:text-base text-white placeholder-white/30 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full py-3 bg-white text-black font-semibold rounded-xl hover:bg-white/90 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                className="w-full py-2.5 sm:py-3 bg-white text-black text-sm sm:text-base font-semibold rounded-xl hover:bg-white/90 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 {isSubmitting ? (
                   <span className="flex items-center justify-center gap-2">
@@ -252,7 +252,7 @@ export function SignupPage() {
             </form>
 
             {/* Sign In Link */}
-            <p className="mt-6 text-center text-white/50 text-sm">
+            <p className="mt-4 sm:mt-6 text-center text-white/50 text-xs sm:text-sm">
               Already have an account?{" "}
               <Link
                 href="/login"

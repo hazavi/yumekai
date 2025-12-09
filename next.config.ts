@@ -34,6 +34,10 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
+        hostname: 'yumekai.site',
+      },
+      {
+        protocol: 'https',
         hostname: '**',
       },
     ],

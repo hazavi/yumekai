@@ -106,6 +106,7 @@ export function SiteLock({ children }: SiteLockProps) {
                     setError("");
                   }}
                   placeholder="Enter password"
+                  autoComplete="current-password"
                   className="w-full px-4 py-3 bg-[#141414] border border-white/[0.08] rounded-xl text-white placeholder-white/20 focus:outline-none focus:border-white/20 transition-colors duration-200"
                   autoFocus
                 />

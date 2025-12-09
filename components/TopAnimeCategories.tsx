@@ -111,7 +111,7 @@ export function TopAnimeCategories({ topAiring, mostPopular, mostFavorite, compl
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className={`relative px-4 py-3 text-sm font-medium transition-all duration-300 whitespace-nowrap ${
+                className={`relative px-4 py-3 text-sm font-medium transition-all duration-300 whitespace-nowrap hover:cursor-pointer ${
                   activeTab === tab.key
                     ? 'bg-[linear-gradient(135deg,rgba(147,51,234,0.4),rgba(147,51,234,0.2))] text-white backdrop-blur-md border-t border-l border-r border-purple-400/50 rounded-t-lg'
                     : 'text-white/70 hover:text-white/90 bg-black/20 hover:bg-black/30 border-t border-l border-r border-white/10 rounded-t-lg'

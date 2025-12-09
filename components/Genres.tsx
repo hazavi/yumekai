@@ -48,7 +48,7 @@ export function Genres({ genres, title = "Genres", initialCount = 12 }: GenresPr
         <div className="flex justify-center">
           <button
             onClick={() => setShowAll(!showAll)}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white/80 bg-[linear-gradient(to_right,rgba(147,51,234,0.2),rgba(147,51,234,0.06))] ring-1 ring-purple-500/30 rounded-lg backdrop-blur-sm transition-all duration-200 hover:bg-[linear-gradient(to_right,rgba(147,51,234,0.3),rgba(147,51,234,0.1))] hover:ring-purple-500/50 hover:text-white"
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white/80 bg-[linear-gradient(to_right,rgba(147,51,234,0.2),rgba(147,51,234,0.06))] ring-1 ring-purple-500/30 rounded-lg backdrop-blur-sm transition-all duration-200 hover:cursor-pointer hover:bg-[linear-gradient(to_right,rgba(147,51,234,0.3),rgba(147,51,234,0.1))] hover:ring-purple-500/50 hover:text-white"
           >
             {showAll ? (
               <>

@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
+    unoptimized: true, // Bypass Vercel's image optimization to avoid 402 errors
     remotePatterns: [
       {
         protocol: 'https',
@@ -36,7 +37,6 @@ const nextConfig: NextConfig = {
         hostname: '**',
       },
     ],
-    qualities: [75, 90, 100], // Add the required image qualities
   },
 };
 

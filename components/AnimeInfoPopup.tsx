@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useRef } from "react";
 import type { QtipData } from "@/types";
+import { AddToListButton } from "./AddToListButton";
 
 interface AnimeInfoPopupProps {
   qtip: QtipData;
@@ -17,6 +18,7 @@ interface AnimeInfoPopupProps {
 
 export function AnimeInfoPopup({
   qtip,
+  poster,
   slug,
   isVisible,
   position,
@@ -102,7 +104,7 @@ export function AnimeInfoPopup({
           : "translate(0, 10px)",
       }}
     >
-      <div className="w-80 bg-black/60 backdrop-blur-xl rounded-md overflow-hidden shadow-2xl border border-white/10">
+      <div className="w-80 bg-black/60 backdrop-blur-xl rounded-md shadow-2xl border border-white/10">
         {/* Header with title */}
         <div className="p-4">
           <h3 className="text-white font-semibold text-lg leading-tight truncate">
@@ -237,8 +239,8 @@ export function AnimeInfoPopup({
         </div>
 
         {/* Watch Now Button */}
-        <div className="p-4 pt-0">
-          <a href={qtip.watch_url || slug} className="block w-full">
+        <div className="p-4 pt-0 flex items-center gap-2">
+          <a href={qtip.watch_url || slug} className="block flex-1">
             <button className="w-full bg-white hover:bg-gray-100 text-black font-semibold py-3 px-4 rounded-md transition-all duration-300 flex items-center justify-center gap-2 hover:cursor-pointer">
               <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
                 <path d="M8 5v14l11-7z" />
@@ -246,6 +248,15 @@ export function AnimeInfoPopup({
               Watch Now
             </button>
           </a>
+          <AddToListButton
+            anime={{
+              animeId: slug,
+              title: qtip.title || '',
+              poster: poster,
+            }}
+            variant="icon"
+            className="flex-shrink-0 h-[48px] w-[48px] flex items-center justify-center"
+          />
         </div>
       </div>
     </div>

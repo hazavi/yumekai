@@ -2,6 +2,7 @@
 import { Inter, Poppins } from "next/font/google";
 import { Navbar } from "@/components/Navbar";
 import { ScrollToTop } from "@/components/ScrollToTop";
+import { AuthProvider } from "@/contexts";
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css";
 
@@ -45,6 +46,7 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${poppins.variable} font-sans antialiased bg-black min-h-screen text-white selection:bg-fuchsia-500/30 selection:text-white`}
       >
+        <AuthProvider>
         <Analytics />
 
         {/* Pure black canvas for seamless hero blend */}
@@ -69,6 +71,7 @@ export default function RootLayout({
         
         {/* Scroll to Top Button */}
         <ScrollToTop />
+        </AuthProvider>
       </body>
     </html>
   );

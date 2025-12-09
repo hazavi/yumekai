@@ -1,9 +1,29 @@
 "use client";
 // Using plain anchor tags for hard reload navigation
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { SearchBar, NavItem } from ".";
+import { useAuth } from "@/contexts";
+
+// SVG Icons
+const Icons = {
+  user: (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+    </svg>
+  ),
+  logout: (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+    </svg>
+  ),
+  chevronDown: (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+    </svg>
+  ),
+};
 
 const navItems = [
   { href: "/most-popular", label: "Most Popular" },
@@ -25,6 +45,21 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileBrowseOpen, setMobileBrowseOpen] = useState(false);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const userDropdownRef = useRef<HTMLDivElement>(null);
+  
+  const { user, userProfile, loading, logout } = useAuth();
+
+  // Close user dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (userDropdownRef.current && !userDropdownRef.current.contains(event.target as Node)) {
+        setUserDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   useEffect(() => {
     const onScroll = () => {
@@ -41,7 +76,7 @@ export function Navbar() {
 
   return (
     <header
-      className={`fixed left-1/2 -translate-x-1/2 z-40 transition-all duration-300 top-4 w-[min(1200px,95%)] px-3`}
+      className={`fixed left-1/2 -translate-x-1/2 z-40 transition-all duration-300 top-4 w-[min(1450px,100%)] px-3`}
     >
       <div
         className={`flex items-center gap-2 md:gap-6 rounded-full px-3 md:px-5 lg:px-8 backdrop-blur-sm shadow-[0_4px_25px_-8px_rgba(0,0,0,0.6)] transition-colors duration-300 h-[60px] ${
@@ -60,7 +95,7 @@ export function Navbar() {
           </button>
           <Link href="/" className="flex items-center" aria-label="Home">
             <Image
-              src="/yumelogo.png"
+              src="/yumelogo.svg"
               alt="YumeKai"
               width={96}
               height={48}
@@ -126,8 +161,91 @@ export function Navbar() {
             )}
           </div>
         </nav>
-        <div className="ml-auto w-full max-w-[200px] sm:max-w-xs md:max-w-sm">
-          <SearchBar />
+        <div className="ml-auto flex items-center gap-3">
+          <div className="w-full max-w-[200px] sm:max-w-xs md:max-w-sm">
+            <SearchBar />
+          </div>
+          
+          {/* Auth Section */}
+          {!loading && (
+            <>
+              {user && userProfile?.username ? (
+                <div className="relative hidden sm:block" ref={userDropdownRef}>
+                  <button
+                    onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-full hover:bg-white/10 transition-colors cursor-pointer"
+                  >
+                    {/* Profile Image */}
+                    {userProfile.photoURL ? (
+                      <Image
+                        src={userProfile.photoURL}
+                        alt=""
+                        width={32}
+                        height={32}
+                        className="w-8 h-8 rounded-full object-cover ring-2 ring-white/10"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500/50 to-blue-500/50 flex items-center justify-center text-white text-sm font-medium">
+                        {(userProfile.displayName || userProfile.username || 'U').charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    
+                    {/* Display Name */}
+                    <span className="text-sm font-medium text-white/80 whitespace-nowrap">
+                      {userProfile.displayName || userProfile.username}
+                    </span>
+                    
+                    {/* Chevron */}
+                    <svg 
+                      className={`w-4 h-4 text-white/50 transition-transform duration-200 ${userDropdownOpen ? 'rotate-180' : ''}`}
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+
+                  {/* User Dropdown Menu */}
+                  {userDropdownOpen && (
+                    <div className="absolute top-full right-0 mt-2 w-48 z-80">
+                      <div className="rounded-xl backdrop-blur-xl bg-black/80 border border-white/10 py-2 shadow-lg">
+                        <Link
+                          href={`/user/${userProfile.username}`}
+                          onClick={() => setUserDropdownOpen(false)}
+                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-white/80 hover:text-white hover:bg-white/5 transition-colors"
+                        >
+                          {Icons.user}
+                          Profile
+                        </Link>
+                        <button
+                          onClick={async () => {
+                            setUserDropdownOpen(false);
+                            await logout();
+                          }}
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-400 hover:text-red-300 hover:bg-white/5 transition-colors cursor-pointer"
+                        >
+                          {Icons.logout}
+                          Log Out
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : user ? (
+                <span className="hidden sm:flex px-1 py-1 font-medium text-sm tracking-wide text-white/50">
+                  Loading...
+                </span>
+              ) : (
+                <Link
+                  href="/login"
+                  className="hidden sm:flex px-1 py-1 font-medium text-sm tracking-wide transition relative after:absolute after:left-0 after:bottom-0 after:h-[2px] after:rounded-full after:bg-white/80 after:transition-all after:duration-300 text-white/70 hover:text-white after:w-0 hover:after:w-full whitespace-nowrap"
+                >
+                  Sign In
+                </Link>
+              )}
+            </>
+          )}
         </div>
       </div>
       {openMobile && (
@@ -185,6 +303,69 @@ export function Navbar() {
               </div>
             )}
           </div>
+          
+          {/* Mobile Auth */}
+          {!loading && (
+            <div className="border-t border-white/10 mt-1 pt-2">
+              {user && userProfile?.username ? (
+                <>
+                  {/* User Info */}
+                  <div className="flex items-center gap-3 px-3 py-2 mb-1">
+                    {userProfile.photoURL ? (
+                      <Image
+                        src={userProfile.photoURL}
+                        alt=""
+                        width={36}
+                        height={36}
+                        className="w-9 h-9 rounded-full object-cover ring-2 ring-white/10"
+                      />
+                    ) : (
+                      <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500/50 to-blue-500/50 flex items-center justify-center text-white text-sm font-medium">
+                        {(userProfile.displayName || userProfile.username || 'U').charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <span className="text-sm font-medium text-white/80">
+                      {userProfile.displayName || userProfile.username}
+                    </span>
+                  </div>
+                  
+                  {/* Profile Link */}
+                  <Link
+                    href={`/user/${userProfile.username}`}
+                    onClick={() => setOpenMobile(false)}
+                    className="flex items-center gap-3 px-3 py-2.5 text-sm text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
+                  >
+                    {Icons.user}
+                    Profile
+                  </Link>
+                  
+                  {/* Logout Button */}
+                  <button
+                    onClick={async () => {
+                      setOpenMobile(false);
+                      await logout();
+                    }}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-red-400 hover:text-red-300 hover:bg-white/10 rounded-lg transition-all duration-200 cursor-pointer"
+                  >
+                    {Icons.logout}
+                    Log Out
+                  </button>
+                </>
+              ) : user ? (
+                <span className="block px-3 py-2.5 text-sm text-white/50 rounded-lg font-medium">
+                  Loading...
+                </span>
+              ) : (
+                <Link
+                  href="/login"
+                  onClick={() => setOpenMobile(false)}
+                  className="block px-3 py-2.5 text-sm text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200 font-medium"
+                >
+                  Sign In
+                </Link>
+              )}
+            </div>
+          )}
         </div>
       )}
     </header>

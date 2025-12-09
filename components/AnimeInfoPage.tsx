@@ -3,6 +3,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { TopAnime } from "./TopAnime";
 import { AnimeCard } from "./AnimeCard";
+import { AddToListButton } from "./AddToListButton";
 import type { QtipData, BasicAnime } from "@/types";
 
 interface AnimeInfo {
@@ -162,22 +163,14 @@ export function AnimeInfoPage({ animeInfo, topAnimeData }: AnimeInfoPageProps) {
                     </svg>
                     Watch Now
                   </a>
-                  <button className="inline-flex items-center gap-1 px-5 h-11 rounded-full text-white font-medium text-sm transition bg-white/5 hover:bg-white/10 backdrop-blur-sm ring-1 ring-white/15 hover:ring-white/25">
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                      />
-                    </svg>
-                    Add to List
-                  </button>
+                  <AddToListButton
+                    anime={{
+                      animeId: animeInfo.link || animeInfo.watch_link?.replace('/watch/', '') || '',
+                      title: animeInfo.title,
+                      poster: animeInfo.thumbnail,
+                    }}
+                    variant="large"
+                  />
                 </div>
 
                 {/* Description */}

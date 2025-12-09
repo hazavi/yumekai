@@ -9,18 +9,48 @@ import { useAuth } from "@/contexts";
 // SVG Icons
 const Icons = {
   user: (
-    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+    <svg
+      className="w-4 h-4"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.5}
+        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+      />
     </svg>
   ),
   logout: (
-    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+    <svg
+      className="w-4 h-4"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.5}
+        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+      />
     </svg>
   ),
   chevronDown: (
-    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+    <svg
+      className="w-4 h-4"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M19 9l-7 7-7-7"
+      />
     </svg>
   ),
 };
@@ -47,13 +77,16 @@ export function Navbar() {
   const [mobileBrowseOpen, setMobileBrowseOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const userDropdownRef = useRef<HTMLDivElement>(null);
-  
+
   const { user, userProfile, loading, logout } = useAuth();
 
   // Close user dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (userDropdownRef.current && !userDropdownRef.current.contains(event.target as Node)) {
+      if (
+        userDropdownRef.current &&
+        !userDropdownRef.current.contains(event.target as Node)
+      ) {
         setUserDropdownOpen(false);
       }
     };
@@ -165,7 +198,7 @@ export function Navbar() {
           <div className="w-full max-w-[200px] sm:max-w-xs md:max-w-sm">
             <SearchBar />
           </div>
-          
+
           {/* Auth Section */}
           {!loading && (
             <>
@@ -186,23 +219,36 @@ export function Navbar() {
                       />
                     ) : (
                       <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500/50 to-blue-500/50 flex items-center justify-center text-white text-sm font-medium">
-                        {(userProfile.displayName || userProfile.username || 'U').charAt(0).toUpperCase()}
+                        {(
+                          userProfile.displayName ||
+                          userProfile.username ||
+                          "U"
+                        )
+                          .charAt(0)
+                          .toUpperCase()}
                       </div>
                     )}
-                    
+
                     {/* Display Name */}
                     <span className="text-sm font-medium text-white/80 whitespace-nowrap">
                       {userProfile.displayName || userProfile.username}
                     </span>
-                    
+
                     {/* Chevron */}
-                    <svg 
-                      className={`w-4 h-4 text-white/50 transition-transform duration-200 ${userDropdownOpen ? 'rotate-180' : ''}`}
-                      fill="none" 
-                      stroke="currentColor" 
+                    <svg
+                      className={`w-4 h-4 text-white/50 transition-transform duration-200 ${
+                        userDropdownOpen ? "rotate-180" : ""
+                      }`}
+                      fill="none"
+                      stroke="currentColor"
                       viewBox="0 0 24 24"
                     >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
                     </svg>
                   </button>
 
@@ -303,7 +349,7 @@ export function Navbar() {
               </div>
             )}
           </div>
-          
+
           {/* Mobile Auth */}
           {!loading && (
             <div className="border-t border-white/10 mt-1 pt-2">
@@ -321,14 +367,20 @@ export function Navbar() {
                       />
                     ) : (
                       <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500/50 to-blue-500/50 flex items-center justify-center text-white text-sm font-medium">
-                        {(userProfile.displayName || userProfile.username || 'U').charAt(0).toUpperCase()}
+                        {(
+                          userProfile.displayName ||
+                          userProfile.username ||
+                          "U"
+                        )
+                          .charAt(0)
+                          .toUpperCase()}
                       </div>
                     )}
                     <span className="text-sm font-medium text-white/80">
                       {userProfile.displayName || userProfile.username}
                     </span>
                   </div>
-                  
+
                   {/* Profile Link */}
                   <Link
                     href={`/user/${userProfile.username}`}
@@ -338,7 +390,7 @@ export function Navbar() {
                     {Icons.user}
                     Profile
                   </Link>
-                  
+
                   {/* Logout Button */}
                   <button
                     onClick={async () => {

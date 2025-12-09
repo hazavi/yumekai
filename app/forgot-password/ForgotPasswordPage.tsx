@@ -1,33 +1,34 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { useAuth } from '@/contexts';
+import { useState } from "react";
+import Link from "next/link";
+import { useAuth } from "@/contexts";
 
 export function ForgotPasswordPage() {
   const { resetPassword } = useAuth();
-  
-  const [email, setEmail] = useState('');
-  const [error, setError] = useState('');
+
+  const [email, setEmail] = useState("");
+  const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setIsSubmitting(true);
 
     try {
       await resetPassword(email);
       setSuccess(true);
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to send reset email';
-      if (errorMessage.includes('user-not-found')) {
-        setError('No account found with this email');
-      } else if (errorMessage.includes('invalid-email')) {
-        setError('Please enter a valid email address');
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to send reset email";
+      if (errorMessage.includes("user-not-found")) {
+        setError("No account found with this email");
+      } else if (errorMessage.includes("invalid-email")) {
+        setError("Please enter a valid email address");
       } else {
-        setError('Failed to send reset email. Please try again');
+        setError("Failed to send reset email. Please try again");
       }
     } finally {
       setIsSubmitting(false);
@@ -51,13 +52,26 @@ export function ForgotPasswordPage() {
               // Success State
               <div className="text-center">
                 <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-green-500/10 flex items-center justify-center">
-                  <svg className="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  <svg
+                    className="w-8 h-8 text-green-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 13l4 4L19 7"
+                    />
                   </svg>
                 </div>
-                <h1 className="text-2xl font-bold text-white mb-2">Check your email</h1>
+                <h1 className="text-2xl font-bold text-white mb-2">
+                  Check your email
+                </h1>
                 <p className="text-white/60 text-sm mb-6">
-                  We&apos;ve sent a password reset link to <span className="text-white">{email}</span>
+                  We&apos;ve sent a password reset link to{" "}
+                  <span className="text-white">{email}</span>
                 </p>
                 <Link
                   href="/login"
@@ -71,12 +85,26 @@ export function ForgotPasswordPage() {
               <>
                 <div className="text-center mb-8">
                   <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-purple-500/10 flex items-center justify-center">
-                    <svg className="w-8 h-8 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                    <svg
+                      className="w-8 h-8 text-purple-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1.5}
+                        d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
+                      />
                     </svg>
                   </div>
-                  <h1 className="text-2xl font-bold text-white mb-2">Forgot password?</h1>
-                  <p className="text-white/60 text-sm">No worries, we&apos;ll send you reset instructions</p>
+                  <h1 className="text-2xl font-bold text-white mb-2">
+                    Forgot password?
+                  </h1>
+                  <p className="text-white/60 text-sm">
+                    No worries, we&apos;ll send you reset instructions
+                  </p>
                 </div>
 
                 {/* Error Message */}
@@ -89,7 +117,10 @@ export function ForgotPasswordPage() {
                 {/* Email Form */}
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-white/70 mb-2">
+                    <label
+                      htmlFor="email"
+                      className="block text-sm font-medium text-white/70 mb-2"
+                    >
                       Email
                     </label>
                     <input
@@ -114,7 +145,7 @@ export function ForgotPasswordPage() {
                         Sending...
                       </span>
                     ) : (
-                      'Reset Password'
+                      "Reset Password"
                     )}
                   </button>
                 </form>
@@ -124,8 +155,18 @@ export function ForgotPasswordPage() {
                   href="/login"
                   className="mt-6 flex items-center justify-center gap-2 text-white/50 text-sm hover:text-white transition-colors"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                    />
                   </svg>
                   Back to Sign In
                 </Link>

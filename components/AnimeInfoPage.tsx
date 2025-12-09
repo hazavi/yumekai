@@ -165,7 +165,10 @@ export function AnimeInfoPage({ animeInfo, topAnimeData }: AnimeInfoPageProps) {
                   </a>
                   <AddToListButton
                     anime={{
-                      animeId: animeInfo.link || animeInfo.watch_link?.replace('/watch/', '') || '',
+                      animeId:
+                        animeInfo.link ||
+                        animeInfo.watch_link?.replace("/watch/", "") ||
+                        "",
                       title: animeInfo.title,
                       poster: animeInfo.thumbnail,
                     }}

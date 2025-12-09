@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
+import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   addAnimeToList,
   updateAnimeStatus,
@@ -11,34 +11,89 @@ import {
   AnimeListStatus,
   LIST_STATUS_LABELS,
   LIST_STATUS_COLORS,
-} from '@/services/animeListService';
+} from "@/services/animeListService";
 
 // SVG Icons for each status
 const StatusIcons: Record<AnimeListStatus, React.ReactNode> = {
-  'watching': (
-    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+  watching: (
+    <svg
+      className="w-4 h-4"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+      />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+      />
     </svg>
   ),
-  'completed': (
-    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+  completed: (
+    <svg
+      className="w-4 h-4"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+      />
     </svg>
   ),
-  'on-hold': (
-    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+  "on-hold": (
+    <svg
+      className="w-4 h-4"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"
+      />
     </svg>
   ),
-  'dropped': (
-    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+  dropped: (
+    <svg
+      className="w-4 h-4"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+      />
     </svg>
   ),
-  'plan-to-watch': (
-    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+  "plan-to-watch": (
+    <svg
+      className="w-4 h-4"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+      />
     </svg>
   ),
 };
@@ -50,21 +105,23 @@ interface AddToListButtonProps {
     poster: string;
     type?: string;
   };
-  variant?: 'icon' | 'button' | 'compact' | 'large';
+  variant?: "icon" | "button" | "compact" | "large";
   onAuthRequired?: () => void;
   className?: string;
 }
 
 export function AddToListButton({
   anime,
-  variant = 'icon',
+  variant = "icon",
   onAuthRequired,
-  className = '',
+  className = "",
 }: AddToListButtonProps) {
   const { user } = useAuth();
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
-  const [currentStatus, setCurrentStatus] = useState<AnimeListStatus | null>(null);
+  const [currentStatus, setCurrentStatus] = useState<AnimeListStatus | null>(
+    null
+  );
   const [loading, setLoading] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -75,7 +132,7 @@ export function AddToListButton({
         const existingAnime = await getAnimeFromList(user.uid, anime.animeId);
         setCurrentStatus(existingAnime?.status || null);
       } catch (error) {
-        console.error('Error fetching anime status:', error);
+        console.error("Error fetching anime status:", error);
       }
     };
     fetchStatus();
@@ -83,23 +140,26 @@ export function AddToListButton({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     if (!user) {
       if (onAuthRequired) {
         onAuthRequired();
       } else {
-        router.push('/login');
+        router.push("/login");
       }
       return;
     }
@@ -122,25 +182,39 @@ export function AddToListButton({
           animeId: anime.animeId,
           title: anime.title,
           thumbnail: anime.poster,
-          type: anime.type || 'TV',
+          type: anime.type || "TV",
           status,
         });
         setCurrentStatus(status);
       }
     } catch (error) {
-      console.error('Error updating anime status:', error);
+      console.error("Error updating anime status:", error);
     } finally {
       setLoading(false);
       setIsOpen(false);
     }
   };
 
-  const statuses: AnimeListStatus[] = ['watching', 'completed', 'on-hold', 'dropped', 'plan-to-watch'];
+  const statuses: AnimeListStatus[] = [
+    "watching",
+    "completed",
+    "on-hold",
+    "dropped",
+    "plan-to-watch",
+  ];
 
   // Dropdown component shared across variants
-  const Dropdown = ({ position = 'bottom', showTitle = false }: { position?: 'top' | 'bottom'; showTitle?: boolean }) => (
-    <div 
-      className={`absolute ${position === 'top' ? 'bottom-full mb-2' : 'top-full mt-2'} right-0 w-52 bg-black/80 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl z-[100]`}
+  const Dropdown = ({
+    position = "bottom",
+    showTitle = false,
+  }: {
+    position?: "top" | "bottom";
+    showTitle?: boolean;
+  }) => (
+    <div
+      className={`absolute ${
+        position === "top" ? "bottom-full mb-2" : "top-full mt-2"
+      } right-0 w-52 bg-black/80 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl z-[100]`}
     >
       {showTitle && (
         <div className="p-3 border-b border-white/5">
@@ -157,14 +231,24 @@ export function AddToListButton({
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all cursor-pointer ${
               currentStatus === status
                 ? `${LIST_STATUS_COLORS[status]} text-white`
-                : 'text-white/70 hover:bg-white/5 hover:text-white'
+                : "text-white/70 hover:bg-white/5 hover:text-white"
             }`}
           >
             {StatusIcons[status]}
             <span className="text-sm">{LIST_STATUS_LABELS[status]}</span>
             {currentStatus === status && (
-              <svg className="w-4 h-4 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              <svg
+                className="w-4 h-4 ml-auto"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
               </svg>
             )}
           </button>
@@ -177,8 +261,18 @@ export function AddToListButton({
             disabled={loading}
             className="w-full flex items-center gap-2 px-3 py-2 text-red-400 hover:bg-red-500/10 rounded-lg transition-all cursor-pointer text-sm"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+              />
             </svg>
             Remove from list
           </button>
@@ -187,7 +281,7 @@ export function AddToListButton({
     </div>
   );
 
-  if (variant === 'icon') {
+  if (variant === "icon") {
     return (
       <div className={`relative ${className}`} ref={dropdownRef}>
         <button
@@ -195,15 +289,27 @@ export function AddToListButton({
           className={`p-3 rounded-xl transition-all cursor-pointer ${
             currentStatus
               ? `${LIST_STATUS_COLORS[currentStatus]} text-white shadow-lg`
-              : 'bg-white/10 hover:bg-white/20 text-white/80 hover:text-white'
+              : "bg-white/10 hover:bg-white/20 text-white/80 hover:text-white"
           }`}
-          title={currentStatus ? LIST_STATUS_LABELS[currentStatus] : 'Add to list'}
+          title={
+            currentStatus ? LIST_STATUS_LABELS[currentStatus] : "Add to list"
+          }
         >
           {currentStatus ? (
             StatusIcons[currentStatus]
           ) : (
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 4v16m8-8H4"
+              />
             </svg>
           )}
         </button>
@@ -213,7 +319,7 @@ export function AddToListButton({
     );
   }
 
-  if (variant === 'button') {
+  if (variant === "button") {
     return (
       <div className={`relative ${className}`} ref={dropdownRef}>
         <button
@@ -221,7 +327,7 @@ export function AddToListButton({
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all cursor-pointer ${
             currentStatus
               ? `${LIST_STATUS_COLORS[currentStatus]} text-white shadow-lg`
-              : 'bg-white/10 hover:bg-white/20 text-white border border-white/10'
+              : "bg-white/10 hover:bg-white/20 text-white border border-white/10"
           }`}
         >
           {currentStatus ? (
@@ -231,14 +337,34 @@ export function AddToListButton({
             </>
           ) : (
             <>
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 4v16m8-8H4"
+                />
               </svg>
               <span>Add to List</span>
             </>
           )}
-          <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          <svg
+            className="w-4 h-4 ml-1"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 9l-7 7-7-7"
+            />
           </svg>
         </button>
 
@@ -248,7 +374,7 @@ export function AddToListButton({
   }
 
   // Compact variant
-  if (variant === 'compact') {
+  if (variant === "compact") {
     return (
       <div className={`relative ${className}`} ref={dropdownRef}>
         <button
@@ -256,15 +382,29 @@ export function AddToListButton({
           className={`p-1.5 rounded-lg transition-all cursor-pointer ${
             currentStatus
               ? `${LIST_STATUS_COLORS[currentStatus]} text-white`
-              : 'bg-black/60 hover:bg-black/80 text-white/80 hover:text-white'
+              : "bg-black/60 hover:bg-black/80 text-white/80 hover:text-white"
           }`}
-          title={currentStatus ? LIST_STATUS_LABELS[currentStatus] : 'Add to list'}
+          title={
+            currentStatus ? LIST_STATUS_LABELS[currentStatus] : "Add to list"
+          }
         >
           {currentStatus ? (
-            <span className="scale-75 inline-block">{StatusIcons[currentStatus]}</span>
+            <span className="scale-75 inline-block">
+              {StatusIcons[currentStatus]}
+            </span>
           ) : (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 4v16m8-8H4"
+              />
             </svg>
           )}
         </button>
@@ -282,7 +422,7 @@ export function AddToListButton({
         className={`inline-flex items-center gap-2 px-5 h-11 rounded-full font-medium text-sm transition cursor-pointer ${
           currentStatus
             ? `${LIST_STATUS_COLORS[currentStatus]} text-white shadow-lg`
-            : 'bg-white/5 hover:bg-white/10 text-white backdrop-blur-sm ring-1 ring-white/15 hover:ring-white/25'
+            : "bg-white/5 hover:bg-white/10 text-white backdrop-blur-sm ring-1 ring-white/15 hover:ring-white/25"
         }`}
       >
         {currentStatus ? (
@@ -292,8 +432,18 @@ export function AddToListButton({
           </>
         ) : (
           <>
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+              />
             </svg>
             <span>Add to List</span>
           </>

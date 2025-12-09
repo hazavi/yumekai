@@ -1,4 +1,4 @@
-import { SettingsPage } from './SettingsPage';
+import { SettingsPage } from "./SettingsPage";
 
 interface PageProps {
   params: Promise<{ username: string }>;

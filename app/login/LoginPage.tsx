@@ -1,43 +1,44 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import Image from 'next/image';
-import { useAuth } from '@/contexts';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
+import { useAuth } from "@/contexts";
 
 export function LoginPage() {
   const router = useRouter();
   const { user, signInWithEmail, signInWithGoogle, loading } = useAuth();
-  
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Redirect if already logged in
   useEffect(() => {
     if (user && !loading) {
-      router.push('/');
+      router.push("/");
     }
   }, [user, loading, router]);
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setIsSubmitting(true);
 
     try {
       await signInWithEmail(email, password);
-      router.push('/');
+      router.push("/");
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to sign in';
-      if (errorMessage.includes('invalid-credential')) {
-        setError('Invalid email or password');
-      } else if (errorMessage.includes('too-many-requests')) {
-        setError('Too many attempts. Please try again later');
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to sign in";
+      if (errorMessage.includes("invalid-credential")) {
+        setError("Invalid email or password");
+      } else if (errorMessage.includes("too-many-requests")) {
+        setError("Too many attempts. Please try again later");
       } else {
-        setError('Failed to sign in. Please try again');
+        setError("Failed to sign in. Please try again");
       }
     } finally {
       setIsSubmitting(false);
@@ -45,18 +46,19 @@ export function LoginPage() {
   };
 
   const handleGoogleLogin = async () => {
-    setError('');
+    setError("");
     setIsSubmitting(true);
 
     try {
       await signInWithGoogle();
-      router.push('/');
+      router.push("/");
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to sign in';
-      if (errorMessage.includes('popup-closed')) {
-        setError('Sign in cancelled');
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to sign in";
+      if (errorMessage.includes("popup-closed")) {
+        setError("Sign in cancelled");
       } else {
-        setError('Failed to sign in with Google');
+        setError("Failed to sign in with Google");
       }
     } finally {
       setIsSubmitting(false);
@@ -82,12 +84,15 @@ export function LoginPage() {
       {/* Content */}
       <div className="flex-1 flex items-center justify-center px-4 py-30">
         <div className="w-full max-w-md">
-
           {/* Card */}
           <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
             <div className="text-center mb-8">
-              <h1 className="text-2xl font-bold text-white mb-2">Welcome back</h1>
-              <p className="text-white/60 text-sm">Sign in to continue to YumeKai</p>
+              <h1 className="text-2xl font-bold text-white mb-2">
+                Welcome back
+              </h1>
+              <p className="text-white/60 text-sm">
+                Sign in to continue to YumeKai
+              </p>
             </div>
 
             {/* Error Message */}
@@ -130,14 +135,19 @@ export function LoginPage() {
                 <div className="w-full border-t border-white/10"></div>
               </div>
               <div className="relative flex justify-center text-xs">
-                <span className="px-4 bg-[#0d0d0d] text-white/40">or continue with email</span>
+                <span className="px-4 bg-[#0d0d0d] text-white/40">
+                  or continue with email
+                </span>
               </div>
             </div>
 
             {/* Email Form */}
             <form onSubmit={handleEmailLogin} className="space-y-4">
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-white/70 mb-2">
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-white/70 mb-2"
+                >
                   Email
                 </label>
                 <input
@@ -153,10 +163,16 @@ export function LoginPage() {
 
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label htmlFor="password" className="block text-sm font-medium text-white/70">
+                  <label
+                    htmlFor="password"
+                    className="block text-sm font-medium text-white/70"
+                  >
                     Password
                   </label>
-                  <Link href="/forgot-password" className="text-xs text-white/50 hover:text-purple-400 transition-colors">
+                  <Link
+                    href="/forgot-password"
+                    className="text-xs text-white/50 hover:text-purple-400 transition-colors"
+                  >
                     Forgot password?
                   </Link>
                 </div>
@@ -182,15 +198,18 @@ export function LoginPage() {
                     Signing in...
                   </span>
                 ) : (
-                  'Sign In'
+                  "Sign In"
                 )}
               </button>
             </form>
 
             {/* Sign Up Link */}
             <p className="mt-6 text-center text-white/50 text-sm">
-              Don&apos;t have an account?{' '}
-              <Link href="/signup" className="text-white hover:text-purple-400 font-medium transition-colors">
+              Don&apos;t have an account?{" "}
+              <Link
+                href="/signup"
+                className="text-white hover:text-purple-400 font-medium transition-colors"
+              >
                 Sign up
               </Link>
             </p>

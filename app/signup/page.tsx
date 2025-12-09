@@ -1,9 +1,9 @@
-import { Metadata } from 'next';
-import { SignupPage } from './SignupPage';
+import { Metadata } from "next";
+import { SignupPage } from "./SignupPage";
 
 export const metadata: Metadata = {
-  title: 'Sign Up - YumeKai',
-  description: 'Create a YumeKai account to track your anime and create lists',
+  title: "Sign Up - YumeKai",
+  description: "Create a YumeKai account to track your anime and create lists",
 };
 
 export default function Page() {

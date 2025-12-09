@@ -1,11 +1,16 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
-import Image from 'next/image';
-import { useAuth } from '@/contexts';
-import { getUserRankings, updateUserRankings, RankedAnime, searchAnimeForRanking } from '@/services/rankingService';
+import { useState, useEffect, useCallback } from "react";
+import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
+import { useAuth } from "@/contexts";
+import {
+  getUserRankings,
+  updateUserRankings,
+  RankedAnime,
+  searchAnimeForRanking,
+} from "@/services/rankingService";
 
 export function EditRankingsPage() {
   const params = useParams();
@@ -13,10 +18,12 @@ export function EditRankingsPage() {
   const { user, userProfile } = useAuth();
   const username = params.username as string;
 
-  const [rankings, setRankings] = useState<(RankedAnime | null)[]>(Array(10).fill(null));
+  const [rankings, setRankings] = useState<(RankedAnime | null)[]>(
+    Array(10).fill(null)
+  );
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<RankedAnime[]>([]);
   const [searching, setSearching] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<number | null>(null);
@@ -27,7 +34,7 @@ export function EditRankingsPage() {
 
   useEffect(() => {
     if (!user) {
-      router.push('/');
+      router.push("/");
       return;
     }
 
@@ -38,20 +45,20 @@ export function EditRankingsPage() {
 
     async function fetchRankings() {
       if (!user) return;
-      
+
       try {
         const userRankings = await getUserRankings(user.uid);
         const rankingsArray: (RankedAnime | null)[] = Array(10).fill(null);
-        
+
         userRankings.forEach((anime) => {
           if (anime.rank >= 1 && anime.rank <= 10) {
             rankingsArray[anime.rank - 1] = anime;
           }
         });
-        
+
         setRankings(rankingsArray);
       } catch (error) {
-        console.error('Error fetching rankings:', error);
+        console.error("Error fetching rankings:", error);
       } finally {
         setLoading(false);
       }
@@ -73,7 +80,7 @@ export function EditRankingsPage() {
         const results = await searchAnimeForRanking(searchQuery);
         setSearchResults(results);
       } catch (error) {
-        console.error('Error searching:', error);
+        console.error("Error searching:", error);
       } finally {
         setSearching(false);
       }
@@ -86,8 +93,10 @@ export function EditRankingsPage() {
     if (selectedSlot === null) return;
 
     // Check if anime is already in rankings
-    const existingIndex = rankings.findIndex(r => r?.animeId === anime.animeId);
-    
+    const existingIndex = rankings.findIndex(
+      (r) => r?.animeId === anime.animeId
+    );
+
     if (existingIndex !== -1 && existingIndex !== selectedSlot) {
       // Swap positions
       const newRankings = [...rankings];
@@ -102,7 +111,7 @@ export function EditRankingsPage() {
     }
 
     setSelectedSlot(null);
-    setSearchQuery('');
+    setSearchQuery("");
     setSearchResults([]);
   };
 
@@ -128,14 +137,14 @@ export function EditRankingsPage() {
     const temp = newRankings[draggedIndex];
     newRankings[draggedIndex] = newRankings[targetIndex];
     newRankings[targetIndex] = temp;
-    
+
     // Update ranks
     newRankings.forEach((anime, idx) => {
       if (anime) {
         anime.rank = idx + 1;
       }
     });
-    
+
     setRankings(newRankings);
     setDraggedIndex(null);
   };
@@ -147,14 +156,14 @@ export function EditRankingsPage() {
     try {
       // Filter out null entries and ensure ranks are correct
       const validRankings = rankings
-        .map((anime, index) => anime ? { ...anime, rank: index + 1 } : null)
+        .map((anime, index) => (anime ? { ...anime, rank: index + 1 } : null))
         .filter((anime): anime is RankedAnime => anime !== null);
-      
+
       await updateUserRankings(user.uid, validRankings);
       router.push(`/user/${username}`);
     } catch (error) {
-      console.error('Error saving rankings:', error);
-      alert('Failed to save rankings. Please try again.');
+      console.error("Error saving rankings:", error);
+      alert("Failed to save rankings. Please try again.");
     } finally {
       setSaving(false);
     }
@@ -185,24 +194,38 @@ export function EditRankingsPage() {
         <div className="glass rounded-2xl p-6 mb-6">
           <div className="flex items-center justify-between">
             <div>
-              <Link 
+              <Link
                 href={`/user/${username}`}
                 className="text-white/40 hover:text-white text-sm mb-2 inline-flex items-center gap-2 transition-colors"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 19l-7-7 7-7"
+                  />
                 </svg>
                 Back to Profile
               </Link>
-              <h1 className="text-xl font-semibold text-white">Edit Top 10 Rankings</h1>
-              <p className="text-white/40 text-sm mt-1">Drag to reorder or click a slot to add an anime</p>
+              <h1 className="text-xl font-semibold text-white">
+                Edit Top 10 Rankings
+              </h1>
+              <p className="text-white/40 text-sm mt-1">
+                Drag to reorder or click a slot to add an anime
+              </p>
             </div>
             <button
               onClick={handleSave}
               disabled={saving}
               className="px-5 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-medium transition-all disabled:opacity-50 text-sm"
             >
-              {saving ? 'Saving...' : 'Save Rankings'}
+              {saving ? "Saving..." : "Save Rankings"}
             </button>
           </div>
         </div>
@@ -217,17 +240,27 @@ export function EditRankingsPage() {
               <button
                 onClick={() => {
                   setSelectedSlot(null);
-                  setSearchQuery('');
+                  setSearchQuery("");
                   setSearchResults([]);
                 }}
                 className="text-white/40 hover:text-white transition-colors"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             </div>
-            
+
             <div className="relative">
               <input
                 type="text"
@@ -248,7 +281,9 @@ export function EditRankingsPage() {
             {searchResults.length > 0 && (
               <div className="mt-4 max-h-64 overflow-y-auto space-y-2">
                 {searchResults.map((anime) => {
-                  const isInRankings = rankings.some(r => r?.animeId === anime.animeId);
+                  const isInRankings = rankings.some(
+                    (r) => r?.animeId === anime.animeId
+                  );
                   return (
                     <button
                       key={anime.animeId}
@@ -264,9 +299,13 @@ export function EditRankingsPage() {
                         />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-white text-sm font-medium truncate">{anime.title}</p>
+                        <p className="text-white text-sm font-medium truncate">
+                          {anime.title}
+                        </p>
                         {isInRankings && (
-                          <p className="text-purple-400 text-xs">Already in rankings (will swap)</p>
+                          <p className="text-purple-400 text-xs">
+                            Already in rankings (will swap)
+                          </p>
                         )}
                       </div>
                     </button>
@@ -276,7 +315,9 @@ export function EditRankingsPage() {
             )}
 
             {searchQuery && !searching && searchResults.length === 0 && (
-              <p className="text-white/30 text-sm mt-4 text-center">No results found</p>
+              <p className="text-white/30 text-sm mt-4 text-center">
+                No results found
+              </p>
             )}
           </div>
         )}
@@ -293,21 +334,31 @@ export function EditRankingsPage() {
                 onDrop={(e) => handleDrop(e, index)}
                 className={`
                   relative flex items-center gap-4 p-4 rounded-xl border transition-all
-                  ${draggedIndex === index ? 'opacity-50' : ''}
-                  ${selectedSlot === index 
-                    ? 'bg-purple-500/20 border-purple-500/50' 
-                    : 'bg-white/[0.02] border-white/5 hover:border-white/10 hover:bg-white/[0.04]'}
-                  ${anime ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'}
+                  ${draggedIndex === index ? "opacity-50" : ""}
+                  ${
+                    selectedSlot === index
+                      ? "bg-purple-500/20 border-purple-500/50"
+                      : "bg-white/[0.02] border-white/5 hover:border-white/10 hover:bg-white/[0.04]"
+                  }
+                  ${
+                    anime
+                      ? "cursor-grab active:cursor-grabbing"
+                      : "cursor-pointer"
+                  }
                 `}
                 onClick={() => !anime && setSelectedSlot(index)}
               >
                 {/* Rank Number */}
-                <div className={`
+                <div
+                  className={`
                   flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center font-semibold text-lg
-                  ${index < 3 
-                    ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' 
-                    : 'bg-white/5 text-white/50 border border-white/10'}
-                `}>
+                  ${
+                    index < 3
+                      ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30"
+                      : "bg-white/5 text-white/50 border border-white/10"
+                  }
+                `}
+                >
                   {index + 1}
                 </div>
 
@@ -323,7 +374,7 @@ export function EditRankingsPage() {
                       />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <Link 
+                      <Link
                         href={`/${anime.animeId}`}
                         className="text-white font-medium hover:text-purple-400 transition-colors line-clamp-2 text-sm"
                         onClick={(e) => e.stopPropagation()}
@@ -331,7 +382,7 @@ export function EditRankingsPage() {
                         {anime.title}
                       </Link>
                     </div>
-                    
+
                     {/* Actions */}
                     <div className="flex items-center gap-1 flex-shrink-0">
                       <button
@@ -342,8 +393,18 @@ export function EditRankingsPage() {
                         className="p-2 text-white/30 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
                         title="Change anime"
                       >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                          />
                         </svg>
                       </button>
                       <button
@@ -354,13 +415,36 @@ export function EditRankingsPage() {
                         className="p-2 text-white/30 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
                         title="Remove"
                       >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                          />
                         </svg>
                       </button>
-                      <div className="p-2 text-white/30" title="Drag to reorder">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
+                      <div
+                        className="p-2 text-white/30"
+                        title="Drag to reorder"
+                      >
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M4 8h16M4 16h16"
+                          />
                         </svg>
                       </div>
                     </div>
@@ -368,8 +452,18 @@ export function EditRankingsPage() {
                 ) : (
                   <div className="flex-1 flex items-center justify-center py-4">
                     <div className="text-white/30 flex items-center gap-2 text-sm">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 4v16m8-8H4"
+                        />
                       </svg>
                       <span>Click to add anime</span>
                     </div>
@@ -392,7 +486,7 @@ export function EditRankingsPage() {
               disabled={saving}
               className="px-5 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-medium transition-all disabled:opacity-50 text-sm"
             >
-              {saving ? 'Saving...' : 'Save Rankings'}
+              {saving ? "Saving..." : "Save Rankings"}
             </button>
           </div>
         </div>

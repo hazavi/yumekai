@@ -251,7 +251,7 @@ export function AnimeInfoPopup({
           <AddToListButton
             anime={{
               animeId: slug,
-              title: qtip.title || '',
+              title: qtip.title || "",
               poster: poster,
             }}
             variant="icon"

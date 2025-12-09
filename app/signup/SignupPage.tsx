@@ -1,45 +1,45 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import Image from 'next/image';
-import { useAuth } from '@/contexts';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
+import { useAuth } from "@/contexts";
 
 export function SignupPage() {
   const router = useRouter();
   const { user, signUpWithEmail, signInWithGoogle, loading } = useAuth();
-  
-  const [displayName, setDisplayName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
+
+  const [displayName, setDisplayName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Redirect if already logged in
   useEffect(() => {
     if (user && !loading) {
-      router.push('/');
+      router.push("/");
     }
   }, [user, loading, router]);
 
   const handleEmailSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError("Passwords do not match");
       return;
     }
 
     if (password.length < 6) {
-      setError('Password must be at least 6 characters');
+      setError("Password must be at least 6 characters");
       return;
     }
 
     if (displayName.length < 2) {
-      setError('Display name must be at least 2 characters');
+      setError("Display name must be at least 2 characters");
       return;
     }
 
@@ -47,17 +47,18 @@ export function SignupPage() {
 
     try {
       await signUpWithEmail(email, password, displayName);
-      router.push('/');
+      router.push("/");
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to create account';
-      if (errorMessage.includes('email-already-in-use')) {
-        setError('An account with this email already exists');
-      } else if (errorMessage.includes('weak-password')) {
-        setError('Password is too weak');
-      } else if (errorMessage.includes('invalid-email')) {
-        setError('Invalid email address');
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to create account";
+      if (errorMessage.includes("email-already-in-use")) {
+        setError("An account with this email already exists");
+      } else if (errorMessage.includes("weak-password")) {
+        setError("Password is too weak");
+      } else if (errorMessage.includes("invalid-email")) {
+        setError("Invalid email address");
       } else {
-        setError('Failed to create account. Please try again');
+        setError("Failed to create account. Please try again");
       }
     } finally {
       setIsSubmitting(false);
@@ -65,18 +66,19 @@ export function SignupPage() {
   };
 
   const handleGoogleSignup = async () => {
-    setError('');
+    setError("");
     setIsSubmitting(true);
 
     try {
       await signInWithGoogle();
-      router.push('/');
+      router.push("/");
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to sign up';
-      if (errorMessage.includes('popup-closed')) {
-        setError('Sign up cancelled');
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to sign up";
+      if (errorMessage.includes("popup-closed")) {
+        setError("Sign up cancelled");
       } else {
-        setError('Failed to sign up with Google');
+        setError("Failed to sign up with Google");
       }
     } finally {
       setIsSubmitting(false);
@@ -102,12 +104,15 @@ export function SignupPage() {
       {/* Content */}
       <div className="flex-1 flex items-center justify-center px-4 py-30">
         <div className="w-full max-w-md">
-
           {/* Card */}
           <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
             <div className="text-center mb-8">
-              <h1 className="text-2xl font-bold text-white mb-2">Create an account</h1>
-              <p className="text-white/60 text-sm">Join YumeKai and start tracking anime</p>
+              <h1 className="text-2xl font-bold text-white mb-2">
+                Create an account
+              </h1>
+              <p className="text-white/60 text-sm">
+                Join YumeKai and start tracking anime
+              </p>
             </div>
 
             {/* Error Message */}
@@ -150,14 +155,19 @@ export function SignupPage() {
                 <div className="w-full border-t border-white/10"></div>
               </div>
               <div className="relative flex justify-center text-xs">
-                <span className="px-4 bg-[#0d0d0d] text-white/40">or continue with email</span>
+                <span className="px-4 bg-[#0d0d0d] text-white/40">
+                  or continue with email
+                </span>
               </div>
             </div>
 
             {/* Email Form */}
             <form onSubmit={handleEmailSignup} className="space-y-4">
               <div>
-                <label htmlFor="displayName" className="block text-sm font-medium text-white/70 mb-2">
+                <label
+                  htmlFor="displayName"
+                  className="block text-sm font-medium text-white/70 mb-2"
+                >
                   Display Name
                 </label>
                 <input
@@ -172,7 +182,10 @@ export function SignupPage() {
               </div>
 
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-white/70 mb-2">
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-white/70 mb-2"
+                >
                   Email
                 </label>
                 <input
@@ -187,7 +200,10 @@ export function SignupPage() {
               </div>
 
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-white/70 mb-2">
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-white/70 mb-2"
+                >
                   Password
                 </label>
                 <input
@@ -202,7 +218,10 @@ export function SignupPage() {
               </div>
 
               <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-white/70 mb-2">
+                <label
+                  htmlFor="confirmPassword"
+                  className="block text-sm font-medium text-white/70 mb-2"
+                >
                   Confirm Password
                 </label>
                 <input
@@ -227,15 +246,18 @@ export function SignupPage() {
                     Creating account...
                   </span>
                 ) : (
-                  'Create Account'
+                  "Create Account"
                 )}
               </button>
             </form>
 
             {/* Sign In Link */}
             <p className="mt-6 text-center text-white/50 text-sm">
-              Already have an account?{' '}
-              <Link href="/login" className="text-white hover:text-purple-400 font-medium transition-colors">
+              Already have an account?{" "}
+              <Link
+                href="/login"
+                className="text-white hover:text-purple-400 font-medium transition-colors"
+              >
                 Sign in
               </Link>
             </p>

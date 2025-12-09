@@ -201,8 +201,8 @@ export default function WatchPage() {
               {/* Video Control Bar Skeleton */}
               <div className="bg-black/40 backdrop-blur-md border border-white/10 rounded-xl p-2 shadow-2xl mt-4">
                 <div className="flex items-center justify-between">
-                  {/* Left Side - Control Buttons Skeleton */}
-                  <div className="flex items-center gap-3">
+                  {/* Left Side - Control Buttons Skeleton (Hidden on mobile) */}
+                  <div className="hidden sm:flex items-center gap-3">
                     <div className="w-8 h-8 bg-white/10 animate-pulse rounded-lg"></div>
                     <div className="w-8 h-8 bg-white/10 animate-pulse rounded-lg"></div>
                   </div>
@@ -216,10 +216,10 @@ export default function WatchPage() {
               </div>
 
               {/* Server Selection Skeleton */}
-              <div className="bg-black/40 backdrop-blur-md border border-white/10 rounded-xl p-4 shadow-2xl mt-4">
-                <div className="grid grid-cols-3 gap-6">
+              <div className="bg-black/40 backdrop-blur-md border border-white/10 rounded-xl p-3 md:p-4 shadow-2xl mt-4">
+                <div className="flex flex-col md:grid md:grid-cols-3 gap-3 md:gap-6">
                   {/* Left Column - Episode Info Skeleton */}
-                  <div className="col-span-1">
+                  <div className="md:col-span-1">
                     <div className="flex items-center gap-2 mb-1">
                       <div className="w-8 h-8 bg-white/10 animate-pulse rounded-lg"></div>
                       <div className="w-20 h-5 bg-white/10 animate-pulse rounded-lg"></div>
@@ -228,7 +228,7 @@ export default function WatchPage() {
                   </div>
 
                   {/* Right Column - Server Buttons Skeleton */}
-                  <div className="col-span-2 space-y-3">
+                  <div className="md:col-span-2 space-y-2 md:space-y-3">
                     {/* SUB Servers Skeleton */}
                     <div className="flex items-center gap-3">
                       <div className="flex items-center gap-2 flex-shrink-0">
@@ -603,9 +603,9 @@ export default function WatchPage() {
                 lightsOff ? "relative z-20" : ""
               } ${isExpanded ? "max-w-5xl mx-auto" : ""}`}
             >
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 sm:gap-0">
-                {/* Left Side - Expand and Lights Controls */}
-                <div className="flex items-center gap-2 md:gap-3">
+              <div className="flex flex-row items-center justify-between">
+                {/* Left Side - Expand and Lights Controls (Hidden on mobile) */}
+                <div className="hidden sm:flex items-center gap-2 md:gap-3">
                   {/* Expand/Contract */}
                   <button
                     onClick={() => setIsExpanded(!isExpanded)}

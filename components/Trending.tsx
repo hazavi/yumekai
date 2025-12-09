@@ -172,12 +172,12 @@ export function Trending({ items, title = "Trending" }: TrendingProps) {
         <h2 className="text-2xl font-bold text-white/95 mb-6">{title}</h2>
 
         {/* Container with Navigation */}
-        <div className="relative px-12">
-          {/* Left Arrow - Outside container */}
+        <div className="relative lg:px-12">
+          {/* Left Arrow - Outside container (hidden on mobile/tablet) */}
           <button
             onClick={handlePrevious}
             disabled={currentIndex === 0}
-            className="absolute -left-6 top-1/2 -translate-y-1/2 z-10 w-8 h-8 text-white/70 hover:cursor-pointer hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            className="hidden lg:block absolute -left-6 top-1/2 -translate-y-1/2 z-10 w-8 h-8 text-white/70 hover:cursor-pointer hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
           >
             <svg
               viewBox="0 0 24 24"
@@ -192,11 +192,11 @@ export function Trending({ items, title = "Trending" }: TrendingProps) {
             </svg>
           </button>
 
-          {/* Right Arrow - Outside container */}
+          {/* Right Arrow - Outside container (hidden on mobile/tablet) */}
           <button
             onClick={handleNext}
             disabled={currentIndex >= maxIndex}
-            className="absolute -right-6 top-1/2 -translate-y-1/2 z-10 w-8 h-8 text-white/70 hover:cursor-pointer hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            className="hidden lg:block absolute -right-6 top-1/2 -translate-y-1/2 z-10 w-8 h-8 text-white/70 hover:cursor-pointer hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
           >
             <svg
               viewBox="0 0 24 24"
@@ -212,7 +212,11 @@ export function Trending({ items, title = "Trending" }: TrendingProps) {
           </button>
 
           {/* Scrollable Container */}
-          <div ref={scrollContainerRef} className="flex gap-4 overflow-hidden">
+          <div
+            ref={scrollContainerRef}
+            className="flex gap-4 overflow-x-auto lg:overflow-hidden scrollbar-hide touch-pan-x"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+          >
             {processedItems.map((anime, idx) => {
               const linkUrl = anime.url;
               const posterUrl = anime.poster;

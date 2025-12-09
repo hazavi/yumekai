@@ -193,6 +193,11 @@ export function Navbar() {
               </div>
             )}
           </div>
+
+          {/* Watch2gether Link */}
+          <NavItem href="/watch2gether">
+            <span className="flex items-center gap-1.5">Watch2gether</span>
+          </NavItem>
         </nav>
         <div className="ml-auto flex items-center gap-3">
           <div className="w-full max-w-[200px] sm:max-w-xs md:max-w-sm">
@@ -349,6 +354,15 @@ export function Navbar() {
               </div>
             )}
           </div>
+
+          {/* Watch2gether Mobile Link */}
+          <Link
+            href="/watch2gether"
+            onClick={() => setOpenMobile(false)}
+            className="flex items-center gap-2 px-3 py-2.5 text-sm text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200 font-medium"
+          >
+            Watch2gether
+          </Link>
 
           {/* Mobile Auth */}
           {!loading && (

@@ -162,7 +162,10 @@ export function SignupPage() {
             </div>
 
             {/* Email Form */}
-            <form onSubmit={handleEmailSignup} className="space-y-3 sm:space-y-4">
+            <form
+              onSubmit={handleEmailSignup}
+              className="space-y-3 sm:space-y-4"
+            >
               <div>
                 <label
                   htmlFor="displayName"

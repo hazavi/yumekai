@@ -142,7 +142,10 @@ export function LoginPage() {
             </div>
 
             {/* Email Form */}
-            <form onSubmit={handleEmailLogin} className="space-y-3 sm:space-y-4">
+            <form
+              onSubmit={handleEmailLogin}
+              className="space-y-3 sm:space-y-4"
+            >
               <div>
                 <label
                   htmlFor="email"

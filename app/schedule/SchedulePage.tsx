@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import {
+import type {
   DailyScheduleResponse,
   WeeklyScheduleResponse,
   ScheduleItem,
-} from "@/models";
+} from "@/types";
 import { ScheduleCard, DateSelector } from "@/components";
-import { api } from "@/lib/api";
+import { api } from "@/services/api";
 
 interface SchedulePageProps {
   initialDailyData: DailyScheduleResponse | null;

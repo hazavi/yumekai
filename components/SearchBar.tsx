@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { SearchIcon } from "./icons";
-import { api } from "@/lib/api";
+import { api } from "@/services/api";
 
 interface SearchResult {
   title: string;

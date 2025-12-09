@@ -2,10 +2,13 @@
 
 import Image from "next/image";
 import { useState, useRef, useMemo, useEffect } from "react";
-import type { TrendingItem } from "@/models";
+import type { TrendingItem } from "@/types";
 import { AnimeInfoPopup } from "./AnimeInfoPopup";
 
-interface TrendingProps { items: TrendingItem[]; title?: string; }
+interface TrendingProps {
+  items: TrendingItem[];
+  title?: string;
+}
 
 export function Trending({ items, title = "Trending" }: TrendingProps) {
   const [showPopup, setShowPopup] = useState(false);
@@ -30,7 +33,7 @@ export function Trending({ items, title = "Trending" }: TrendingProps) {
     const rankGroups: Record<number, TrendingItem[]> = {};
     const parseRank = (r: string | undefined) => {
       if (!r) return NaN;
-      const n = parseInt(r.replace(/[^0-9]/g, ''), 10);
+      const n = parseInt(r.replace(/[^0-9]/g, ""), 10);
       return Number.isFinite(n) ? n : NaN;
     };
 
@@ -45,16 +48,29 @@ export function Trending({ items, title = "Trending" }: TrendingProps) {
     const chooseBest = (candidates: TrendingItem[]): TrendingItem | null => {
       if (!candidates || !candidates.length) return null;
       // exact match with description
-      const exact = candidates.find(c => c.qtip && c.qtip.title && c.title && c.qtip.title.trim().toLowerCase() === c.title.trim().toLowerCase() && !!c.qtip.description);
+      const exact = candidates.find(
+        (c) =>
+          c.qtip &&
+          c.qtip.title &&
+          c.title &&
+          c.qtip.title.trim().toLowerCase() === c.title.trim().toLowerCase() &&
+          !!c.qtip.description
+      );
       if (exact) return exact;
       // exact match (no description requirement)
-      const exactNoDesc = candidates.find(c => c.qtip && c.qtip.title && c.title && c.qtip.title.trim().toLowerCase() === c.title.trim().toLowerCase());
+      const exactNoDesc = candidates.find(
+        (c) =>
+          c.qtip &&
+          c.qtip.title &&
+          c.title &&
+          c.qtip.title.trim().toLowerCase() === c.title.trim().toLowerCase()
+      );
       if (exactNoDesc) return exactNoDesc;
       // has qtip with description
-      const withDesc = candidates.find(c => c.qtip && c.qtip.description);
+      const withDesc = candidates.find((c) => c.qtip && c.qtip.description);
       if (withDesc) return withDesc;
       // any qtip
-      const anyQtip = candidates.find(c => c.qtip);
+      const anyQtip = candidates.find((c) => c.qtip);
       if (anyQtip) return anyQtip;
       return candidates[0];
     };
@@ -72,16 +88,18 @@ export function Trending({ items, title = "Trending" }: TrendingProps) {
 
   const handleMouseEnter = (e: React.MouseEvent, anime: TrendingItem) => {
     if (!anime.qtip) return;
-    
+
     // Soft validation: log mismatches but still show popup (previously we blocked which hid rank 10 popup)
     if (anime.qtip.title && anime.title) {
       const qtipTitle = anime.qtip.title.toLowerCase().trim();
       const animeTitle = anime.title.toLowerCase().trim();
       if (qtipTitle !== animeTitle) {
-        console.debug(`[Trending] qtip/title mismatch: card="${anime.title}" qtip.title="${anime.qtip.title}"`);
+        console.debug(
+          `[Trending] qtip/title mismatch: card="${anime.title}" qtip.title="${anime.qtip.title}"`
+        );
       }
     }
-    
+
     // Clear any pending hide timeout
     if (hideTimeoutRef.current) {
       clearTimeout(hideTimeoutRef.current);
@@ -122,7 +140,7 @@ export function Trending({ items, title = "Trending" }: TrendingProps) {
       const itemWidth = 210; // card width + gap (200px + 10px gap)
       scrollContainerRef.current.scrollTo({
         left: index * itemWidth,
-        behavior: 'smooth'
+        behavior: "smooth",
       });
     }
   };
@@ -152,7 +170,7 @@ export function Trending({ items, title = "Trending" }: TrendingProps) {
     <>
       <section className="container-padded">
         <h2 className="text-2xl font-bold text-white/95 mb-6">{title}</h2>
-        
+
         {/* Container with Navigation */}
         <div className="relative px-12">
           {/* Left Arrow - Outside container */}
@@ -161,8 +179,16 @@ export function Trending({ items, title = "Trending" }: TrendingProps) {
             disabled={currentIndex === 0}
             className="absolute -left-6 top-1/2 -translate-y-1/2 z-10 w-8 h-8 text-white/70 hover:cursor-pointer hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="w-full h-full">
-              <path d="m15 18-6-6 6-6"/>
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="w-full h-full"
+            >
+              <path d="m15 18-6-6 6-6" />
             </svg>
           </button>
 
@@ -172,23 +198,30 @@ export function Trending({ items, title = "Trending" }: TrendingProps) {
             disabled={currentIndex >= maxIndex}
             className="absolute -right-6 top-1/2 -translate-y-1/2 z-10 w-8 h-8 text-white/70 hover:cursor-pointer hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="w-full h-full">
-              <path d="m9 18 6-6-6-6"/>
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="w-full h-full"
+            >
+              <path d="m9 18 6-6-6-6" />
             </svg>
           </button>
 
           {/* Scrollable Container */}
-          <div 
-            ref={scrollContainerRef}
-            className="flex gap-4 overflow-hidden"
-          >
+          <div ref={scrollContainerRef} className="flex gap-4 overflow-hidden">
             {processedItems.map((anime, idx) => {
               const linkUrl = anime.url;
               const posterUrl = anime.poster;
               // Prefer anime.rank (normalize to two digits); fallback to position if missing
               const numericRank = parseInt(anime.rank.replace(/[^0-9]/g, ""));
-              const displayRank = Number.isFinite(numericRank) ? String(numericRank).padStart(2, '0') : String(idx + 1).padStart(2, '0');
-              
+              const displayRank = Number.isFinite(numericRank)
+                ? String(numericRank).padStart(2, "0")
+                : String(idx + 1).padStart(2, "0");
+
               return (
                 <div
                   key={`${linkUrl}-${idx}`}
@@ -198,33 +231,33 @@ export function Trending({ items, title = "Trending" }: TrendingProps) {
                   <div className="flex flex-col h-[240px] w-8 mr-3">
                     {/* Title - Vertical Text with ellipsis */}
                     <div className="flex-1 overflow-hidden">
-                      <div 
+                      <div
                         className="writing-mode-vertical text-white font-bold text-sm tracking-wider transform rotate-180 h-full overflow-hidden cursor-help"
                         title={anime.title}
                       >
                         <span className="block truncate">{anime.title}</span>
                       </div>
                     </div>
-                    
+
                     {/* Rank - Fixed at bottom */}
                     <div className="text-white text-2xl font-bold mt-2">
                       {displayRank}
                     </div>
                   </div>
-                  
+
                   {/* Anime Card - Smaller poster */}
-                  <a 
-                    href={linkUrl} 
+                  <a
+                    href={linkUrl}
                     className="block relative h-[240px] w-[160px] overflow-hidden bg-black/20"
                     onMouseEnter={(e) => handleMouseEnter(e, anime)}
                     onMouseLeave={handleMouseLeave}
                   >
-                    <Image 
-                      src={posterUrl} 
-                      alt={anime.title} 
-                      fill 
+                    <Image
+                      src={posterUrl}
+                      alt={anime.title}
+                      fill
                       priority={idx < 3}
-                      sizes="160px" 
+                      sizes="160px"
                       className="object-cover transition-transform duration-300 group-hover:scale-105"
                     />
                   </a>

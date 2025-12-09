@@ -1,4 +1,4 @@
-import { AvailableDate } from "@/models";
+import type { AvailableDate } from "@/types";
 
 interface DateSelectorProps {
   dates: AvailableDate[];
@@ -7,7 +7,12 @@ interface DateSelectorProps {
   loading?: boolean;
 }
 
-export function DateSelector({ dates, selectedDate, onDateChange, loading }: DateSelectorProps) {
+export function DateSelector({
+  dates,
+  selectedDate,
+  onDateChange,
+  loading,
+}: DateSelectorProps) {
   if (dates.length === 0) {
     return null;
   }
@@ -23,12 +28,16 @@ export function DateSelector({ dates, selectedDate, onDateChange, loading }: Dat
               disabled={loading}
               className={`flex flex-col items-center px-3 sm:px-4 py-3 rounded-lg text-sm font-medium transition-all min-w-[70px] sm:min-w-[80px] ${
                 date.is_active || selectedDate === date.date
-                  ? 'bg-purple-600 text-white shadow-lg'
-                  : 'text-white/70 hover:text-white hover:bg-purple-600/20'
-              } ${loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                  ? "bg-purple-600 text-white shadow-lg"
+                  : "text-white/70 hover:text-white hover:bg-purple-600/20"
+              } ${
+                loading ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+              }`}
             >
               <span className="text-xs opacity-80 mb-1">{date.day}</span>
-              <span className="font-semibold text-xs sm:text-sm">{date.formatted}</span>
+              <span className="font-semibold text-xs sm:text-sm">
+                {date.formatted}
+              </span>
             </button>
           ))}
         </div>

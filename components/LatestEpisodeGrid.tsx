@@ -1,10 +1,14 @@
 "use client";
 
 import { SectionGrid } from "./SectionGrid";
-import { AnimeCardData } from "@/lib/api";
+import type { AnimeCardData } from "@/types";
 
 interface LatestEpisodeGridProps {
-  anime: (AnimeCardData & { latest_episode?: string; dub?: string; duration?: string })[];
+  anime: (AnimeCardData & {
+    latest_episode?: string;
+    dub?: string;
+    duration?: string;
+  })[];
 }
 
 export function LatestEpisodeGrid({ anime }: LatestEpisodeGridProps) {

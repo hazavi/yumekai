@@ -1,7 +1,7 @@
 "use client";
 
 import { SectionGrid } from "./SectionGrid";
-import { AnimeCardData } from "@/lib/api";
+import type { AnimeCardData } from "@/types";
 
 interface TopUpcomingProps {
   anime: AnimeCardData[];

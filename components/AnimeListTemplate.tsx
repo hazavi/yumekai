@@ -7,7 +7,7 @@ import { TopAnimeCategories } from "./TopAnimeCategories";
 import { Genres } from "./Genres";
 import { Pagination } from "./Pagination";
 import { AnimeInfoPopup } from "./AnimeInfoPopup";
-import type { QtipData, BasicAnime, Genre } from "@/models";
+import type { QtipData, BasicAnime, Genre } from "@/types";
 
 interface AnimeResult {
   title: string;

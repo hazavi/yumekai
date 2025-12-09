@@ -3,7 +3,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { TopAnime } from "./TopAnime";
 import { AnimeCard } from "./AnimeCard";
-import type { QtipData, BasicAnime } from "@/models";
+import type { QtipData, BasicAnime } from "@/types";
 
 interface AnimeInfo {
   title: string;
@@ -31,7 +31,7 @@ interface AnimeInfo {
   recommendations?: Array<{
     title: string;
     poster: string; // fully qualified or relative image URL
-    url: string;    // full or relative link
+    url: string; // full or relative link
     qtip?: QtipData;
   }>;
 }
@@ -48,18 +48,18 @@ interface AnimeInfoPageProps {
 
 export function AnimeInfoPage({ animeInfo, topAnimeData }: AnimeInfoPageProps) {
   const [showFullDescription, setShowFullDescription] = useState(false);
-  
+
   // Determine the anime type for breadcrumbs
   const getAnimeType = () => {
     if (animeInfo.type) return animeInfo.type;
     // Fallback to checking if it's in info object
     return "TV"; // Default fallback
   };
-  
+
   const breadcrumbs = [
     { label: "Home", href: "/" },
     { label: getAnimeType(), href: `/${getAnimeType().toLowerCase()}` },
-    { label: animeInfo.title, href: "#" }
+    { label: animeInfo.title, href: "#" },
   ];
 
   return (
@@ -73,7 +73,10 @@ export function AnimeInfoPage({ animeInfo, topAnimeData }: AnimeInfoPageProps) {
               {index === breadcrumbs.length - 1 ? (
                 <span className="text-white">{breadcrumb.label}</span>
               ) : (
-                <a href={breadcrumb.href} className="hover:text-white transition-colors">
+                <a
+                  href={breadcrumb.href}
+                  className="hover:text-white transition-colors"
+                >
                   {breadcrumb.label}
                 </a>
               )}
@@ -101,8 +104,10 @@ export function AnimeInfoPage({ animeInfo, topAnimeData }: AnimeInfoPageProps) {
 
               {/* Info */}
               <div className="flex-1">
-                <h1 className="text-4xl font-bold text-white mb-4">{animeInfo.title}</h1>
-                
+                <h1 className="text-4xl font-bold text-white mb-4">
+                  {animeInfo.title}
+                </h1>
+
                 {/* Tags */}
                 <div className="flex flex-wrap items-center gap-2 mb-6">
                   {animeInfo.quality && (
@@ -112,13 +117,25 @@ export function AnimeInfoPage({ animeInfo, topAnimeData }: AnimeInfoPageProps) {
                   )}
                   {animeInfo.sub_count && animeInfo.sub_count !== "0" && (
                     <span className="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium bg-[linear-gradient(to_right,rgba(147,51,234,0.25),rgba(147,51,234,0.08))] ring-1 ring-purple-500/40 text-purple-200 shadow-[0_0_0_1px_rgba(147,51,234,0.2)] backdrop-blur-sm rounded-full">
-                      <Image src="/cc.svg" alt="CC" width={12} height={12} className="w-3 h-3 brightness-0 invert" />
+                      <Image
+                        src="/cc.svg"
+                        alt="CC"
+                        width={12}
+                        height={12}
+                        className="w-3 h-3 brightness-0 invert"
+                      />
                       {animeInfo.sub_count}
                     </span>
                   )}
                   {animeInfo.dub_count && animeInfo.dub_count !== "0" && (
                     <span className="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium bg-[linear-gradient(to_right,rgba(16,185,129,0.25),rgba(16,185,129,0.08))] ring-1 ring-emerald-500/40 text-emerald-200 shadow-[0_0_0_1px_rgba(16,185,129,0.25)] backdrop-blur-sm rounded-full">
-                      <Image src="/mic.svg" alt="MIC" width={12} height={12} className="w-3 h-3 brightness-0 invert" />
+                      <Image
+                        src="/mic.svg"
+                        alt="MIC"
+                        width={12}
+                        height={12}
+                        className="w-3 h-3 brightness-0 invert"
+                      />
                       {animeInfo.dub_count}
                     </span>
                   )}
@@ -136,14 +153,28 @@ export function AnimeInfoPage({ animeInfo, topAnimeData }: AnimeInfoPageProps) {
                     href={animeInfo.watch_link || "#"}
                     className="inline-flex items-center gap-2 px-6 h-11 rounded-full bg-white text-black font-medium text-sm hover:bg-white/90 transition shadow"
                   >
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M8 5v10l8-5z"/>
+                    <svg
+                      className="w-4 h-4"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M8 5v10l8-5z" />
                     </svg>
                     Watch Now
                   </a>
                   <button className="inline-flex items-center gap-1 px-5 h-11 rounded-full text-white font-medium text-sm transition bg-white/5 hover:bg-white/10 backdrop-blur-sm ring-1 ring-white/15 hover:ring-white/25">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                      />
                     </svg>
                     Add to List
                   </button>
@@ -154,14 +185,17 @@ export function AnimeInfoPage({ animeInfo, topAnimeData }: AnimeInfoPageProps) {
                   <p className={showFullDescription ? "" : "line-clamp-3"}>
                     {animeInfo.description || "No description available."}
                   </p>
-                  {animeInfo.description && animeInfo.description.length > 200 && (
-                    <button
-                      onClick={() => setShowFullDescription(!showFullDescription)}
-                      className="text-purple-400 hover:cursor-pointer hover:text-purple-300 mt-2 text-sm font-medium"
-                    >
-                      {showFullDescription ? "- Less" : "+ More"}
-                    </button>
-                  )}
+                  {animeInfo.description &&
+                    animeInfo.description.length > 200 && (
+                      <button
+                        onClick={() =>
+                          setShowFullDescription(!showFullDescription)
+                        }
+                        className="text-purple-400 hover:cursor-pointer hover:text-purple-300 mt-2 text-sm font-medium"
+                      >
+                        {showFullDescription ? "- Less" : "+ More"}
+                      </button>
+                    )}
                 </div>
               </div>
             </div>
@@ -174,13 +208,17 @@ export function AnimeInfoPage({ animeInfo, topAnimeData }: AnimeInfoPageProps) {
                 {animeInfo.info?.Japanese && (
                   <div className="text-sm">
                     <span className="text-white/60">Japanese: </span>
-                    <span className="text-white">{animeInfo.info.Japanese}</span>
+                    <span className="text-white">
+                      {animeInfo.info.Japanese}
+                    </span>
                   </div>
                 )}
                 {animeInfo.info?.Synonyms && (
                   <div className="text-sm">
                     <span className="text-white/60">Synonyms: </span>
-                    <span className="text-white">{animeInfo.info.Synonyms}</span>
+                    <span className="text-white">
+                      {animeInfo.info.Synonyms}
+                    </span>
                   </div>
                 )}
                 {animeInfo.info?.Aired && (
@@ -189,35 +227,41 @@ export function AnimeInfoPage({ animeInfo, topAnimeData }: AnimeInfoPageProps) {
                     <span className="text-white">{animeInfo.info.Aired}</span>
                   </div>
                 )}
-                
+
                 {animeInfo.info?.Premiered && (
                   <div className="text-sm">
                     <span className="text-white/60">Premiered: </span>
-                    <span className="text-white">{animeInfo.info.Premiered}</span>
+                    <span className="text-white">
+                      {animeInfo.info.Premiered}
+                    </span>
                   </div>
                 )}
-                
+
                 {animeInfo.info?.Duration && (
                   <div className="text-sm">
                     <span className="text-white/60">Duration: </span>
-                    <span className="text-white">{animeInfo.info.Duration}</span>
+                    <span className="text-white">
+                      {animeInfo.info.Duration}
+                    </span>
                   </div>
                 )}
-                
+
                 {animeInfo.info?.Status && (
                   <div className="text-sm">
                     <span className="text-white/60">Status: </span>
                     <span className="text-white">{animeInfo.info.Status}</span>
                   </div>
                 )}
-                
+
                 {animeInfo.info?.["MAL Score"] && (
                   <div className="text-sm">
                     <span className="text-white/60">MAL Score: </span>
-                    <span className="text-white">{animeInfo.info["MAL Score"]}</span>
+                    <span className="text-white">
+                      {animeInfo.info["MAL Score"]}
+                    </span>
                   </div>
                 )}
-                
+
                 {animeInfo.genres && animeInfo.genres.length > 0 && (
                   <div className="text-sm">
                     <span className="text-white/60">Genres: </span>
@@ -233,20 +277,26 @@ export function AnimeInfoPage({ animeInfo, topAnimeData }: AnimeInfoPageProps) {
                     </div>
                   </div>
                 )}
-                
-                {animeInfo.info?.Studios && animeInfo.info.Studios.length > 0 && (
-                  <div className="text-sm">
-                    <span className="text-white/60">Studios: </span>
-                    <span className="text-white">{animeInfo.info.Studios.join(", ")}</span>
-                  </div>
-                )}
-                
-                {animeInfo.info?.Producers && animeInfo.info.Producers.length > 0 && (
-                  <div className="text-sm">
-                    <span className="text-white/60">Producers: </span>
-                    <span className="text-white">{animeInfo.info.Producers.join(", ")}</span>
-                  </div>
-                )}
+
+                {animeInfo.info?.Studios &&
+                  animeInfo.info.Studios.length > 0 && (
+                    <div className="text-sm">
+                      <span className="text-white/60">Studios: </span>
+                      <span className="text-white">
+                        {animeInfo.info.Studios.join(", ")}
+                      </span>
+                    </div>
+                  )}
+
+                {animeInfo.info?.Producers &&
+                  animeInfo.info.Producers.length > 0 && (
+                    <div className="text-sm">
+                      <span className="text-white/60">Producers: </span>
+                      <span className="text-white">
+                        {animeInfo.info.Producers.join(", ")}
+                      </span>
+                    </div>
+                  )}
               </div>
             </div>
           </div>
@@ -256,27 +306,33 @@ export function AnimeInfoPage({ animeInfo, topAnimeData }: AnimeInfoPageProps) {
         {animeInfo.recommendations && animeInfo.recommendations.length > 0 && (
           <div className="mt-12 grid grid-cols-1 xl:grid-cols-12 gap-8">
             <div className="xl:col-span-8">
-              <h2 className="text-2xl font-bold text-white mb-6">You might also like</h2>
+              <h2 className="text-2xl font-bold text-white mb-6">
+                You might also like
+              </h2>
               <div className="grid grid-cols-6 gap-4">
                 {animeInfo.recommendations
                   .slice(0, 12)
-                  .filter(rec => rec.poster && rec.poster.trim() !== "")
+                  .filter((rec) => rec.poster && rec.poster.trim() !== "")
                   .map((rec, index) => {
-                    const poster = rec.poster && rec.poster.trim() !== "" ? rec.poster : "/yumelogo.png";
-                    const href = rec.url && rec.url.trim() !== "" ? rec.url : "#";
-                    
+                    const poster =
+                      rec.poster && rec.poster.trim() !== ""
+                        ? rec.poster
+                        : "/yumelogo.png";
+                    const href =
+                      rec.url && rec.url.trim() !== "" ? rec.url : "#";
+
                     // Transform recommendation to AnimeCard format
                     const animeCardData = {
                       link: href,
                       thumbnail: poster,
-                      title: rec.title || 'Untitled',
-                      type: rec.qtip?.type || 'TV',
+                      title: rec.title || "Untitled",
+                      type: rec.qtip?.type || "TV",
                       qtip: rec.qtip,
                       latest_episode: rec.qtip?.eps || undefined,
                       dub: rec.qtip?.dub,
-                      duration: "24m" // Default duration
+                      duration: "24m", // Default duration
                     };
-                    
+
                     return (
                       <AnimeCard
                         key={index}
@@ -288,24 +344,30 @@ export function AnimeInfoPage({ animeInfo, topAnimeData }: AnimeInfoPageProps) {
                   })}
               </div>
             </div>
-            
+
             {/* TopAnime Sidebar */}
             <div className="xl:col-span-4">
               {topAnimeData && (
-                <TopAnime 
+                <TopAnime
                   data={{
-                    top_today: topAnimeData.topAiring.slice(0, 10).map((anime, index) => ({
-                      ...anime,
-                      rank: (index + 1).toString()
-                    })),
-                    top_week: topAnimeData.mostPopular.slice(0, 10).map((anime, index) => ({
-                      ...anime,
-                      rank: (index + 1).toString()
-                    })),
-                    top_month: topAnimeData.mostFavorite.slice(0, 10).map((anime, index) => ({
-                      ...anime,
-                      rank: (index + 1).toString()
-                    }))
+                    top_today: topAnimeData.topAiring
+                      .slice(0, 10)
+                      .map((anime, index) => ({
+                        ...anime,
+                        rank: (index + 1).toString(),
+                      })),
+                    top_week: topAnimeData.mostPopular
+                      .slice(0, 10)
+                      .map((anime, index) => ({
+                        ...anime,
+                        rank: (index + 1).toString(),
+                      })),
+                    top_month: topAnimeData.mostFavorite
+                      .slice(0, 10)
+                      .map((anime, index) => ({
+                        ...anime,
+                        rank: (index + 1).toString(),
+                      })),
                   }}
                 />
               )}

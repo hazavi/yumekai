@@ -2,16 +2,24 @@
 
 import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
-import { AnimeCardData } from "@/lib/api";
+import type { AnimeCardData } from "@/types";
 import { AnimeInfoPopup } from "./AnimeInfoPopup";
 
 interface AnimeCardProps {
-  anime: AnimeCardData & { latest_episode?: string; dub?: string; duration?: string };
+  anime: AnimeCardData & {
+    latest_episode?: string;
+    dub?: string;
+    duration?: string;
+  };
   showMeta?: boolean;
-  badgeType?: 'latest' | 'recent' | 'upcoming';
+  badgeType?: "latest" | "recent" | "upcoming";
 }
 
-export function AnimeCard({ anime, showMeta = true, badgeType = 'latest' }: AnimeCardProps) {
+export function AnimeCard({
+  anime,
+  showMeta = true,
+  badgeType = "latest",
+}: AnimeCardProps) {
   const [showPopup, setShowPopup] = useState(false);
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
   const cardRef = useRef<HTMLDivElement>(null);
@@ -72,105 +80,127 @@ export function AnimeCard({ anime, showMeta = true, badgeType = 'latest' }: Anim
 
   return (
     <>
-      <div 
-        ref={cardRef}
-        className="relative"
-      >
-      <div 
-        className="relative overflow-hidden bg-black/20 backdrop-blur-sm group"
-        onMouseEnter={handleImageMouseEnter}
-        onMouseLeave={handleImageMouseLeave}
-      >
-  <a href={slug} className="block aspect-[3/4] relative">
-          <Image
-            src={anime.thumbnail}
-            alt={anime.title}
-            fill
-            sizes="(max-width:768px) 40vw, (max-width:1200px) 20vw, 15vw"
-            className="object-cover transition-all duration-300 group-hover:blur-sm"
-          />
-          
-          {/* Play button overlay on hover */}
-          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/20">
-            <div className="flex items-center justify-center w-16 h-16 hover:transition-all duration-300 hover:scale-110">
-              <Image
-                src="/playbutton.svg"
-                alt="Play"
-                width={64}
-                height={64}
-                className="ml-1 filter brightness-0 invert"
-              />
+      <div ref={cardRef} className="relative">
+        <div
+          className="relative overflow-hidden bg-black/20 backdrop-blur-sm group"
+          onMouseEnter={handleImageMouseEnter}
+          onMouseLeave={handleImageMouseLeave}
+        >
+          <a href={slug} className="block aspect-[3/4] relative">
+            <Image
+              src={anime.thumbnail}
+              alt={anime.title}
+              fill
+              sizes="(max-width:768px) 40vw, (max-width:1200px) 20vw, 15vw"
+              className="object-cover transition-all duration-300 group-hover:blur-sm"
+            />
+
+            {/* Play button overlay on hover */}
+            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/20">
+              <div className="flex items-center justify-center w-16 h-16 hover:transition-all duration-300 hover:scale-110">
+                <Image
+                  src="/playbutton.svg"
+                  alt="Play"
+                  width={64}
+                  height={64}
+                  className="ml-1 filter brightness-0 invert"
+                />
+              </div>
             </div>
-          </div>
-          
-          {/* Bottom black vignette */}
-          <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/80 to-transparent pointer-events-none" />
-          
-          {/* Dynamic badges based on badge type */}
-          {badgeType !== 'upcoming' && (anime.dub || anime.latest_episode) && (
-            <div className="absolute bottom-2 left-2 flex items-center gap-2">
-              {/* SUB badge with CC icon and episode number */}
-              <span className="inline-flex items-center gap-1 pl-1.5 pr-2 py-0.5 rounded-full text-[11px] font-medium bg-[linear-gradient(to_right,rgba(147,51,234,0.25),rgba(147,51,234,0.08))] ring-1 ring-purple-500/40 text-purple-200 shadow-[0_0_0_1px_rgba(147,51,234,0.2)] backdrop-blur-sm">
-                <Image src="/cc.svg" alt="CC" width={14} height={14} className="w-3.5 h-3.5 brightness-0 invert" />
-                {anime.latest_episode || 'SUB'}
-              </span>
-              {/* DUB badge with mic icon */}
-              {anime.dub && (
-                <span className="inline-flex items-center gap-1 pl-1.5 pr-2 py-0.5 rounded-full text-[11px] font-medium bg-[linear-gradient(to_right,rgba(16,185,129,0.25),rgba(16,185,129,0.08))] ring-1 ring-emerald-500/40 text-emerald-200 shadow-[0_0_0_1px_rgba(16,185,129,0.25)] backdrop-blur-sm">
-                <Image src="/mic.svg" alt="Mic" width={14} height={14} className="w-3.5 h-3.5 brightness-0 invert" />
-                   {anime.dub}
-                </span>
+
+            {/* Bottom black vignette */}
+            <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/80 to-transparent pointer-events-none" />
+
+            {/* Dynamic badges based on badge type */}
+            {badgeType !== "upcoming" &&
+              (anime.dub || anime.latest_episode) && (
+                <div className="absolute bottom-2 left-2 flex items-center gap-2">
+                  {/* SUB badge with CC icon and episode number */}
+                  <span className="inline-flex items-center gap-1 pl-1.5 pr-2 py-0.5 rounded-full text-[11px] font-medium bg-[linear-gradient(to_right,rgba(147,51,234,0.25),rgba(147,51,234,0.08))] ring-1 ring-purple-500/40 text-purple-200 shadow-[0_0_0_1px_rgba(147,51,234,0.2)] backdrop-blur-sm">
+                    <Image
+                      src="/cc.svg"
+                      alt="CC"
+                      width={14}
+                      height={14}
+                      className="w-3.5 h-3.5 brightness-0 invert"
+                    />
+                    {anime.latest_episode || "SUB"}
+                  </span>
+                  {/* DUB badge with mic icon */}
+                  {anime.dub && (
+                    <span className="inline-flex items-center gap-1 pl-1.5 pr-2 py-0.5 rounded-full text-[11px] font-medium bg-[linear-gradient(to_right,rgba(16,185,129,0.25),rgba(16,185,129,0.08))] ring-1 ring-emerald-500/40 text-emerald-200 shadow-[0_0_0_1px_rgba(16,185,129,0.25)] backdrop-blur-sm">
+                      <Image
+                        src="/mic.svg"
+                        alt="Mic"
+                        width={14}
+                        height={14}
+                        className="w-3.5 h-3.5 brightness-0 invert"
+                      />
+                      {anime.dub}
+                    </span>
+                  )}
+                </div>
+              )}
+          </a>
+        </div>
+        {showMeta && (
+          <div className="mt-2 px-1">
+            <a
+              href={slug}
+              className="block text-sm font-medium text-white/90 truncate hover:text-white transition-colors"
+              title={anime.title}
+            >
+              {anime.title}
+            </a>
+            <div className="flex items-center gap-1 mt-1 text-[11px] text-white/60">
+              {badgeType === "latest" && (
+                <>
+                  {anime.type && (
+                    <span className="uppercase tracking-wide">
+                      {anime.type}
+                    </span>
+                  )}
+                  {anime.type && anime.duration && <span>•</span>}
+                  {anime.duration && <span>{anime.duration}</span>}
+                </>
+              )}
+              {badgeType === "recent" && (
+                <>
+                  {anime.type && (
+                    <span className="uppercase tracking-wide">
+                      {anime.type}
+                    </span>
+                  )}
+                  {anime.type && anime.duration && <span>•</span>}
+                  {anime.duration && <span>{anime.duration}</span>}
+                </>
+              )}
+              {badgeType === "upcoming" && (
+                <>
+                  {anime.type && (
+                    <span className="uppercase tracking-wide">
+                      {anime.type}
+                    </span>
+                  )}
+                  {anime.type && anime.qtip?.eps && <span>•</span>}
+                  {anime.qtip?.eps && <span>{anime.qtip.eps} episodes</span>}
+                </>
               )}
             </div>
-          )}
-  </a>
-      </div>
-      {showMeta && (
-        <div className="mt-2 px-1">
-          <a 
-            href={slug} 
-            className="block text-sm font-medium text-white/90 truncate hover:text-white transition-colors"
-            title={anime.title}
-          >
-            {anime.title}
-          </a>
-          <div className="flex items-center gap-1 mt-1 text-[11px] text-white/60">
-            {badgeType === 'latest' && (
-              <>
-                {anime.type && <span className="uppercase tracking-wide">{anime.type}</span>}
-                {anime.type && anime.duration && <span>•</span>}
-                {anime.duration && <span>{anime.duration}</span>}
-              </>
-            )}
-            {badgeType === 'recent' && (
-              <>
-                {anime.type && <span className="uppercase tracking-wide">{anime.type}</span>}
-                {anime.type && anime.duration && <span>•</span>}
-                {anime.duration && <span>{anime.duration}</span>}
-              </>
-            )}
-            {badgeType === 'upcoming' && (
-              <>
-                {anime.type && <span className="uppercase tracking-wide">{anime.type}</span>}
-                {anime.type && anime.qtip?.eps && <span>•</span>}
-                {anime.qtip?.eps && <span>{anime.qtip.eps} episodes</span>}
-              </>
-            )}
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
 
-    {/* Anime Info Popup */}
-    <AnimeInfoPopup
-      qtip={anime.qtip!}
-      poster={anime.thumbnail}
-      slug={slug}
-      isVisible={showPopup}
-      position={popupPosition}
-      onMouseEnter={handlePopupMouseEnter}
-      onMouseLeave={handlePopupMouseLeave}
-    />
-  </>
+      {/* Anime Info Popup */}
+      <AnimeInfoPopup
+        qtip={anime.qtip!}
+        poster={anime.thumbnail}
+        slug={slug}
+        isVisible={showPopup}
+        position={popupPosition}
+        onMouseEnter={handlePopupMouseEnter}
+        onMouseLeave={handlePopupMouseLeave}
+      />
+    </>
   );
 }

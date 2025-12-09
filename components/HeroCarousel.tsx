@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import { useEffect, useState, useRef } from "react";
-import type { SpotlightItem } from "@/models";
+import type { SpotlightItem } from "@/types";
 import { PlayIcon, TvIcon, ClockIcon, CalendarIcon } from "./icons";
 
 interface HeroCarouselProps {

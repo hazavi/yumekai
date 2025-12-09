@@ -3,9 +3,12 @@
 import { notFound, useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { api } from "@/lib/api";
+import { api } from "@/services/api";
 import { AnimeCard } from "@/components/AnimeCard";
 import { useEffect, useState } from "react";
+import { decodeHtmlEntities } from "@/utils/html";
+import type { WatchData, Episode, ServerItem, SimpleServer } from "@/types";
+
 /**
  * Watch Page Security / Ad Mitigation Notes
  * ----------------------------------------
@@ -20,81 +23,6 @@ import { useEffect, useState } from "react";
  * implications depending on content source. For now this is a lightweight defensive layer.
  */
 
-interface ServerItem {
-  data_id: string;
-  default: boolean;
-  ifram_src: string;
-  name: string;
-  server_id: string;
-}
-
-// Also support simple server object with src for backward compatibility
-interface SimpleServer {
-  src: string;
-}
-
-interface Episode {
-  episode_nr: number;
-  id: string;
-  iframe_src?: string;
-  real_id: string;
-  s_id?: string;
-  jname?: string;
-  servers: {
-    dub?: ServerItem[] | SimpleServer;
-    sub?: ServerItem[] | SimpleServer;
-  };
-  title: string;
-}
-
-interface Recommendation {
-  jname: string;
-  poster: string;
-  qtip: {
-    aired: string;
-    description: string;
-    dub: string | null;
-    eps: string;
-    genres: string[];
-    japanese: string;
-    quality: string;
-    rating: string;
-    status: string;
-    sub: string;
-    synonyms: string | null;
-    title: string;
-    type: string;
-    watch_url: string;
-  };
-  title: string;
-  url: string;
-}
-
-interface WatchData {
-  episodes: Episode[];
-  recommendations: Recommendation[];
-  total_episodes: number;
-  other_seasons?: Array<{
-    active: boolean;
-    poster: string;
-    title: string;
-    url: string;
-  }>;
-  watch_detail: {
-    content_rating: string;
-    description: string;
-    duration: string;
-    jname: string;
-    poster: string;
-    producers: string[];
-    quality: string;
-    rating: string | null;
-    sub_count: string;
-    title: string;
-    type: string;
-  };
-}
-
 async function getWatchData(
   slug: string,
   ep?: string
@@ -107,11 +35,39 @@ async function getWatchData(
   }
 }
 
-// Utility function to decode HTML entities
-function decodeHtmlEntities(str: string): string {
-  const textarea = document.createElement("textarea");
-  textarea.innerHTML = str;
-  return textarea.value;
+/**
+ * Helper function to extract iframe source from an episode
+ */
+function getIframeSrc(episode: Episode | undefined): string | null {
+  if (!episode) return null;
+
+  if (episode.iframe_src) {
+    return episode.iframe_src;
+  }
+
+  if (episode.servers?.sub) {
+    if (Array.isArray(episode.servers.sub)) {
+      const serverItem = episode.servers.sub[0] as ServerItem;
+      if (serverItem?.ifram_src) {
+        return serverItem.ifram_src;
+      }
+    } else if ("src" in episode.servers.sub) {
+      return (episode.servers.sub as SimpleServer).src;
+    }
+  }
+
+  if (episode.servers?.dub) {
+    if (Array.isArray(episode.servers.dub)) {
+      const serverItem = episode.servers.dub[0] as ServerItem;
+      if (serverItem?.ifram_src) {
+        return serverItem.ifram_src;
+      }
+    } else if ("src" in episode.servers.dub) {
+      return (episode.servers.dub as SimpleServer).src;
+    }
+  }
+
+  return null;
 }
 
 export default function WatchPage() {
@@ -151,27 +107,10 @@ export default function WatchPage() {
 
             console.log("Current episode:", currentEpisode);
 
-            // Use iframe_src if available, otherwise check servers
-            if (currentEpisode?.iframe_src) {
-              setCurrentIframeSrc(currentEpisode.iframe_src);
-            } else if (currentEpisode?.servers?.sub) {
-              // Check if it's an array or simple object
-              if (Array.isArray(currentEpisode.servers.sub)) {
-                if (currentEpisode.servers.sub[0]?.ifram_src) {
-                  setCurrentIframeSrc(currentEpisode.servers.sub[0].ifram_src);
-                }
-              } else if ("src" in currentEpisode.servers.sub) {
-                setCurrentIframeSrc(currentEpisode.servers.sub.src);
-              }
-            } else if (currentEpisode?.servers?.dub) {
-              // Check if it's an array or simple object
-              if (Array.isArray(currentEpisode.servers.dub)) {
-                if (currentEpisode.servers.dub[0]?.ifram_src) {
-                  setCurrentIframeSrc(currentEpisode.servers.dub[0].ifram_src);
-                }
-              } else if ("src" in currentEpisode.servers.dub) {
-                setCurrentIframeSrc(currentEpisode.servers.dub.src);
-              }
+            // Use helper function to get iframe source
+            const iframeSrc = getIframeSrc(currentEpisode);
+            if (iframeSrc) {
+              setCurrentIframeSrc(iframeSrc);
             }
           }
         }

@@ -1,3 +1,6 @@
+/**
+ * QtipData - Tooltip/popup information for anime cards
+ */
 export interface QtipData {
   aired?: string;
   description?: string;

@@ -1,5 +1,8 @@
 import { QtipData } from './qtip';
 
+/**
+ * Basic anime information used across the app
+ */
 export interface BasicAnime {
   link: string; // slug like "/one-piece"
   thumbnail: string;
@@ -8,14 +11,19 @@ export interface BasicAnime {
   qtip?: QtipData;
 }
 
+/**
+ * Extended anime info with update details
+ */
 export interface UpdatedAnime extends BasicAnime {
   description?: string;
   dub?: string; // SUB / DUB
   duration?: string; // e.g. 24m
   latest_episode?: string; // e.g. EP 1100
-  qtip?: QtipData;
 }
 
+/**
+ * Spotlight/featured anime item
+ */
 export interface SpotlightItem {
   date?: string;
   description?: string;
@@ -33,92 +41,76 @@ export interface SpotlightItem {
   qtip?: QtipData;
 }
 
-export type TrendingItem = {
+/**
+ * Trending anime item
+ */
+export interface TrendingItem {
   jname: string;
   poster: string;
   qtip?: QtipData;
   rank: string;
   title: string;
   url: string;
-};
+}
 
+/**
+ * Top anime grouped by time period
+ */
 export interface TopAnimeGroups {
   today: BasicAnime[];
   week: BasicAnime[];
   month: BasicAnime[];
 }
 
+/**
+ * Top anime data from API
+ */
 export interface TopAnimeData {
   top_today: (BasicAnime & { rank: string })[];
   top_week: (BasicAnime & { rank: string })[];
   top_month: (BasicAnime & { rank: string })[];
 }
 
+/**
+ * Genre information
+ */
 export interface Genre {
   name: string;
   slug: string;
   url: string;
 }
 
+/**
+ * Detailed anime information
+ */
 export interface AnimeDetailsInfo {
   description: string;
   genres: string[];
   info: Record<string, string | string[]>;
   link: string;
   quality: string;
-  sub_count: string; // SUB
+  sub_count: string;
   thumbnail: string;
   title: string;
-  watch_link: string; // /watch/slug
-  recommendations?: Array<{
-    title: string;
-    poster: string; // image url
-    url: string; // full or relative url
-    jname?: string;
-    qtip?: QtipData;
-    link?: string;
-    thumbnail?: string;
-  }>;
+  watch_link: string;
+  recommendations?: AnimeRecommendation[];
   qtip?: QtipData;
 }
 
-export interface ScheduleItem {
-  episode: string;
-  episode_number: number;
-  jname: string;
-  link: string;
-  slug: string;
-  time: string;
+/**
+ * Anime recommendation item
+ */
+export interface AnimeRecommendation {
   title: string;
-  watch_link: string;
+  poster: string;
+  url: string;
+  jname?: string;
+  qtip?: QtipData;
+  link?: string;
+  thumbnail?: string;
 }
 
-export interface AvailableDate {
-  date: string;
-  day: string;
-  formatted: string;
-  is_active: boolean;
-}
-
-export interface DailyScheduleResponse {
-  available_dates: AvailableDate[];
-  current_date: string;
-  schedule: ScheduleItem[];
-  timezone: string;
-}
-
-export interface DateScheduleResponse {
-  date: string;
-  schedule: ScheduleItem[];
-}
-
-export interface WeeklyScheduleResponse {
-  end_date: string;
-  start_date: string;
-  week_schedule: Record<string, {
-    date: string;
-    schedule: ScheduleItem[];
-  }>;
-}
-
-export type { BasicAnime as AnimeCardData };
+/**
+ * Alias for backward compatibility
+ */
+export type AnimeCardData = BasicAnime;

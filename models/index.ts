@@ -1,3 +1,5 @@
-export * from './qtip';
-export * from './pagination';
-export * from './anime';
+/**
+ * @deprecated Import from '@/types' instead
+ * This file is kept for backward compatibility
+ */
+export * from '@/types';

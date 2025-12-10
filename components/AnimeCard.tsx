@@ -24,37 +24,55 @@ export function AnimeCard({
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
   const cardRef = useRef<HTMLDivElement>(null);
   const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const showTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const slug = anime.link;
 
-  // Cleanup timeout on unmount
+  // Cleanup timeouts on unmount
   useEffect(() => {
     return () => {
-      if (hideTimeoutRef.current) {
-        clearTimeout(hideTimeoutRef.current);
-      }
+      if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current);
+      if (showTimeoutRef.current) clearTimeout(showTimeoutRef.current);
     };
   }, []);
 
   const handleMouseEnter = (e: React.MouseEvent) => {
     if (!anime.qtip) return;
+
     // Clear any pending hide timeout
     if (hideTimeoutRef.current) {
       clearTimeout(hideTimeoutRef.current);
       hideTimeoutRef.current = null;
     }
+
+    // Clear any pending show timeout
+    if (showTimeoutRef.current) {
+      clearTimeout(showTimeoutRef.current);
+      showTimeoutRef.current = null;
+    }
+
     const rect = e.currentTarget.getBoundingClientRect();
     const x = rect.left + rect.width / 2;
     const y = rect.top + rect.height / 2;
     setPopupPosition({ x, y });
-    setShowPopup(true);
+
+    // Small delay before showing to prevent flickering on quick hover
+    showTimeoutRef.current = setTimeout(() => {
+      setShowPopup(true);
+    }, 150);
   };
 
   const handleMouseLeave = () => {
+    // Clear show timeout if still pending
+    if (showTimeoutRef.current) {
+      clearTimeout(showTimeoutRef.current);
+      showTimeoutRef.current = null;
+    }
+
     // Add a delay before hiding to allow moving to popup
     hideTimeoutRef.current = setTimeout(() => {
       setShowPopup(false);
-    }, 100);
+    }, 150);
   };
 
   const handlePopupMouseEnter = () => {

@@ -241,7 +241,7 @@ export function AnimeInfoPopup({
         {/* Watch Now Button */}
         <div className="p-4 pt-0 flex items-center gap-2">
           <a href={qtip.watch_url || slug} className="block flex-1">
-            <button className="w-full bg-white hover:bg-gray-100 text-black font-semibold py-3 px-4 rounded-md transition-all duration-300 flex items-center justify-center gap-2 hover:cursor-pointer">
+            <button className="w-full bg-white hover:bg-gray-100 text-black font-semibold py-3 px-4 rounded-full transition-all duration-300 flex items-center justify-center gap-2 hover:cursor-pointer">
               <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
                 <path d="M8 5v14l11-7z" />
               </svg>

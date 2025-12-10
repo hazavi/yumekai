@@ -19,7 +19,7 @@ export function AnimeGrid<T extends AnimeCardData>({
   }
   return (
     <div
-      className={`grid gap-4 grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-6 ${className}`}
+      className={`grid gap-4 grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-6 ${className}`}
     >
       {items.map((item) => (
         <AnimeCard key={item.link} anime={item} badgeType={badgeType} />

@@ -199,7 +199,7 @@ export function Navbar() {
             <span className="flex items-center gap-1.5">Watch2gether</span>
           </NavItem>
         </nav>
-        <div className="ml-auto flex items-center gap-3">
+        <div className="ml-auto flex items-center gap-4">
           <div className="w-full max-w-[200px] sm:max-w-xs md:max-w-sm">
             <SearchBar />
           </div>
@@ -208,10 +208,15 @@ export function Navbar() {
           {!loading && (
             <>
               {user && userProfile?.username ? (
-                <div className="relative hidden sm:block" ref={userDropdownRef}>
+                <div
+                  className={`relative ${
+                    openMobile ? "hidden" : "hidden sm:block"
+                  }`}
+                  ref={userDropdownRef}
+                >
                   <button
                     onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-full hover:bg-white/10 transition-colors cursor-pointer"
+                    className="flex items-center gap-2 px-1.5 py-1.5 rounded-full hover:bg-white/10 transition-colors cursor-pointer"
                   >
                     {/* Profile Image */}
                     {userProfile.photoURL ? (
@@ -284,13 +289,19 @@ export function Navbar() {
                   )}
                 </div>
               ) : user ? (
-                <span className="hidden sm:flex px-1 py-1 font-medium text-sm tracking-wide text-white/50">
+                <span
+                  className={`${
+                    openMobile ? "hidden" : "hidden sm:flex"
+                  } px-1 py-1 font-medium text-sm tracking-wide text-white/50`}
+                >
                   Loading...
                 </span>
               ) : (
                 <Link
                   href="/login"
-                  className="hidden sm:flex px-1 py-1 font-medium text-sm tracking-wide transition relative after:absolute after:left-0 after:bottom-0 after:h-[2px] after:rounded-full after:bg-white/80 after:transition-all after:duration-300 text-white/70 hover:text-white after:w-0 hover:after:w-full whitespace-nowrap"
+                  className={`${
+                    openMobile ? "hidden" : "hidden sm:flex"
+                  } px-1 py-1 font-medium text-sm tracking-wide transition relative after:absolute after:left-0 after:bottom-0 after:h-[2px] after:rounded-full after:bg-white/80 after:transition-all after:duration-300 text-white/70 hover:text-white after:w-0 hover:after:w-full whitespace-nowrap`}
                 >
                   Sign In
                 </Link>

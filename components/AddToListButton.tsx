@@ -286,7 +286,7 @@ export function AddToListButton({
       <div className={`relative ${className}`} ref={dropdownRef}>
         <button
           onClick={handleClick}
-          className={`p-3 rounded-xl transition-all cursor-pointer ${
+          className={`p-3 rounded-full transition-all cursor-pointer ${
             currentStatus
               ? `${LIST_STATUS_COLORS[currentStatus]} text-white shadow-lg`
               : "bg-white/10 hover:bg-white/20 text-white/80 hover:text-white"

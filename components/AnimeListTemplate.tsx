@@ -119,13 +119,13 @@ export function AnimeListTemplate({
           <h1 className="text-3xl font-bold text-white mb-2">{title}</h1>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-3">
             {/* First 4 anime in one row */}
             {results.length > 0 && (
               <div className="mb-12">
-                <div className="grid grid-cols-4 gap-6">
+                <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-4 gap-4 md:gap-6">
                   {results.slice(0, 4).map((anime, index) => (
                     <div key={index} className="relative">
                       <div
@@ -229,7 +229,7 @@ export function AnimeListTemplate({
 
             {/* Rest of the anime in 6 per row grid format */}
             {results.length > 4 && (
-              <div className="grid grid-cols-6 gap-4">
+              <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-6 gap-3 md:gap-4">
                 {results.slice(4).map((anime, index) => {
                   // Transform to AnimeCard format
                   const animeCardData = {
@@ -257,7 +257,7 @@ export function AnimeListTemplate({
 
             {/* All anime in 6 per row grid if less than or equal to 4 */}
             {results.length <= 4 && results.length > 0 && (
-              <div className="grid grid-cols-6 gap-4">
+              <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4">
                 {results.map((anime, index) => {
                   // Transform to AnimeCard format
                   const animeCardData = {
@@ -299,7 +299,7 @@ export function AnimeListTemplate({
           </div>
 
           {/* Sidebar */}
-          <div className="lg:col-span-1 space-y-8">
+          <div className="xl:col-span-1 space-y-8">
             {/* TopAnime Component */}
             {topAnimeData && (
               <TopAnime

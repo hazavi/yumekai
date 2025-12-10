@@ -31,9 +31,18 @@ export function SearchBar() {
   const [userResults, setUserResults] = useState<UserResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const router = useRouter();
   const searchRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<NodeJS.Timeout | undefined>(undefined);
+
+  // Check if mobile on mount and resize
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 640);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   // Handle click outside to close results
   useEffect(() => {
@@ -121,7 +130,7 @@ export function SearchBar() {
             (animeResults.length > 0 || userResults.length > 0) &&
             setShowResults(true)
           }
-          placeholder="Search anime or user..."
+          placeholder={isMobile ? "Search..." : "Search anime or user..."}
           className="w-full h-11 pl-4 pr-12 rounded-full bg-black/1 outline-none text-sm placeholder:text-white/60 backdrop-blur-xs text-white focus:border-white/40 focus:ring-0 transition"
         />
         <button

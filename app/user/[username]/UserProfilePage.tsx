@@ -238,7 +238,7 @@ export function UserProfilePage({ username }: UserProfilePageProps) {
           <div className="absolute inset-0 bg-gradient-to-br from-purple-900/15 via-black to-blue-900/10" />
         </div>
         <div className="container-padded py-12">
-          <div className="animate-pulse space-y-6">
+          <div className="space-y-6">
             <div className="glass rounded-2xl p-8">
               <div className="flex items-center gap-6">
                 <div className="w-24 h-24 rounded-full bg-white/10" />

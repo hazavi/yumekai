@@ -6,6 +6,7 @@ import { TopUpcoming } from "@/components/TopUpcoming";
 import { TopAnime } from "@/components/TopAnime";
 import { TopAnimeCategories } from "@/components/TopAnimeCategories";
 import { Genres } from "@/components/Genres";
+import { ContinueWatching } from "@/components/ContinueWatching";
 import { api } from "@/services/api";
 import type {
   SpotlightItem,
@@ -149,6 +150,9 @@ export default async function Home() {
             )}
           </Suspense>
         </section>
+
+        {/* Continue Watching - Only shows for authenticated users */}
+        <ContinueWatching />
 
         {/* Trending Section - pass full list so component can derive ranks 1..10 correctly */}
         <Trending items={trending} />

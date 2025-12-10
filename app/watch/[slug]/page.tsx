@@ -4,8 +4,10 @@ import { notFound, useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { api } from "@/services/api";
+import { saveContinueWatching } from "@/services/continueWatchingService";
+import { useAuth } from "@/contexts/AuthContext";
 import { AnimeCard } from "@/components/AnimeCard";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { decodeHtmlEntities } from "@/utils/html";
 import type { WatchData, Episode, ServerItem, SimpleServer } from "@/types";
 
@@ -75,6 +77,7 @@ export default function WatchPage() {
   const query = useSearchParams();
   const slug = routeParams.slug;
   const ep = query.get("ep") || "";
+  const { user } = useAuth();
 
   const [data, setData] = useState<WatchData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -91,12 +94,47 @@ export default function WatchPage() {
     }
   );
 
+  // Track if we've saved continue watching for current episode
+  const savedContinueWatchingRef = useRef<string>("");
+
   // Save sort order to localStorage whenever it changes
   useEffect(() => {
     if (typeof window !== "undefined") {
       localStorage.setItem("episodeSortOrder", episodeSortOrder);
     }
   }, [episodeSortOrder]);
+
+  // Save to continue watching when user watches an episode
+  useEffect(() => {
+    if (!user || !data || loading) return;
+
+    const currentEpNumber = ep ? parseInt(ep) : 1;
+    const saveKey = `${slug}-${currentEpNumber}`;
+
+    // Only save once per episode view
+    if (savedContinueWatchingRef.current === saveKey) return;
+
+    const saveProgress = async () => {
+      try {
+        await saveContinueWatching(user.uid, {
+          animeId: slug,
+          title: data.watch_detail?.title || "Unknown",
+          poster: data.watch_detail?.poster || "",
+          currentEpisode: currentEpNumber,
+          totalEpisodes: data.total_episodes || data.episodes?.length || 1,
+          timestamp: Date.now(),
+          watchedAt: Date.now(),
+        });
+        savedContinueWatchingRef.current = saveKey;
+      } catch (error) {
+        console.error("Error saving continue watching:", error);
+      }
+    };
+
+    // Save after a short delay to ensure user actually started watching
+    const timer = setTimeout(saveProgress, 3000);
+    return () => clearTimeout(timer);
+  }, [user, data, slug, ep, loading]);
 
   useEffect(() => {
     let active = true;

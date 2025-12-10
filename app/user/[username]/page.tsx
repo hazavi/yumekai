@@ -10,7 +10,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const username = decodeURIComponent(resolvedParams.username);
 
   return {
-    title: `${username}'s Profile - YumeKai`,
+    title: `${username}'s Profile`,
     description: `View ${username}'s anime lists and top 10 rankings on YumeKai`,
   };
 }

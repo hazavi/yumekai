@@ -202,6 +202,7 @@ export function UserProfilePage({ username }: UserProfilePageProps) {
   > | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<AnimeListStatus | "all">("all");
+  const [currentPage, setCurrentPage] = useState(1);
 
   const isOwnProfile =
     user && userProfile?.username?.toLowerCase() === username.toLowerCase();
@@ -321,6 +322,21 @@ export function UserProfilePage({ username }: UserProfilePageProps) {
     return animeLists[activeTab] || [];
   };
 
+  // Pagination logic
+  const ITEMS_PER_PAGE = 24;
+  const filteredAnime = getFilteredAnime();
+  const totalPages = Math.ceil(filteredAnime.length / ITEMS_PER_PAGE);
+  const paginatedAnime = filteredAnime.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  // Reset page when tab changes
+  const handleTabChange = (tab: AnimeListStatus | "all") => {
+    setActiveTab(tab);
+    setCurrentPage(1);
+  };
+
   return (
     <div className="min-h-screen bg-black pt-20 pb-12">
       {/* Background */}
@@ -394,7 +410,7 @@ export function UserProfilePage({ username }: UserProfilePageProps) {
         <div className="mb-6 -mx-4 px-4 md:mx-0 md:px-0">
           <div className="flex gap-2 overflow-x-auto md:overflow-visible pb-2 md:pb-0 scrollbar-hide snap-x snap-mandatory md:snap-none touch-pan-x md:flex-wrap">
             <button
-              onClick={() => setActiveTab("all")}
+              onClick={() => handleTabChange("all")}
               className={`flex-shrink-0 md:flex-shrink snap-start md:snap-align-none px-4 py-2 rounded-full transition-all cursor-pointer text-center whitespace-nowrap ${
                 activeTab === "all"
                   ? "bg-purple-600 text-white"
@@ -409,7 +425,7 @@ export function UserProfilePage({ username }: UserProfilePageProps) {
             {statuses.map((status) => (
               <button
                 key={status}
-                onClick={() => setActiveTab(status)}
+                onClick={() => handleTabChange(status)}
                 className={`flex-shrink-0 md:flex-shrink snap-start md:snap-align-none px-4 py-2 rounded-full transition-all cursor-pointer text-center whitespace-nowrap ${
                   activeTab === status
                     ? `${LIST_STATUS_COLORS[status]} text-white`
@@ -429,11 +445,20 @@ export function UserProfilePage({ username }: UserProfilePageProps) {
 
         {/* Anime Lists */}
         <div className="glass rounded-2xl p-4 sm:p-6 mb-6">
-          <h2 className="text-base sm:text-lg font-medium text-white mb-4 sm:mb-5">
-            {activeTab === "all" ? "All Anime" : LIST_STATUS_LABELS[activeTab]}
-          </h2>
+          <div className="flex items-center justify-between mb-4 sm:mb-5">
+            <h2 className="text-base sm:text-lg font-medium text-white">
+              {activeTab === "all"
+                ? "All Anime"
+                : LIST_STATUS_LABELS[activeTab]}
+            </h2>
+            {filteredAnime.length > 0 && (
+              <span className="text-xs text-white/40">
+                {filteredAnime.length} anime's
+              </span>
+            )}
+          </div>
 
-          {getFilteredAnime().length === 0 ? (
+          {paginatedAnime.length === 0 ? (
             <div className="text-center py-12 sm:py-16 text-white/30">
               <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-white/5 flex items-center justify-center">
                 {Icons.collection}
@@ -441,45 +466,102 @@ export function UserProfilePage({ username }: UserProfilePageProps) {
               <p className="text-sm">No anime in this list</p>
             </div>
           ) : (
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2 sm:gap-3">
-              {getFilteredAnime().map((anime) => (
-                <Link
-                  key={anime.animeId}
-                  href={anime.animeId}
-                  className="group"
-                >
-                  <div className="relative aspect-[3/4] rounded-xl overflow-hidden bg-white/5">
-                    <Image
-                      src={anime.thumbnail}
-                      alt={anime.title}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                    <div
-                      className={`absolute top-1.5 right-1.5 p-1.5 rounded-lg bg-black/60 backdrop-blur-sm ${
-                        anime.status === "watching"
-                          ? "text-blue-400"
-                          : anime.status === "completed"
-                          ? "text-green-400"
-                          : anime.status === "on-hold"
-                          ? "text-yellow-400"
-                          : anime.status === "dropped"
-                          ? "text-red-400"
-                          : "text-purple-400"
-                      }`}
-                    >
-                      {STATUS_ICONS[anime.status as AnimeListStatus]}
+            <>
+              <div className="grid grid-cols-3 md:grid-cols-6 lg:grid-cols-8 gap-2 sm:gap-3">
+                {paginatedAnime.map((anime) => (
+                  <Link
+                    key={anime.animeId}
+                    href={anime.animeId}
+                    className="group"
+                  >
+                    <div className="relative aspect-[3/4] rounded-xl overflow-hidden bg-white/5">
+                      <Image
+                        src={anime.thumbnail}
+                        alt={anime.title}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                      <div
+                        className={`absolute top-1.5 right-1.5 p-1.5 rounded-lg bg-black/60 backdrop-blur-sm ${
+                          anime.status === "watching"
+                            ? "text-blue-400"
+                            : anime.status === "completed"
+                            ? "text-green-400"
+                            : anime.status === "on-hold"
+                            ? "text-yellow-400"
+                            : anime.status === "dropped"
+                            ? "text-red-400"
+                            : "text-purple-400"
+                        }`}
+                      >
+                        {STATUS_ICONS[anime.status as AnimeListStatus]}
+                      </div>
+                      <div className="absolute bottom-0 left-0 right-0 p-2">
+                        <p className="text-white text-[11px] font-medium line-clamp-2">
+                          {anime.title}
+                        </p>
+                      </div>
                     </div>
-                    <div className="absolute bottom-0 left-0 right-0 p-2">
-                      <p className="text-white text-[11px] font-medium line-clamp-2">
-                        {anime.title}
-                      </p>
-                    </div>
+                  </Link>
+                ))}
+              </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-2 mt-6">
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="px-6 py-2 rounded-lg bg-white/5 text-white/60 hover:bg-white/10 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all text-sm cursor-pointer"
+                  >
+                    Prev
+                  </button>
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1)
+                      .filter((page) => {
+                        // Show first, last, current, and pages around current
+                        if (page === 1 || page === totalPages) return true;
+                        if (Math.abs(page - currentPage) <= 1) return true;
+                        return false;
+                      })
+                      .map((page, idx, arr) => {
+                        // Add ellipsis if there's a gap
+                        const showEllipsisBefore =
+                          idx > 0 && page - arr[idx - 1] > 1;
+                        return (
+                          <div key={page} className="flex items-center gap-1">
+                            {showEllipsisBefore && (
+                              <span className="px-2 text-white/30 text-sm">
+                                ...
+                              </span>
+                            )}
+                            <button
+                              onClick={() => setCurrentPage(page)}
+                              className={`w-10 h-8 rounded-lg text-sm font-medium transition-all cursor-pointer ${
+                                currentPage === page
+                                  ? "bg-purple-600 text-white"
+                                  : "bg-white/5 text-white/60 hover:bg-white/10 hover:text-white"
+                              }`}
+                            >
+                              {page}
+                            </button>
+                          </div>
+                        );
+                      })}
                   </div>
-                </Link>
-              ))}
-            </div>
+                  <button
+                    onClick={() =>
+                      setCurrentPage((p) => Math.min(totalPages, p + 1))
+                    }
+                    disabled={currentPage === totalPages}
+                    className="px-6 py-2 rounded-lg bg-white/5 text-white/60 hover:bg-white/10 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all text-sm cursor-pointer"
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
 
@@ -500,7 +582,7 @@ export function UserProfilePage({ username }: UserProfilePageProps) {
             )}
           </div>
 
-          <div className="grid grid-cols-5 sm:grid-cols-10 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-5 md:grid-cols-5 gap-3 sm:gap-2 lg:grid-cols-10">
             {topRankings.map((anime, index) => (
               <div key={index} className="relative group">
                 {anime && anime.thumbnail ? (

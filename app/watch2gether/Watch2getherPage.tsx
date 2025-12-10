@@ -1,16 +1,68 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "@/contexts";
 import { ref, onValue, push, set, get } from "firebase/database";
 import { database } from "@/lib/firebase";
-import type { RoomPreview, Watch2getherRoom } from "@/types";
+import { api } from "@/services/api";
+import type {
+  RoomPreview,
+  Watch2getherRoom,
+  ServerItem,
+  SimpleServer,
+} from "@/types";
+
+/**
+ * Helper function to extract iframe source from an episode
+ */
+function getIframeSrc(
+  episode:
+    | {
+        iframe_src?: string;
+        servers?: {
+          sub?: ServerItem[] | SimpleServer;
+          dub?: ServerItem[] | SimpleServer;
+        };
+      }
+    | undefined
+): string | null {
+  if (!episode) return null;
+
+  if (episode.iframe_src) {
+    return episode.iframe_src;
+  }
+
+  if (episode.servers?.sub) {
+    if (Array.isArray(episode.servers.sub)) {
+      const serverItem = episode.servers.sub[0] as ServerItem;
+      if (serverItem?.ifram_src) {
+        return serverItem.ifram_src;
+      }
+    } else if ("src" in episode.servers.sub) {
+      return (episode.servers.sub as SimpleServer).src;
+    }
+  }
+
+  if (episode.servers?.dub) {
+    if (Array.isArray(episode.servers.dub)) {
+      const serverItem = episode.servers.dub[0] as ServerItem;
+      if (serverItem?.ifram_src) {
+        return serverItem.ifram_src;
+      }
+    } else if ("src" in episode.servers.dub) {
+      return (episode.servers.dub as SimpleServer).src;
+    }
+  }
+
+  return null;
+}
 
 export function Watch2getherPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, userProfile, loading } = useAuth();
   const [rooms, setRooms] = useState<RoomPreview[]>([]);
   const [loadingRooms, setLoadingRooms] = useState(true);
@@ -26,6 +78,33 @@ export function Watch2getherPage() {
   const [password, setPassword] = useState("");
   const [maxParticipants, setMaxParticipants] = useState(10);
   const [creating, setCreating] = useState(false);
+
+  // Pre-selected anime from URL params
+  const [preSelectedAnime, setPreSelectedAnime] = useState<{
+    animeId: string;
+    title: string;
+    poster: string;
+  } | null>(null);
+
+  // Check for anime params and auto-open create modal
+  useEffect(() => {
+    const animeId = searchParams.get("anime");
+    const title = searchParams.get("title");
+    const poster = searchParams.get("poster");
+
+    if (animeId && title && poster) {
+      setPreSelectedAnime({
+        animeId: decodeURIComponent(animeId),
+        title: decodeURIComponent(title),
+        poster: decodeURIComponent(poster),
+      });
+      setRoomName(`Watching: ${decodeURIComponent(title)}`);
+      // Auto-open create modal when user is logged in
+      if (user && !loading) {
+        setShowCreateModal(true);
+      }
+    }
+  }, [searchParams, user, loading]);
 
   // Fetch public rooms
   useEffect(() => {
@@ -92,6 +171,48 @@ export function Watch2getherPage() {
       const newRoomRef = push(roomsRef);
       const roomId = newRoomRef.key;
 
+      // If there's a pre-selected anime, fetch the video source
+      let animeData = null;
+      if (preSelectedAnime) {
+        try {
+          // Clean up the slug - remove leading slash if present
+          const cleanSlug = preSelectedAnime.animeId.startsWith("/")
+            ? preSelectedAnime.animeId.slice(1)
+            : preSelectedAnime.animeId;
+
+          // Fetch watch data to get iframe source
+          const watchData = await api.watch(cleanSlug, "1");
+
+          // Find episode 1 or fallback to first episode
+          const episode1 =
+            watchData?.episodes?.find(
+              (e: { episode_nr: number }) => e.episode_nr === 1
+            ) || watchData?.episodes?.[0];
+
+          const iframeSrc = getIframeSrc(episode1) || "";
+
+          animeData = {
+            slug: preSelectedAnime.animeId,
+            title: preSelectedAnime.title,
+            poster: preSelectedAnime.poster,
+            currentEpisode: 1,
+            totalEpisodes: watchData?.total_episodes || 1,
+            iframeSrc,
+          };
+        } catch (err) {
+          console.error("Error fetching anime data:", err);
+          // Still create the room, but without video source
+          animeData = {
+            slug: preSelectedAnime.animeId,
+            title: preSelectedAnime.title,
+            poster: preSelectedAnime.poster,
+            currentEpisode: 1,
+            totalEpisodes: 1,
+            iframeSrc: "",
+          };
+        }
+      }
+
       // Build room object without undefined values (Firebase doesn't accept undefined)
       const newRoom: Record<string, unknown> = {
         id: roomId!,
@@ -101,7 +222,7 @@ export function Watch2getherPage() {
         createdAt: Date.now(),
         isPrivate,
         maxParticipants,
-        anime: null,
+        anime: animeData,
         videoState: {
           currentTime: 0,
           isPlaying: false,
@@ -492,6 +613,26 @@ export function Watch2getherPage() {
                   />
                 </div>
               )}
+
+              {/* Pre-selected anime preview */}
+              {preSelectedAnime && (
+                <div className="p-3 bg-purple-500/10 border border-purple-500/20 rounded-xl">
+                  <p className="text-xs text-purple-400 mb-2">Selected Anime</p>
+                  <div className="flex items-center gap-3">
+                    <div className="relative w-12 h-16 rounded overflow-hidden flex-shrink-0">
+                      <Image
+                        src={preSelectedAnime.poster}
+                        alt={preSelectedAnime.title}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                    <p className="text-sm text-white font-medium line-clamp-2">
+                      {preSelectedAnime.title}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="flex gap-3 mt-6">
@@ -502,6 +643,9 @@ export function Watch2getherPage() {
                   setRoomName("");
                   setIsPrivate(false);
                   setPassword("");
+                  setPreSelectedAnime(null);
+                  // Clear URL params
+                  router.replace("/watch2gether");
                 }}
                 className="flex-1 py-3 bg-white/10 hover:bg-white/15 text-white font-medium rounded-xl transition-colors cursor-pointer"
               >

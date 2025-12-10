@@ -1,6 +1,7 @@
 "use client";
 import Image from "next/image";
 import { useState } from "react";
+import Link from "next/link";
 import { TopAnime } from "./TopAnime";
 import { AnimeCard } from "./AnimeCard";
 import { AddToListButton } from "./AddToListButton";
@@ -38,7 +39,7 @@ interface AnimeInfo {
 }
 
 interface AnimeInfoPageProps {
-  animeInfo: AnimeInfo;
+  animeInfo: AnimeInfo | null;
   topAnimeData?: {
     topAiring: BasicAnime[];
     mostPopular: BasicAnime[];
@@ -49,6 +50,82 @@ interface AnimeInfoPageProps {
 
 export function AnimeInfoPage({ animeInfo, topAnimeData }: AnimeInfoPageProps) {
   const [showFullDescription, setShowFullDescription] = useState(false);
+
+  // Skeleton loading state
+  if (!animeInfo) {
+    return (
+      <div className="relative min-h-screen pt-20">
+        <div className="container mx-auto px-4 py-8">
+          {/* Breadcrumb skeleton */}
+          <div className="flex items-center gap-3 mb-8">
+            <div className="h-4 w-12 bg-white/10 rounded" />
+            <div className="h-4 w-4 bg-white/5 rounded" />
+            <div className="h-4 w-8 bg-white/10 rounded" />
+            <div className="h-4 w-4 bg-white/5 rounded" />
+            <div className="h-4 w-32 bg-white/10 rounded" />
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            {/* Main Content Skeleton */}
+            <div className="lg:col-span-8">
+              <div className="flex flex-col md:flex-row gap-6 mb-8">
+                {/* Poster skeleton */}
+                <div className="flex-shrink-0">
+                  <div className="w-60 h-85 bg-white/10 rounded" />
+                  <div className="w-60 h-10 mt-3 bg-white/10 rounded-full" />
+                </div>
+
+                {/* Info skeleton */}
+                <div className="flex-1 space-y-4">
+                  <div className="h-10 w-3/4 bg-white/10 rounded" />
+                  <div className="flex gap-2">
+                    <div className="h-6 w-12 bg-white/10 rounded-full" />
+                    <div className="h-6 w-14 bg-white/10 rounded-full" />
+                    <div className="h-6 w-14 bg-white/10 rounded-full" />
+                    <div className="h-6 w-10 bg-white/10 rounded-full" />
+                  </div>
+                  <div className="flex gap-3">
+                    <div className="h-11 w-32 bg-white/10 rounded-full" />
+                    <div className="h-11 w-32 bg-white/10 rounded-full" />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="h-4 w-full bg-white/10 rounded" />
+                    <div className="h-4 w-full bg-white/10 rounded" />
+                    <div className="h-4 w-2/3 bg-white/10 rounded" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Sidebar Skeleton */}
+            <div className="lg:col-span-4">
+              <div className="glass p-6 space-y-3">
+                {[...Array(8)].map((_, i) => (
+                  <div key={i} className="flex gap-2">
+                    <div className="h-4 w-20 bg-white/10 rounded" />
+                    <div className="h-4 flex-1 bg-white/10 rounded" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Recommendations Skeleton */}
+          <div className="mt-12">
+            <div className="h-8 w-48 bg-white/10 rounded mb-6" />
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="space-y-2">
+                  <div className="aspect-[2/3] bg-white/10 rounded" />
+                  <div className="h-4 w-full bg-white/10 rounded" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Determine the anime type for breadcrumbs
   const getAnimeType = () => {
@@ -64,10 +141,10 @@ export function AnimeInfoPage({ animeInfo, topAnimeData }: AnimeInfoPageProps) {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] pt-20">
+    <div className="relative min-h-screen pt-20">
       <div className="container mx-auto px-4 py-8">
         {/* Breadcrumbs */}
-        <nav className="flex items-center space-x-2 text-sm text-white/60 mb-8">
+        <nav className="flex items-center text-sm text-white/60 mb-8">
           {breadcrumbs.map((breadcrumb, index) => (
             <div key={index} className="flex items-center">
               {index > 0 && (
@@ -108,7 +185,7 @@ export function AnimeInfoPage({ animeInfo, topAnimeData }: AnimeInfoPageProps) {
             <div className="flex flex-col md:flex-row gap-6 mb-8">
               {/* Poster */}
               <div className="flex-shrink-0">
-                <div className="relative w-60 h-80 overflow-hidden bg-gray-800">
+                <div className="relative w-60 h-85 overflow-hidden bg-gray-800">
                   <Image
                     src={animeInfo.thumbnail}
                     alt={animeInfo.title}
@@ -117,6 +194,26 @@ export function AnimeInfoPage({ animeInfo, topAnimeData }: AnimeInfoPageProps) {
                     priority
                   />
                 </div>
+                {/* Watch2gether Button */}
+                <Link
+                  href={`/watch2gether?anime=${encodeURIComponent(
+                    animeInfo.link ||
+                      animeInfo.watch_link?.replace("/watch/", "") ||
+                      ""
+                  )}&title=${encodeURIComponent(
+                    animeInfo.title
+                  )}&poster=${encodeURIComponent(animeInfo.thumbnail)}`}
+                  className="btn-gray text-sm font-medium w-60 inline-flex items-center justify-center gap-2 px-4 py-2.5 transition-all"
+                >
+                  <Image
+                    src="/stream.svg"
+                    alt="Watch Together"
+                    width={32}
+                    height={32}
+                    className="w-8 h-8"
+                  />
+                  Watch2gether
+                </Link>
               </div>
 
               {/* Info */}
@@ -215,7 +312,7 @@ export function AnimeInfoPage({ animeInfo, topAnimeData }: AnimeInfoPageProps) {
 
           {/* Sidebar */}
           <div className="lg:col-span-4">
-            <div className="bg-[#1a1a1a] backdrop-blur-xxl rounded-md p-6">
+            <div className="glass p-6">
               <div className="space-y-3">
                 {animeInfo.info?.Japanese && (
                   <div className="text-sm">
@@ -279,12 +376,15 @@ export function AnimeInfoPage({ animeInfo, topAnimeData }: AnimeInfoPageProps) {
                     <span className="text-white/60">Genres: </span>
                     <div className="inline-flex flex-wrap gap-1.5 mt-1">
                       {animeInfo.genres.map((genre, index) => (
-                        <span
+                        <a
                           key={index}
-                          className="px-3 py-1 text-xs bg-white/10 text-white/80 rounded-full"
+                          href={`/genre/${genre
+                            .toLowerCase()
+                            .replace(/\s+/g, "-")}`}
+                          className="genre-item px-3 py-1 text-xs text-white/80 rounded-full cursor-pointer"
                         >
                           {genre}
-                        </span>
+                        </a>
                       ))}
                     </div>
                   </div>
@@ -321,7 +421,7 @@ export function AnimeInfoPage({ animeInfo, topAnimeData }: AnimeInfoPageProps) {
               <h2 className="text-2xl font-bold text-white mb-6">
                 You might also like
               </h2>
-              <div className="grid grid-cols-6 gap-4">
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-6 gap-4">
                 {animeInfo.recommendations
                   .slice(0, 12)
                   .filter((rec) => rec.poster && rec.poster.trim() !== "")

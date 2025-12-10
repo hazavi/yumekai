@@ -25,7 +25,7 @@ export function SectionGrid({
         <h2 className="text-xl sm:text-2xl font-bold font-poppins">{title}</h2>
         <a
           href={href}
-          className="hidden md:inline-flex items-center text-[12px] font-medium text-fuchsia-300/80 hover:text-fuchsia-200 transition"
+          className="hidden md:inline-flex items-center text-[12px] font-medium text-purple-500/80 hover:text-purple-500 transition"
         >
           View more <span className="ml-1">›</span>
         </a>

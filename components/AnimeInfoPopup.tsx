@@ -130,14 +130,14 @@ export function AnimeInfoPopup({
 
             {/* Quality */}
             {qtip.quality && (
-              <span className="px-2 py-1 bg-[linear-gradient(to_right,rgba(59,130,246,0.25),rgba(59,130,246,0.08))] ring-1 ring-blue-500/40 text-blue-200 shadow-[0_0_0_1px_rgba(59,130,246,0.2)] backdrop-blur-sm rounded-full font-medium">
+              <span className="badge badge-blue px-2 py-1 text-xs">
                 {qtip.quality}
               </span>
             )}
 
             {/* Sub badge */}
             {qtip.sub && (
-              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-medium bg-[linear-gradient(to_right,rgba(147,51,234,0.25),rgba(147,51,234,0.08))] ring-1 ring-purple-500/40 text-purple-200 shadow-[0_0_0_1px_rgba(147,51,234,0.2)] backdrop-blur-sm">
+              <span className="badge badge-purple px-2 py-1 text-[10px]">
                 <Image
                   src="/cc.svg"
                   alt="CC"
@@ -151,7 +151,7 @@ export function AnimeInfoPopup({
 
             {/* Dub badge */}
             {qtip.dub && qtip.dub !== "0" && (
-              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-medium bg-[linear-gradient(to_right,rgba(16,185,129,0.25),rgba(16,185,129,0.08))] ring-1 ring-emerald-500/40 text-emerald-200 shadow-[0_0_0_1px_rgba(16,185,129,0.25)] backdrop-blur-sm">
+              <span className="badge badge-emerald px-2 py-1 text-[10px]">
                 <Image
                   src="/mic.svg"
                   alt="mic"
@@ -165,7 +165,7 @@ export function AnimeInfoPopup({
 
             {/* Type */}
             {qtip.type && (
-              <span className="px-2 py-1 bg-[linear-gradient(to_right,rgba(236,72,153,0.25),rgba(236,72,153,0.08))] ring-1 ring-pink-500/40 text-pink-200 shadow-[0_0_0_1px_rgba(236,72,153,0.2)] backdrop-blur-sm rounded-full font-medium">
+              <span className="badge badge-pink px-2 py-1 text-xs">
                 {qtip.type}
               </span>
             )}

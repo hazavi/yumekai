@@ -110,7 +110,7 @@ export function LatestEpisode({ anime, showMeta = true }: LatestEpisodeProps) {
             {(anime.dub || anime.latest_episode) && (
               <div className="absolute bottom-2 left-2 flex items-center gap-2">
                 {/* SUB badge with CC icon and episode number */}
-                <span className="inline-flex items-center gap-1 pl-1.5 pr-2 py-0.5 rounded-full text-[11px] font-medium bg-[linear-gradient(to_right,rgba(147,51,234,0.25),rgba(147,51,234,0.08))] ring-1 ring-purple-500/40 text-purple-200 shadow-[0_0_0_1px_rgba(147,51,234,0.2)] backdrop-blur-sm">
+                <span className="badge badge-purple pl-1.5 pr-2 py-0.5 text-[11px]">
                   <Image
                     src="/cc.svg"
                     alt="CC"
@@ -122,7 +122,7 @@ export function LatestEpisode({ anime, showMeta = true }: LatestEpisodeProps) {
                 </span>
                 {/* DUB badge with mic icon */}
                 {anime.dub && (
-                  <span className="inline-flex items-center gap-1 pl-1.5 pr-2 py-0.5 rounded-full text-[11px] font-medium bg-[linear-gradient(to_right,rgba(16,185,129,0.25),rgba(16,185,129,0.08))] ring-1 ring-emerald-500/40 text-emerald-200 shadow-[0_0_0_1px_rgba(16,185,129,0.25)] backdrop-blur-sm">
+                  <span className="badge badge-emerald pl-1.5 pr-2 py-0.5 text-[11px]">
                     <Image
                       src="/mic.svg"
                       alt="MIC"

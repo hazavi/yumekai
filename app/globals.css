@@ -143,3 +143,89 @@ body {
 .animate-shake {
   animation: shake 0.5s ease-in-out;
 }
+
+/* Badge styles */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-weight: 500;
+  border-radius: 9999px;
+  backdrop-filter: blur(8px);
+}
+
+/* Blue badge - Quality/HD */
+.badge-blue {
+  background: linear-gradient(to right, rgba(59,130,246,0.25), rgba(59,130,246,0.08));
+  box-shadow: 0 0 0 1px rgba(59,130,246,0.4) inset, 0 0 0 1px rgba(59,130,246,0.2);
+  color: rgb(191 219 254); /* text-blue-200 */
+}
+
+/* Purple badge - SUB/CC */
+.badge-purple {
+  background: linear-gradient(to right, rgba(60, 18, 99, 0.6), rgba(35, 12, 56, 0.8));
+  box-shadow: 0 0 0 1px rgba(147,51,234,0.4) inset, 0 0 0 1px rgba(147,51,234,0.2);
+  color: rgb(233 213 255); /* text-purple-200 */
+}
+
+/* Emerald badge - DUB */
+.badge-emerald {
+  background: linear-gradient(to right, rgba(10, 48, 35, 0.6), rgba(12, 66, 48, 0.8));
+  box-shadow: 0 0 0 1px rgba(16,185,129,0.4) inset, 0 0 0 1px rgba(16,185,129,0.25);
+  color: rgb(167 243 208); /* text-emerald-200 */
+}
+
+/* Pink badge - Type */
+.badge-pink {
+  background: linear-gradient(to right, rgba(236,72,153,0.25), rgba(236,72,153,0.08));
+  box-shadow: 0 0 0 1px rgba(236,72,153,0.4) inset, 0 0 0 1px rgba(236,72,153,0.2);
+  color: rgb(251 207 232); /* text-pink-200 */
+}
+
+/* Gray badge - Duration */
+.badge-gray {
+  background: linear-gradient(to right, rgba(75,85,99,0.25), rgba(75,85,99,0.08));
+  box-shadow: 0 0 0 1px rgba(75,85,99,0.4) inset, 0 0 0 1px rgba(75,85,99,0.2);
+  color: rgb(229 231 235); /* text-gray-200 */
+}
+
+/* Purple button style - Show More/View All */
+.btn-purple {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  color: rgba(255,255,255,0.8);
+  background: linear-gradient(to right, rgba(147,51,234,0.2), rgba(147,51,234,0.06));
+  box-shadow: 0 0 0 1px rgba(147,51,234,0.3) inset;
+  border-radius: 0.5rem;
+  backdrop-filter: blur(8px);
+  transition: all 0.2s ease;
+}
+.btn-purple:hover {
+  cursor: pointer;
+  background: linear-gradient(to right, rgba(147,51,234,0.3), rgba(147,51,234,0.1));
+  box-shadow: 0 0 0 1px rgba(147,51,234,0.5) inset;
+  color: white;
+}
+
+/* Purple tab active style */
+.tab-purple-active {
+  background: linear-gradient(to right, rgba(147,51,234,0.3), rgba(147,51,234,0.1));
+  box-shadow: 0 0 0 1px rgba(147,51,234,0.4) inset;
+  backdrop-filter: blur(8px);
+  color: white;
+}
+
+/* Genre item with hover effect */
+.genre-item {
+  background: linear-gradient(to right, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.1) inset;
+  backdrop-filter: blur(8px);
+  transition: all 0.2s ease;
+}
+.genre-item:hover {
+  background: linear-gradient(to right, rgba(147,51,234,0.25), rgba(147,51,234,0.08));
+  box-shadow: 0 0 0 1px rgba(147,51,234,0.4) inset;
+  color: white;
+}

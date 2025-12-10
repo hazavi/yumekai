@@ -82,20 +82,27 @@ export default function WatchPage() {
   const [isExpanded, setIsExpanded] = useState(false);
   const [lightsOff, setLightsOff] = useState(false);
   const [episodeSortOrder, setEpisodeSortOrder] = useState<"asc" | "desc">(
-    "asc"
+    () => {
+      if (typeof window !== "undefined") {
+        const saved = localStorage.getItem("episodeSortOrder");
+        return (saved as "asc" | "desc") || "asc";
+      }
+      return "asc";
+    }
   );
-  const fetchingRef = useState<{ key: string; done: boolean }>({
-    key: "",
-    done: false,
-  })[0];
+
+  // Save sort order to localStorage whenever it changes
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("episodeSortOrder", episodeSortOrder);
+    }
+  }, [episodeSortOrder]);
 
   useEffect(() => {
     let active = true;
+    setLoading(true);
+
     async function run() {
-      const fetchKey = `${slug}|${ep}`;
-      if (fetchingRef.done && fetchingRef.key === fetchKey) return; // already fetched this combination
-      fetchingRef.done = true;
-      fetchingRef.key = fetchKey;
       try {
         const watchData = await getWatchData(slug, ep || undefined);
         if (active) {
@@ -128,7 +135,7 @@ export default function WatchPage() {
     return () => {
       active = false;
     };
-  }, [slug, ep, fetchingRef]);
+  }, [slug, ep]);
 
   if (loading) {
     return (
@@ -356,6 +363,29 @@ export default function WatchPage() {
     data.episodes.find((episode) => episode.episode_nr === currentEpNumber) ||
     data.episodes[0];
 
+  // Format breadcrumb episode text
+  const getBreadcrumbEpisodeText = () => {
+    if (!currentEpisode?.title) {
+      return `Episode ${currentEpNumber}`;
+    }
+
+    const decodedTitle = decodeHtmlEntities(currentEpisode.title);
+    const episodePrefix = `Episode ${currentEpNumber}`;
+
+    // Check if title is just "Episode X" (case insensitive)
+    if (decodedTitle.toLowerCase().trim() === episodePrefix.toLowerCase()) {
+      return episodePrefix;
+    }
+
+    // Return with title, truncate if too long
+    const maxLength = 50;
+    if (decodedTitle.length > maxLength) {
+      return `${episodePrefix}: ${decodedTitle.substring(0, maxLength)}...`;
+    }
+
+    return `${episodePrefix}: ${decodedTitle}`;
+  };
+
   return (
     <div className="min-h-screen bg-black pt-20">
       {/* Animated background */}
@@ -372,20 +402,20 @@ export default function WatchPage() {
 
       {/* Breadcrumb */}
       <div
-        className={`py-6 px-6 bg-black/40 backdrop-blur-md transition-all duration-500 ${
+        className={`py-4 md:py-6 px-3 md:px-6 bg-black/40 backdrop-blur-md transition-all duration-500 ${
           lightsOff ? "opacity-30" : ""
         }`}
       >
-        <div className="container mx-auto">
-          <div className="flex items-center text-sm text-white/70">
+        <div className="container mx-auto px-3 md:px-4">
+          <div className="flex items-center text-xs md:text-sm text-white/70 overflow-x-auto scrollbar-hide whitespace-nowrap">
             <Link
               href="/"
-              className="hover:text-white transition-all duration-300 flex items-center gap-2"
+              className="hover:text-white transition-all duration-300 flex items-center gap-2 flex-shrink-0"
             >
               Home
             </Link>
             <svg
-              className="w-4 h-4 mx-3 text-white/40"
+              className="w-3 h-3 md:w-4 md:h-4 mx-1.5 md:mx-3 text-white/40 flex-shrink-0"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -399,12 +429,12 @@ export default function WatchPage() {
             </svg>
             <Link
               href="/tv"
-              className="hover:text-white transition-all duration-300 "
+              className="hover:text-white transition-all duration-300 flex-shrink-0"
             >
               TV
             </Link>
             <svg
-              className="w-4 h-4 mx-3 text-white/40"
+              className="w-3 h-3 md:w-4 md:h-4 mx-1.5 md:mx-3 text-white/40 flex-shrink-0"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -416,8 +446,31 @@ export default function WatchPage() {
                 d="M9 5l7 7-7 7"
               />
             </svg>
-            <span className="text-white font-medium">
+            <Link
+              href={`/${slug}`}
+              className="hover:text-white transition-all duration-300 text-white/70 truncate max-w-[120px] md:max-w-none flex-shrink-0"
+              title={data.watch_detail?.title || "Anime"}
+            >
               {data.watch_detail?.title || "Anime"}
+            </Link>
+            <svg
+              className="w-3 h-3 md:w-4 md:h-4 mx-1.5 md:mx-3 text-white/40 flex-shrink-0"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+            <span
+              className="text-white font-medium flex-shrink-0"
+              title={getBreadcrumbEpisodeText()}
+            >
+              {getBreadcrumbEpisodeText()}
             </span>
           </div>
         </div>
@@ -426,16 +479,16 @@ export default function WatchPage() {
       <div className="container mx-auto px-3 md:px-6 py-4 md:py-8">
         <div
           className={`grid ${
-            isExpanded ? "grid-cols-1" : "grid-cols-1 lg:grid-cols-12"
+            isExpanded ? "grid-cols-1" : "grid-cols-1 xl:grid-cols-12"
           } gap-4 md:gap-6`}
         >
           {/* Left Sidebar - Episodes List */}
           <div
             className={`${
-              isExpanded ? "order-2" : "lg:col-span-3 order-2 lg:order-1"
+              isExpanded ? "order-2" : "xl:col-span-3 order-2 xl:order-1"
             } transition-all duration-500 ${lightsOff ? "opacity-20" : ""}`}
           >
-            <div className="p-4 md:p-5">
+            <div className="p-3 md:p-4">
               {/* Header */}
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-3">
                 <div>
@@ -569,7 +622,7 @@ export default function WatchPage() {
                           ? decodeHtmlEntities(episode.title)
                           : `Episode ${episodeNum}`
                       }
-                      className={`group flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-300 ${
+                      className={`group flex items-center gap-2 md:gap-3 px-2 md:px-3 py-2 md:py-2.5 rounded-lg md:rounded-xl transition-all duration-300 ${
                         isActive
                           ? "bg-purple-600/15 border border-purple-500/30"
                           : "bg-white/[0.03] border border-white/[0.05] hover:bg-white/[0.08] hover:border-white/10"
@@ -577,7 +630,7 @@ export default function WatchPage() {
                     >
                       {/* Episode Number Badge */}
                       <div
-                        className={`flex items-center justify-center w-9 h-9 rounded-full text-sm font-bold flex-shrink-0 transition-all duration-300 ${
+                        className={`flex items-center justify-center w-7 h-7 md:w-8 md:h-8 rounded-full text-xs md:text-sm font-bold flex-shrink-0 transition-all duration-300 ${
                           isActive
                             ? "bg-purple-600 text-white"
                             : "bg-white/[0.08] text-white/50 group-hover:bg-white/[0.12] group-hover:text-white/70"
@@ -589,7 +642,7 @@ export default function WatchPage() {
                       {/* Episode Title */}
                       <div className="flex-1 min-w-0">
                         <p
-                          className={`text-sm font-medium truncate transition-colors duration-300 ${
+                          className={`text-xs md:text-sm font-medium truncate transition-colors duration-300 ${
                             isActive
                               ? "text-white"
                               : "text-white/60 group-hover:text-white/90"
@@ -603,9 +656,9 @@ export default function WatchPage() {
 
                       {/* Now Playing Indicator */}
                       {isActive && (
-                        <div className="flex items-center justify-center w-8 h-8 bg-purple-600 rounded-full flex-shrink-0">
+                        <div className="flex items-center justify-center flex-shrink-0">
                           <svg
-                            className="w-3.5 h-3.5 text-white ml-0.5"
+                            className="w-5 h-5 md:w-6 md:h-6 text-purple-400 ml-0.5"
                             fill="currentColor"
                             viewBox="0 0 24 24"
                           >
@@ -616,9 +669,9 @@ export default function WatchPage() {
 
                       {/* Hover Play Icon */}
                       {!isActive && (
-                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-white/0 group-hover:bg-white/10 transition-all duration-300 flex-shrink-0">
+                        <div className="flex items-center justify-center flex-shrink-0">
                           <svg
-                            className="w-3.5 h-3.5 text-white/0 group-hover:text-white/60 transition-all duration-300 ml-0.5"
+                            className="w-4 h-4 md:w-5 md:h-5 text-white/0 group-hover:text-white/60 transition-all duration-300 ml-0.5"
                             fill="currentColor"
                             viewBox="0 0 24 24"
                           >
@@ -635,7 +688,7 @@ export default function WatchPage() {
 
           {/* Main Content */}
           <div
-            className={`${isExpanded ? "order-1" : "lg:col-span-6 order-1"} ${
+            className={`${isExpanded ? "order-1" : "xl:col-span-6 order-1"} ${
               lightsOff ? "relative z-20" : ""
             }`}
           >
@@ -973,7 +1026,7 @@ export default function WatchPage() {
           </div>
 
           {/* Right Sidebar - Anime Details */}
-          <div className={isExpanded ? "order-3" : "lg:col-span-3 order-3"}>
+          <div className={isExpanded ? "order-3" : "xl:col-span-3 order-3"}>
             {data.watch_detail && (
               <div className="bg-black rounded-xl md:rounded-2xl p-3 md:p-4 shadow-2xl">
                 {/* Anime Poster and Title */}
@@ -994,44 +1047,44 @@ export default function WatchPage() {
                       </h2>
 
                       {/* Badges */}
-                      <div className="flex flex-wrap items-center justify-start gap-1 md:gap-1.5 mb-2">
-                        <span className="inline-flex items-center justify-center px-2 py-1 bg-white/10 border border-white/10 text-white/70 rounded text-xs font-medium">
-                          {data.watch_detail.content_rating}
-                        </span>
-                        <span className="inline-flex items-center justify-center px-2 py-1 bg-green-500/15 border border-green-500/30 text-green-300 rounded text-xs font-medium">
-                          {data.watch_detail.quality}
-                        </span>
-                        <span className="inline-flex items-center justify-center gap-1 px-2 py-1 bg-purple-500/15 border border-purple-500/30 text-purple-300 rounded text-xs font-medium">
-                          <Image
-                            src="/cc.svg"
-                            alt="CC"
-                            width={10}
-                            height={10}
-                            className="brightness-0 invert"
-                          />
-                          <span>{data.watch_detail.sub_count}</span>
-                        </span>
-                        {data.watch_detail.type === "TV" && (
-                          <span className="inline-flex items-center justify-center gap-1 px-2 py-1 bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 rounded text-xs font-medium">
-                            <Image
-                              src="/mic.svg"
-                              alt="mic"
-                              width={9}
-                              height={9}
-                              className="brightness-0 invert"
-                            />
-                            <span>DUB</span>
+                      <div className="flex flex-wrap items-center justify-start gap-1 mb-2">
+                        {data.watch_detail.content_rating && (
+                          <span className="badge badge-gray px-1.5 py-0.5 text-[9px] md:text-[10px] whitespace-nowrap">
+                            {data.watch_detail.content_rating}
                           </span>
                         )}
-                        <span className="inline-flex items-center justify-center px-2 py-1 bg-blue-500/15 border border-blue-500/30 text-blue-300 rounded text-xs font-medium">
-                          {data.total_episodes}
-                        </span>
-                        <span className="inline-flex items-center justify-center px-2 py-1 bg-purple-500/15 border border-purple-500/30 text-purple-300 rounded text-xs font-medium">
-                          {data.watch_detail.type}
-                        </span>
-                        <span className="inline-flex items-center justify-center px-2 py-1 bg-orange-500/15 border border-orange-500/30 text-orange-300 rounded text-xs font-medium">
-                          {data.watch_detail.duration}
-                        </span>
+                        {data.watch_detail.quality && (
+                          <span className="badge badge-blue px-1.5 py-0.5 text-[9px] md:text-[10px] whitespace-nowrap">
+                            {data.watch_detail.quality}
+                          </span>
+                        )}
+                        {data.watch_detail.sub_count && (
+                          <span className="badge badge-purple px-1.5 py-0.5 text-[9px] md:text-[10px] whitespace-nowrap">
+                            <Image
+                              src="/cc.svg"
+                              alt="CC"
+                              width={8}
+                              height={8}
+                              className="brightness-0 invert"
+                            />
+                            <span>{data.watch_detail.sub_count}</span>
+                          </span>
+                        )}
+                        {data.total_episodes && (
+                          <span className="badge badge-blue px-1.5 py-0.5 text-[9px] md:text-[10px] whitespace-nowrap">
+                            Eps: {data.total_episodes}
+                          </span>
+                        )}
+                        {data.watch_detail.type && (
+                          <span className="badge badge-pink px-1.5 py-0.5 text-[9px] md:text-[10px] whitespace-nowrap">
+                            {data.watch_detail.type}
+                          </span>
+                        )}
+                        {data.watch_detail.duration && (
+                          <span className="badge badge-gray px-1.5 py-0.5 text-[9px] md:text-[10px] whitespace-nowrap">
+                            {data.watch_detail.duration}
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -1058,7 +1111,7 @@ export default function WatchPage() {
                         <Link
                           href={season.url}
                           key={index}
-                          className={`flex items-center p-2.5 rounded-xl backdrop-blur-md border transition-all duration-300 hover:scale-[1.02] ${
+                          className={`flex items-center p-2.5 rounded-xl backdrop-blur-md border transition-all duration-300 ${
                             season.active
                               ? "bg-blue-500/20 border-blue-400/30 ring-1 ring-blue-400/20"
                               : "bg-black/20 border-white/10 hover:bg-black/30 hover:border-white/20"

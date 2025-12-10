@@ -70,7 +70,23 @@ export function AnimeInfoPage({ animeInfo, topAnimeData }: AnimeInfoPageProps) {
         <nav className="flex items-center space-x-2 text-sm text-white/60 mb-8">
           {breadcrumbs.map((breadcrumb, index) => (
             <div key={index} className="flex items-center">
-              {index > 0 && <span className="mx-2">•</span>}
+              {index > 0 && (
+                <span className="mx-2">
+                  <svg
+                    className="w-4 h-4 mx-3 text-white/40"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 5l7 7-7 7"
+                    />
+                  </svg>
+                </span>
+              )}
               {index === breadcrumbs.length - 1 ? (
                 <span className="text-white">{breadcrumb.label}</span>
               ) : (
@@ -112,12 +128,12 @@ export function AnimeInfoPage({ animeInfo, topAnimeData }: AnimeInfoPageProps) {
                 {/* Tags */}
                 <div className="flex flex-wrap items-center gap-2 mb-6">
                   {animeInfo.quality && (
-                    <span className="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium bg-[linear-gradient(to_right,rgba(59,130,246,0.25),rgba(59,130,246,0.08))] ring-1 ring-blue-500/40 text-blue-200 shadow-[0_0_0_1px_rgba(59,130,246,0.2)] backdrop-blur-sm rounded-full">
+                    <span className="badge badge-blue px-3 py-1 text-xs">
                       {animeInfo.quality}
                     </span>
                   )}
                   {animeInfo.sub_count && animeInfo.sub_count !== "0" && (
-                    <span className="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium bg-[linear-gradient(to_right,rgba(147,51,234,0.25),rgba(147,51,234,0.08))] ring-1 ring-purple-500/40 text-purple-200 shadow-[0_0_0_1px_rgba(147,51,234,0.2)] backdrop-blur-sm rounded-full">
+                    <span className="badge badge-purple px-3 py-1 text-xs">
                       <Image
                         src="/cc.svg"
                         alt="CC"
@@ -129,7 +145,7 @@ export function AnimeInfoPage({ animeInfo, topAnimeData }: AnimeInfoPageProps) {
                     </span>
                   )}
                   {animeInfo.dub_count && animeInfo.dub_count !== "0" && (
-                    <span className="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium bg-[linear-gradient(to_right,rgba(16,185,129,0.25),rgba(16,185,129,0.08))] ring-1 ring-emerald-500/40 text-emerald-200 shadow-[0_0_0_1px_rgba(16,185,129,0.25)] backdrop-blur-sm rounded-full">
+                    <span className="badge badge-emerald px-3 py-1 text-xs">
                       <Image
                         src="/mic.svg"
                         alt="MIC"
@@ -140,10 +156,10 @@ export function AnimeInfoPage({ animeInfo, topAnimeData }: AnimeInfoPageProps) {
                       {animeInfo.dub_count}
                     </span>
                   )}
-                  <span className="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium bg-[linear-gradient(to_right,rgba(236,72,153,0.25),rgba(236,72,153,0.08))] ring-1 ring-pink-500/40 text-pink-200 shadow-[0_0_0_1px_rgba(236,72,153,0.2)] backdrop-blur-sm rounded-full">
+                  <span className="badge badge-pink px-3 py-1 text-xs">
                     {getAnimeType()}
                   </span>
-                  <span className="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium bg-[linear-gradient(to_right,rgba(75,85,99,0.25),rgba(75,85,99,0.08))] ring-1 ring-gray-500/40 text-gray-200 shadow-[0_0_0_1px_rgba(75,85,99,0.2)] backdrop-blur-sm rounded-full">
+                  <span className="badge badge-gray px-3 py-1 text-xs">
                     {animeInfo.info?.Duration || "24m"}
                   </span>
                 </div>
@@ -187,7 +203,7 @@ export function AnimeInfoPage({ animeInfo, topAnimeData }: AnimeInfoPageProps) {
                         onClick={() =>
                           setShowFullDescription(!showFullDescription)
                         }
-                        className="text-purple-400 hover:cursor-pointer hover:text-purple-300 mt-2 text-sm font-medium"
+                        className="text-purple-500 hover:cursor-pointer hover:text-purple-400 mt-2 text-sm font-medium"
                       >
                         {showFullDescription ? "- Less" : "+ More"}
                       </button>

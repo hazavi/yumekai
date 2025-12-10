@@ -116,7 +116,7 @@ export function TopAnime({ data, title = "Top Anime" }: TopAnimeProps) {
                   onClick={() => setActiveTab(tab.key)}
                   className={`px-2 py-1 text-xs font-medium rounded transition-all duration-200 hover:cursor-pointer ${
                     isActive
-                      ? "bg-[linear-gradient(to_right,rgba(147,51,234,0.3),rgba(147,51,234,0.1))] text-white ring-1 ring-purple-500/40 backdrop-blur-sm"
+                      ? "tab-purple-active"
                       : "text-white/70 hover:text-white/90 hover:bg-white/5"
                   }`}
                 >
@@ -176,7 +176,7 @@ export function TopAnime({ data, title = "Top Anime" }: TopAnimeProps) {
                         {anime.qtip && (
                           <div className="flex items-center gap-1.5 mt-2">
                             {anime.qtip.sub && (
-                              <span className="inline-flex items-center gap-1 pl-1.5 pr-2 py-1 rounded-full text-[10px] font-medium bg-[linear-gradient(to_right,rgba(147,51,234,0.25),rgba(147,51,234,0.08))] ring-1 ring-purple-500/40 text-purple-200 backdrop-blur-sm">
+                              <span className="badge badge-purple pl-1.5 pr-2 py-1 text-[10px]">
                                 <Image
                                   src="/cc.svg"
                                   alt="CC"
@@ -188,7 +188,7 @@ export function TopAnime({ data, title = "Top Anime" }: TopAnimeProps) {
                               </span>
                             )}
                             {anime.qtip.dub && (
-                              <span className="inline-flex items-center gap-1 pl-1.5 pr-2 py-1 rounded-full text-[10px] font-medium bg-[linear-gradient(to_right,rgba(16,185,129,0.25),rgba(16,185,129,0.08))] ring-1 ring-emerald-500/40 text-emerald-200 backdrop-blur-sm">
+                              <span className="badge badge-emerald pl-1.5 pr-2 py-1 text-[10px]">
                                 <Image
                                   src="/mic.svg"
                                   alt="Mic"

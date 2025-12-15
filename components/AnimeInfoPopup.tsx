@@ -12,6 +12,7 @@ interface AnimeInfoPopupProps {
   isVisible: boolean;
   position: { x: number; y: number };
   isSidebar?: boolean;
+  badgeType?: "latest" | "recent" | "upcoming";
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
 }
@@ -23,6 +24,7 @@ export function AnimeInfoPopup({
   isVisible,
   position,
   isSidebar = false,
+  badgeType = "latest",
   onMouseEnter,
   onMouseLeave,
 }: AnimeInfoPopupProps) {
@@ -217,12 +219,13 @@ export function AnimeInfoPopup({
           {qtip.genres && qtip.genres.length > 0 && (
             <div className="flex flex-wrap gap-1">
               {qtip.genres.slice(0, 4).map((genre, index) => (
-                <span
+                <a
                   key={index}
-                  className="px-2 py-0.5 bg-white/10 text-white/70 text-[10px] rounded-full"
+                  href={`/genre/${genre.toLowerCase().replace(/\s+/g, "-")}`}
+                  className="px-2 py-0.5 bg-white/10 text-white/70 text-[10px] rounded-full hover:bg-white/20 hover:text-white transition-colors"
                 >
                   {genre}
-                </span>
+                </a>
               ))}
               {qtip.genres.length > 4 && (
                 <span className="px-2 py-0.5 text-white/40 text-[10px]">
@@ -233,16 +236,28 @@ export function AnimeInfoPopup({
           )}
         </div>
 
-        {/* Watch Now Button */}
+        {/* Watch Now Button - Hidden for upcoming anime */}
         <div className="p-4 pt-2 flex items-center gap-2 border-t border-white/5">
-          <a href={qtip.watch_url || slug} className="block flex-1">
-            <button className="w-full bg-white hover:bg-gray-100 text-black font-semibold py-2.5 px-4 rounded-full transition-colors duration-200 flex items-center justify-center gap-2 cursor-pointer">
-              <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-                <path d="M8 5v14l11-7z" />
-              </svg>
-              Watch Now
-            </button>
-          </a>
+          {badgeType !== "upcoming" ? (
+            <a href={qtip.watch_url || slug} className="block flex-1">
+              <button className="w-full bg-white hover:bg-gray-100 text-black font-semibold py-2.5 px-4 rounded-full transition-colors duration-200 flex items-center justify-center gap-2 cursor-pointer">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  className="w-5 h-5"
+                >
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+                Watch Now
+              </button>
+            </a>
+          ) : (
+            <a href={slug} className="block flex-1">
+              <button className="w-full bg-white hover:bg-gray-100 text-black font-semibold py-2.5 px-4 rounded-full transition-colors duration-200 flex items-center justify-center gap-2 cursor-pointer">
+                View Details
+              </button>
+            </a>
+          )}
           <AddToListButton
             anime={{
               animeId: slug,

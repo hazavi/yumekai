@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { searchUsers, UserSearchResult } from "@/services/animeListService";
@@ -11,6 +11,27 @@ export function UserSearchPage() {
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
 
+  // Memoized search handler
+  const performSearch = useCallback(async (query: string) => {
+    if (!query.trim()) {
+      setSearchResults([]);
+      setHasSearched(false);
+      return;
+    }
+
+    setLoading(true);
+    setHasSearched(true);
+    try {
+      const results = await searchUsers(query);
+      setSearchResults(results);
+    } catch (error) {
+      console.error("Error searching users:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Debounced search effect
   useEffect(() => {
     if (!searchQuery.trim()) {
       setSearchResults([]);
@@ -18,21 +39,72 @@ export function UserSearchPage() {
       return;
     }
 
-    const timer = setTimeout(async () => {
-      setLoading(true);
-      setHasSearched(true);
-      try {
-        const results = await searchUsers(searchQuery);
-        setSearchResults(results);
-      } catch (error) {
-        console.error("Error searching users:", error);
-      } finally {
-        setLoading(false);
-      }
+    const timer = setTimeout(() => {
+      performSearch(searchQuery);
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [searchQuery]);
+  }, [searchQuery, performSearch]);
+
+  // Memoized input change handler
+  const handleInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setSearchQuery(e.target.value);
+    },
+    []
+  );
+
+  // Memoized search results rendering
+  const renderedResults = useMemo(
+    () =>
+      searchResults.map((user) => (
+        <Link
+          key={user.uid}
+          href={`/user/${user.username}`}
+          className="flex items-center gap-4 p-4 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 hover:border-purple-500/50 hover:bg-white/10 transition-all"
+        >
+          {/* Avatar */}
+          <div className="relative w-14 h-14 rounded-full overflow-hidden bg-gradient-to-br from-purple-600 to-pink-600 flex-shrink-0">
+            {user.photoURL ? (
+              <Image
+                src={user.photoURL}
+                alt={user.displayName || user.username}
+                fill
+                className="object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-white text-xl font-bold">
+                {(user.displayName || user.username).charAt(0).toUpperCase()}
+              </div>
+            )}
+          </div>
+
+          {/* Info */}
+          <div className="flex-1 min-w-0">
+            <h3 className="text-white font-medium truncate">
+              {user.displayName || user.username}
+            </h3>
+            <p className="text-gray-400 text-sm">@{user.username}</p>
+          </div>
+
+          {/* Arrow */}
+          <svg
+            className="w-5 h-5 text-gray-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 5l7 7-7 7"
+            />
+          </svg>
+        </Link>
+      )),
+    [searchResults]
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0f0f1a] to-[#1a1a2e] pt-24">
@@ -65,7 +137,7 @@ export function UserSearchPage() {
           <input
             type="text"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={handleInputChange}
             placeholder="Search by username..."
             className="w-full pl-12 pr-4 py-4 bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 transition-colors text-lg"
             autoFocus
@@ -79,54 +151,7 @@ export function UserSearchPage() {
 
         {/* Search Results */}
         <div className="space-y-3">
-          {searchResults.map((user) => (
-            <Link
-              key={user.uid}
-              href={`/user/${user.username}`}
-              className="flex items-center gap-4 p-4 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 hover:border-purple-500/50 hover:bg-white/10 transition-all"
-            >
-              {/* Avatar */}
-              <div className="relative w-14 h-14 rounded-full overflow-hidden bg-gradient-to-br from-purple-600 to-pink-600 flex-shrink-0">
-                {user.photoURL ? (
-                  <Image
-                    src={user.photoURL}
-                    alt={user.displayName || user.username}
-                    fill
-                    className="object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-white text-xl font-bold">
-                    {(user.displayName || user.username)
-                      .charAt(0)
-                      .toUpperCase()}
-                  </div>
-                )}
-              </div>
-
-              {/* Info */}
-              <div className="flex-1 min-w-0">
-                <h3 className="text-white font-medium truncate">
-                  {user.displayName || user.username}
-                </h3>
-                <p className="text-gray-400 text-sm">@{user.username}</p>
-              </div>
-
-              {/* Arrow */}
-              <svg
-                className="w-5 h-5 text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-            </Link>
-          ))}
+          {renderedResults}
 
           {/* No Results */}
           {hasSearched && !loading && searchResults.length === 0 && (

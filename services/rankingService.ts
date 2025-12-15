@@ -60,8 +60,15 @@ export async function removeRankedAnime(userId: string, rank: number): Promise<v
 
 // Search anime for ranking (using existing search API)
 export async function searchAnimeForRanking(query: string): Promise<RankedAnime[]> {
+  if (!query.trim()) return [];
+  
   try {
     const response = await api.search(query);
+    
+    // Handle empty or invalid response
+    if (!response?.results || !Array.isArray(response.results)) {
+      return [];
+    }
     
     return response.results.slice(0, 10).map((anime) => ({
       rank: 0, // Will be set when adding to rankings
@@ -70,7 +77,10 @@ export async function searchAnimeForRanking(query: string): Promise<RankedAnime[
       poster: anime.thumbnail,
     }));
   } catch (error) {
-    console.error('Error searching anime:', error);
+    // Don't log timeout errors as they're expected sometimes
+    if (error instanceof Error && !error.message.includes('timeout')) {
+      console.error('Error searching anime:', error);
+    }
     return [];
   }
 }

@@ -6,10 +6,22 @@ import Image from "next/image";
 import { api } from "@/services/api";
 import { saveContinueWatching } from "@/services/continueWatchingService";
 import { useAuth } from "@/contexts/AuthContext";
-import { AnimeCard } from "@/components/AnimeCard";
-import { useEffect, useState, useRef } from "react";
+import {
+  useEffect,
+  useState,
+  useRef,
+  useMemo,
+  useCallback,
+  lazy,
+  Suspense,
+} from "react";
 import { decodeHtmlEntities } from "@/utils/html";
 import type { WatchData, Episode, ServerItem, SimpleServer } from "@/types";
+
+// Lazy load heavy components
+const AnimeCard = lazy(() =>
+  import("@/components/AnimeCard").then((m) => ({ default: m.AnimeCard }))
+);
 
 /**
  * Watch Page Security / Ad Mitigation Notes
@@ -81,6 +93,7 @@ export default function WatchPage() {
 
   const [data, setData] = useState<WatchData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [currentIframeSrc, setCurrentIframeSrc] = useState<string>("");
   const [isExpanded, setIsExpanded] = useState(false);
   const [lightsOff, setLightsOff] = useState(false);
@@ -96,6 +109,41 @@ export default function WatchPage() {
 
   // Track if we've saved continue watching for current episode
   const savedContinueWatchingRef = useRef<string>("");
+
+  // Memoized computed values for performance
+  const currentEpNumber = useMemo(() => (ep ? parseInt(ep) : 1), [ep]);
+
+  const currentEpisode = useMemo(() => {
+    if (!data?.episodes) return undefined;
+    return (
+      data.episodes.find((episode) => episode.episode_nr === currentEpNumber) ||
+      data.episodes[0]
+    );
+  }, [data?.episodes, currentEpNumber]);
+
+  const sortedEpisodeNumbers = useMemo(() => {
+    if (!data?.total_episodes) return [];
+    const episodes = Array.from(
+      { length: data.total_episodes },
+      (_, i) => i + 1
+    );
+    return episodeSortOrder === "desc" ? episodes.reverse() : episodes;
+  }, [data?.total_episodes, episodeSortOrder]);
+
+  // Create episode lookup map for O(1) access
+  const episodeMap = useMemo(() => {
+    if (!data?.episodes) return new Map<number, Episode>();
+    const map = new Map<number, Episode>();
+    data.episodes.forEach((ep) => map.set(ep.episode_nr, ep));
+    return map;
+  }, [data?.episodes]);
+
+  // Memoized callbacks for toggle handlers
+  const toggleExpanded = useCallback(() => setIsExpanded((prev) => !prev), []);
+  const toggleLights = useCallback(() => setLightsOff((prev) => !prev), []);
+  const toggleSortOrder = useCallback(() => {
+    setEpisodeSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+  }, []);
 
   // Save sort order to localStorage whenever it changes
   useEffect(() => {
@@ -139,12 +187,19 @@ export default function WatchPage() {
   useEffect(() => {
     let active = true;
     setLoading(true);
+    setError(null);
 
     async function run() {
       try {
         const watchData = await getWatchData(slug, ep || undefined);
         if (active) {
+          if (!watchData) {
+            setError("Failed to load video data. Please try again.");
+            setData(null);
+            return;
+          }
           setData(watchData);
+          setError(null);
           // Set initial iframe source when data is loaded
           if (watchData) {
             const currentEpNumber = ep ? parseInt(ep) : 1;
@@ -152,8 +207,6 @@ export default function WatchPage() {
               watchData.episodes.find(
                 (episode) => episode.episode_nr === currentEpNumber
               ) || watchData.episodes[0];
-
-            console.log("Current episode:", currentEpisode);
 
             // Use helper function to get iframe source
             const iframeSrc = getIframeSrc(currentEpisode);
@@ -164,7 +217,12 @@ export default function WatchPage() {
         }
       } catch (e) {
         console.error("Error loading watch data:", e);
-        if (active) setData(null);
+        if (active) {
+          setError(
+            e instanceof Error ? e.message : "Failed to load video data"
+          );
+          setData(null);
+        }
       } finally {
         if (active) setLoading(false);
       }
@@ -178,212 +236,49 @@ export default function WatchPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-black pt-20">
-        {/* Animated background */}
-        <div className="fixed inset-0 -z-10">
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-black to-pink-900/20" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,rgba(120,119,198,0.3),transparent_50%)]" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(255,119,198,0.3),transparent_50%)]" />
-        </div>
+        {/* Simple background */}
+        <div className="fixed inset-0 -z-10 bg-gradient-to-br from-purple-900/20 via-black to-pink-900/20" />
 
-        {/* Breadcrumb Skeleton */}
-        <div className="py-6 px-6 border-b border-white/10 bg-black/40 backdrop-blur-md">
+        {/* Minimal Breadcrumb Skeleton */}
+        <div className="py-4 px-6 bg-black/40">
           <div className="container mx-auto">
-            <div className="flex items-center text-sm text-white/70">
-              <div className="w-12 h-4 bg-white/10 animate-pulse rounded-lg"></div>
-              <div className="w-4 h-4 mx-3 bg-white/10 animate-pulse rounded"></div>
-              <div className="w-8 h-4 bg-white/10 animate-pulse rounded-lg"></div>
-              <div className="w-4 h-4 mx-3 bg-white/10 animate-pulse rounded"></div>
-              <div className="w-32 h-4 bg-white/10 animate-pulse rounded-lg"></div>
+            <div className="flex items-center gap-2">
+              <div className="w-10 h-4 bg-white/10 rounded" />
+              <div className="w-4 h-4 bg-white/10 rounded" />
+              <div className="w-24 h-4 bg-white/10 rounded" />
             </div>
           </div>
         </div>
 
-        <div className="container mx-auto px-3 md:px-6 py-4 md:py-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-8">
-            {/* Left Sidebar Skeleton - Episodes List */}
-            <div className="lg:col-span-3 order-2 lg:order-1">
-              <div className="p-4 md:p-5">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <div className="w-20 h-5 bg-white/10 animate-pulse rounded-lg mb-1"></div>
-                    <div className="w-28 h-3 bg-white/10 animate-pulse rounded"></div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-16 h-7 bg-white/10 animate-pulse rounded-md"></div>
-                    <div className="w-12 h-7 bg-white/10 animate-pulse rounded-md"></div>
-                  </div>
-                </div>
-
-                <div className="space-y-1 max-h-[500px] overflow-y-auto">
-                  {Array.from({ length: 10 }, (_, i) => (
-                    <div
-                      key={i}
-                      className="flex items-center gap-3 px-3 py-3 bg-white/[0.03] border border-white/[0.05] rounded-xl"
-                    >
-                      <div className="w-9 h-9 bg-white/10 animate-pulse rounded-full flex-shrink-0"></div>
-                      <div className="flex-1 min-w-0">
-                        <div className="w-3/4 h-4 bg-white/10 animate-pulse rounded"></div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Main Content Skeleton */}
-            <div className="lg:col-span-6 order-1 lg:order-2">
-              {/* Video Player Skeleton */}
-              <div className="relative group">
-                <div className="bg-black/40 backdrop-blur-md border border-white/10 rounded-2xl shadow-2xl overflow-hidden">
-                  <div className="relative aspect-video bg-white/5 flex items-center justify-center">
-                    <div className="text-center space-y-4">
-                      <div className="w-16 h-16 bg-white/10 animate-pulse rounded-xl mx-auto"></div>
-                      <div className="w-32 h-4 bg-white/10 animate-pulse rounded-lg mx-auto"></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Video Control Bar Skeleton */}
-              <div className="bg-black/40 backdrop-blur-md border border-white/10 rounded-xl p-2 shadow-2xl mt-4">
-                <div className="flex items-center justify-between">
-                  {/* Left Side - Control Buttons Skeleton (Hidden on mobile) */}
-                  <div className="hidden sm:flex items-center gap-3">
-                    <div className="w-8 h-8 bg-white/10 animate-pulse rounded-lg"></div>
-                    <div className="w-8 h-8 bg-white/10 animate-pulse rounded-lg"></div>
-                  </div>
-
-                  {/* Right Side - Navigation Buttons Skeleton */}
-                  <div className="flex items-center gap-2">
-                    <div className="w-16 h-7 bg-white/10 animate-pulse rounded-lg"></div>
-                    <div className="w-16 h-7 bg-white/10 animate-pulse rounded-lg"></div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Server Selection Skeleton */}
-              <div className="bg-black/40 backdrop-blur-md border border-white/10 rounded-xl p-3 md:p-4 shadow-2xl mt-4">
-                <div className="flex flex-col md:grid md:grid-cols-3 gap-3 md:gap-6">
-                  {/* Left Column - Episode Info Skeleton */}
-                  <div className="md:col-span-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <div className="w-8 h-8 bg-white/10 animate-pulse rounded-lg"></div>
-                      <div className="w-20 h-5 bg-white/10 animate-pulse rounded-lg"></div>
-                    </div>
-                    <div className="w-48 h-3 bg-white/10 animate-pulse rounded"></div>
-                  </div>
-
-                  {/* Right Column - Server Buttons Skeleton */}
-                  <div className="md:col-span-2 space-y-2 md:space-y-3">
-                    {/* SUB Servers Skeleton */}
-                    <div className="flex items-center gap-3">
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        <div className="w-4 h-4 bg-white/10 animate-pulse rounded"></div>
-                        <div className="w-8 h-4 bg-white/10 animate-pulse rounded"></div>
-                      </div>
-                      <div className="flex gap-2 flex-wrap">
-                        {Array.from({ length: 2 }, (_, i) => (
-                          <div
-                            key={i}
-                            className="w-14 h-7 bg-white/10 animate-pulse rounded-sm"
-                          ></div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* DUB Servers Skeleton */}
-                    <div className="flex items-center gap-3">
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        <div className="w-4 h-4 bg-white/10 animate-pulse rounded"></div>
-                        <div className="w-8 h-4 bg-white/10 animate-pulse rounded"></div>
-                      </div>
-                      <div className="flex gap-2 flex-wrap">
-                        {Array.from({ length: 2 }, (_, i) => (
-                          <div
-                            key={i}
-                            className="w-14 h-7 bg-white/10 animate-pulse rounded-sm"
-                          ></div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Right Sidebar Skeleton - Anime Details */}
-            <div className="lg:col-span-3 order-3">
-              <div className="bg-black rounded-2xl p-4 shadow-2xl">
-                {/* Anime Poster Skeleton */}
-                <div className="mb-4">
-                  <div className="mb-4">
-                    <div className="w-32 h-48 bg-white/10 animate-pulse mb-4"></div>
-                    <div>
-                      <div className="w-40 h-5 bg-white/10 animate-pulse rounded-lg mb-3"></div>
-
-                      {/* Badges Skeleton */}
-                      <div className="flex flex-wrap gap-1 mb-2">
-                        {Array.from({ length: 6 }, (_, i) => (
-                          <div
-                            key={i}
-                            className="w-8 h-4 bg-white/10 animate-pulse rounded"
-                          ></div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Description Skeleton */}
-                <div className="bg-black/80 rounded-lg p-3">
-                  <div className="space-y-2 max-h-32">
-                    <div className="w-full h-3 bg-white/10 animate-pulse rounded"></div>
-                    <div className="w-full h-3 bg-white/10 animate-pulse rounded"></div>
-                    <div className="w-full h-3 bg-white/10 animate-pulse rounded"></div>
-                    <div className="w-full h-3 bg-white/10 animate-pulse rounded"></div>
-                    <div className="w-full h-3 bg-white/10 animate-pulse rounded"></div>
-                    <div className="w-full h-3 bg-white/10 animate-pulse rounded"></div>
-                    <div className="w-3/4 h-3 bg-white/10 animate-pulse rounded"></div>
-                  </div>
-                </div>
-
-                {/* Other Seasons Skeleton */}
-                <div className="mt-4">
-                  <div className="w-24 h-4 bg-white/10 animate-pulse rounded-lg mb-3"></div>
-                  <div className="space-y-2 max-h-[125px] overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
-                    {Array.from({ length: 2 }, (_, i) => (
-                      <div
-                        key={i}
-                        className="flex items-center p-2.5 rounded-xl bg-white/5 border border-white/10"
-                      >
-                        <div className="w-8 h-12 bg-white/10 animate-pulse rounded flex-shrink-0 mr-3"></div>
-                        <div className="flex-1 min-w-0">
-                          <div className="w-24 h-3 bg-white/10 animate-pulse rounded mb-1"></div>
-                          <div className="w-16 h-2 bg-white/10 animate-pulse rounded"></div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Recommendations Skeleton */}
-          <div className="mt-12">
-            <div className="bg-black/20 backdrop-blur-md border border-white/10 rounded-2xl p-8 shadow-2xl">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 bg-white/10 animate-pulse rounded-xl"></div>
-                <div className="w-40 h-6 bg-white/10 animate-pulse rounded-lg"></div>
-              </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4">
-                {Array.from({ length: 8 }, (_, i) => (
-                  <div key={i} className="space-y-2">
-                    <div className="aspect-[3/4] bg-white/10 animate-pulse rounded-xl"></div>
-                    <div className="w-full h-3 bg-white/10 animate-pulse rounded"></div>
-                    <div className="w-3/4 h-3 bg-white/10 animate-pulse rounded"></div>
-                  </div>
+        <div className="container mx-auto px-3 md:px-6 py-4">
+          <div className="grid grid-cols-1 xl:grid-cols-12 gap-4">
+            {/* Episodes Skeleton - hidden on mobile initially */}
+            <div className="hidden xl:block xl:col-span-3 order-2 xl:order-1">
+              <div className="space-y-1">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="h-10 bg-white/5 rounded-lg" />
                 ))}
+              </div>
+            </div>
+
+            {/* Video Player Skeleton - Priority */}
+            <div className="xl:col-span-6 order-1">
+              <div className="aspect-video bg-white/5 rounded-xl flex items-center justify-center">
+                <div className="w-12 h-12 border-2 border-white/20 border-t-purple-500 rounded-full animate-spin" />
+              </div>
+              <div className="mt-3 h-10 bg-white/5 rounded-lg" />
+            </div>
+
+            {/* Anime Info Skeleton */}
+            <div className="xl:col-span-3 order-3">
+              <div className="bg-black/40 rounded-xl p-4">
+                <div className="flex gap-3">
+                  <div className="w-20 h-28 bg-white/10 rounded" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 bg-white/10 rounded w-3/4" />
+                    <div className="h-3 bg-white/10 rounded w-1/2" />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -392,16 +287,56 @@ export default function WatchPage() {
     );
   }
 
-  if (!data) {
-    notFound();
+  // Show error state with retry option
+  if (error || !data) {
+    return (
+      <div className="min-h-screen bg-black pt-20">
+        <div className="fixed inset-0 -z-10">
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-black to-pink-900/20" />
+        </div>
+        <div className="container mx-auto px-6 py-20 flex flex-col items-center justify-center">
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-8 max-w-md w-full text-center">
+            <svg
+              className="w-16 h-16 text-red-400 mx-auto mb-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
+            </svg>
+            <h2 className="text-xl font-bold text-white mb-2">
+              Failed to Load Video
+            </h2>
+            <p className="text-white/60 mb-6">
+              {error ||
+                "The video data could not be loaded. This might be due to a slow connection or server issues."}
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <button
+                onClick={() => window.location.reload()}
+                className="px-6 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-xl transition-colors"
+              >
+                Try Again
+              </button>
+              <Link
+                href={`/${slug}`}
+                className="px-6 py-2.5 bg-white/10 hover:bg-white/15 text-white font-medium rounded-xl transition-colors"
+              >
+                View Anime Details
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
-  const currentEpNumber = ep ? parseInt(ep) : 1;
-  const currentEpisode =
-    data.episodes.find((episode) => episode.episode_nr === currentEpNumber) ||
-    data.episodes[0];
-
-  // Format breadcrumb episode text
+  // Format breadcrumb episode text - use memoized currentEpisode and currentEpNumber
   const getBreadcrumbEpisodeText = () => {
     if (!currentEpisode?.title) {
       return `Episode ${currentEpNumber}`;
@@ -540,11 +475,7 @@ export default function WatchPage() {
                 <div className="flex items-center gap-2 w-full sm:w-auto">
                   {/* Sort Toggle Button */}
                   <button
-                    onClick={() =>
-                      setEpisodeSortOrder((prev) =>
-                        prev === "asc" ? "desc" : "asc"
-                      )
-                    }
+                    onClick={toggleSortOrder}
                     className="flex items-center gap-1 px-2 py-1.5 bg-white/5 border border-white/10 rounded-md text-white/60 hover:text-white/90 hover:bg-white/[0.08] hover:border-purple-500/30 transition-all duration-200 flex-shrink-0"
                     title={
                       episodeSortOrder === "asc"
@@ -635,20 +566,10 @@ export default function WatchPage() {
                 </div>
               </div>
 
-              {/* Episode List */}
+              {/* Episode List - using memoized sortedEpisodeNumbers and episodeMap */}
               <div className="space-y-1 max-h-[300px] md:max-h-[500px] overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent pr-1">
-                {(() => {
-                  const episodes = Array.from(
-                    { length: data.total_episodes },
-                    (_, i) => i + 1
-                  );
-                  return episodeSortOrder === "desc"
-                    ? episodes.reverse()
-                    : episodes;
-                })().map((episodeNum) => {
-                  const episode = data.episodes.find(
-                    (ep) => ep.episode_nr === episodeNum
-                  );
+                {sortedEpisodeNumbers.map((episodeNum) => {
+                  const episode = episodeMap.get(episodeNum);
                   const isActive = episodeNum === currentEpNumber;
                   return (
                     <a
@@ -792,7 +713,7 @@ export default function WatchPage() {
                 <div className="hidden sm:flex items-center gap-2 md:gap-3">
                   {/* Expand/Contract */}
                   <button
-                    onClick={() => setIsExpanded(!isExpanded)}
+                    onClick={toggleExpanded}
                     className="flex items-center justify-center w-8 h-8 bg-white/10 hover:bg-white/20 rounded-lg transition-all duration-300 group"
                     title={isExpanded ? "Contract view" : "Expand video"}
                   >
@@ -829,7 +750,7 @@ export default function WatchPage() {
 
                   {/* Lights Toggle */}
                   <button
-                    onClick={() => setLightsOff(!lightsOff)}
+                    onClick={toggleLights}
                     className="flex items-center justify-center w-8 h-8 bg-white/10 hover:bg-white/20 rounded-lg transition-all duration-300 group"
                     title={lightsOff ? "Turn lights on" : "Turn lights off"}
                   >
@@ -1070,19 +991,28 @@ export default function WatchPage() {
                 {/* Anime Poster and Title */}
                 <div className="mb-3 md:mb-4">
                   <div className="flex md:flex-col gap-3 md:gap-0 mb-3 md:mb-4">
-                    <div className="relative group mb-0 md:mb-4 flex-shrink-0">
+                    <Link
+                      href={`/${slug}`}
+                      className="relative group mb-0 md:mb-4 flex-shrink-0 block"
+                    >
                       <Image
                         src={data.watch_detail.poster}
                         alt={data.watch_detail.title}
                         width={120}
                         height={180}
-                        className="w-20 h-28 md:w-32 md:h-48 object-cover shadow-lg transition-all duration-300 "
+                        priority
+                        className="w-20 h-28 md:w-32 md:h-48 object-cover shadow-lg transition-all duration-300 hover:scale-105"
                       />
-                    </div>
+                    </Link>
                     <div className="flex-1 min-w-0">
-                      <h2 className="text-sm md:text-lg font-bold text-white mb-2 md:mb-3 leading-tight line-clamp-2">
-                        {data.watch_detail.title}
-                      </h2>
+                      <Link
+                        href={`/${slug}`}
+                        className="block hover:text-purple-300 transition-colors"
+                      >
+                        <h2 className="text-sm md:text-lg font-bold text-white mb-2 md:mb-3 leading-tight line-clamp-2 hover:text-purple-300 transition-colors">
+                          {data.watch_detail.title}
+                        </h2>
+                      </Link>
 
                       {/* Badges */}
                       <div className="flex flex-wrap items-center justify-start gap-1 mb-2">
@@ -1190,7 +1120,7 @@ export default function WatchPage() {
           </div>
         </div>
 
-        {/* Recommendations - Full Width */}
+        {/* Recommendations - Full Width - Lazy loaded */}
         {data.recommendations && data.recommendations.length > 0 && (
           <div
             className={`mt-6 md:mt-8 transition-all duration-500 ${
@@ -1200,29 +1130,44 @@ export default function WatchPage() {
             <h2 className="text-xl md:text-2xl font-bold text-white mb-4 md:mb-6">
               You might also like
             </h2>
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-3 md:gap-4">
-              {data.recommendations.slice(0, 16).map((rec, index) => (
-                <AnimeCard
-                  key={index}
-                  anime={{
-                    title: rec.title,
-                    thumbnail: rec.poster,
-                    link: rec.url,
-                    type: rec.qtip.type,
-                    duration: rec.qtip.eps ? `${rec.qtip.eps} eps` : undefined,
-                    qtip: {
-                      ...rec.qtip,
+            <Suspense
+              fallback={
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-3 md:gap-4">
+                  {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                    <div key={i} className="space-y-2">
+                      <div className="aspect-[3/4] bg-white/10 rounded-xl" />
+                      <div className="h-3 bg-white/10 rounded w-3/4" />
+                    </div>
+                  ))}
+                </div>
+              }
+            >
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-3 md:gap-4">
+                {data.recommendations.slice(0, 16).map((rec, index) => (
+                  <AnimeCard
+                    key={index}
+                    anime={{
+                      title: rec.title,
+                      thumbnail: rec.poster,
+                      link: rec.url,
+                      type: rec.qtip.type,
+                      duration: rec.qtip.eps
+                        ? `${rec.qtip.eps} eps`
+                        : undefined,
+                      qtip: {
+                        ...rec.qtip,
+                        dub: rec.qtip.dub || undefined,
+                        synonyms: rec.qtip.synonyms || undefined,
+                      },
+                      latest_episode: rec.qtip.sub,
                       dub: rec.qtip.dub || undefined,
-                      synonyms: rec.qtip.synonyms || undefined,
-                    },
-                    latest_episode: rec.qtip.sub,
-                    dub: rec.qtip.dub || undefined,
-                  }}
-                  showMeta={true}
-                  badgeType="latest"
-                />
-              ))}
-            </div>
+                    }}
+                    showMeta={true}
+                    badgeType="latest"
+                  />
+                ))}
+              </div>
+            </Suspense>
           </div>
         )}
       </div>

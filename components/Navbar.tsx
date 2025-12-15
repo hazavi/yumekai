@@ -203,7 +203,17 @@ export function Navbar() {
 
           {/* Watch2gether Link */}
           <NavItem href="/watch2gether">
-            <span className="flex items-center gap-1.5">Watch2gether</span>
+          
+            <span className="flex items-center gap-1.5">
+              {/* <Image
+                src="/stream.svg"
+                alt="Watch2gether"
+                width={24}
+                height={24}
+                className="w-7 h-7"
+              /> */}
+              Watch2gether
+              </span>
           </NavItem>
         </nav>
         <div className="ml-auto flex items-center gap-4">

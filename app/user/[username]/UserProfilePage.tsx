@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import Image from "next/image";
 import Link from "next/link";
@@ -12,9 +12,13 @@ import {
   UserAnimeList,
   TopRankAnime,
   AnimeListStatus,
+  AnimeListItem,
   LIST_STATUS_LABELS,
   LIST_STATUS_COLORS,
 } from "@/services/animeListService";
+
+// Sort options type
+type SortOption = "newest" | "oldest";
 
 // SVG Icons
 const Icons = {
@@ -169,6 +173,21 @@ const Icons = {
       />
     </svg>
   ),
+  sort: (
+    <svg
+      className="w-4 h-4"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.5}
+        d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"
+      />
+    </svg>
+  ),
 };
 
 const STATUS_ICONS: Record<AnimeListStatus, React.ReactNode> = {
@@ -178,6 +197,15 @@ const STATUS_ICONS: Record<AnimeListStatus, React.ReactNode> = {
   dropped: Icons.x,
   "plan-to-watch": Icons.clock,
 };
+
+// Ordered list of statuses (as requested: watching, plan to watch, on hold, completed, dropped)
+const ORDERED_STATUSES: AnimeListStatus[] = [
+  "watching",
+  "plan-to-watch",
+  "on-hold",
+  "completed",
+  "dropped",
+];
 
 interface UserProfilePageProps {
   username: string;
@@ -203,6 +231,16 @@ export function UserProfilePage({ username }: UserProfilePageProps) {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<AnimeListStatus | "all">("all");
   const [currentPage, setCurrentPage] = useState(1);
+  const [sortOption, setSortOption] = useState<SortOption>(() => {
+    // Initialize from localStorage if available
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("userProfileSortOption");
+      if (saved === "newest" || saved === "oldest") {
+        return saved;
+      }
+    }
+    return "newest";
+  });
 
   const isOwnProfile =
     user && userProfile?.username?.toLowerCase() === username.toLowerCase();
@@ -231,6 +269,62 @@ export function UserProfilePage({ username }: UserProfilePageProps) {
     };
     fetchProfile();
   }, [username]);
+
+  // Memoized filtered and sorted anime list - must be before any early returns
+  const filteredAnime = useMemo(() => {
+    if (!animeLists) return [];
+
+    let animeList: AnimeListItem[];
+    if (activeTab === "all") {
+      animeList = Object.values(animeLists).flat();
+    } else {
+      animeList = animeLists[activeTab] || [];
+    }
+
+    // Sort by addedAt (when user added it to their list)
+    return [...animeList].sort((a, b) => {
+      if (sortOption === "newest") {
+        return b.addedAt - a.addedAt;
+      } else {
+        return a.addedAt - b.addedAt;
+      }
+    });
+  }, [animeLists, activeTab, sortOption]);
+
+  // Memoized pagination calculations
+  const ITEMS_PER_PAGE = 24;
+  const totalPages = useMemo(
+    () => Math.ceil(filteredAnime.length / ITEMS_PER_PAGE),
+    [filteredAnime.length]
+  );
+
+  const paginatedAnime = useMemo(
+    () =>
+      filteredAnime.slice(
+        (currentPage - 1) * ITEMS_PER_PAGE,
+        currentPage * ITEMS_PER_PAGE
+      ),
+    [filteredAnime, currentPage]
+  );
+
+  // Memoized tab change handler
+  const handleTabChange = useCallback((tab: AnimeListStatus | "all") => {
+    setActiveTab(tab);
+    setCurrentPage(1);
+  }, []);
+
+  // Memoized sort change handler
+  const handleSortChange = useCallback((newSort: SortOption) => {
+    setSortOption(newSort);
+    setCurrentPage(1);
+    // Save to localStorage
+    if (typeof window !== "undefined") {
+      localStorage.setItem("userProfileSortOption", newSort);
+    }
+  }, []);
+
+  // Display name - computed after hooks but before conditional returns
+  const displayName = profileUser?.displayName || profileUser?.username || "";
 
   if (loading) {
     return (
@@ -302,40 +396,6 @@ export function UserProfilePage({ username }: UserProfilePageProps) {
       </div>
     );
   }
-
-  const displayName = profileUser.displayName || profileUser.username;
-  const statuses: AnimeListStatus[] = [
-    "watching",
-    "completed",
-    "on-hold",
-    "dropped",
-    "plan-to-watch",
-  ];
-
-  const getFilteredAnime = () => {
-    if (!animeLists) return [];
-    if (activeTab === "all") {
-      return Object.values(animeLists)
-        .flat()
-        .sort((a, b) => b.updatedAt - a.updatedAt);
-    }
-    return animeLists[activeTab] || [];
-  };
-
-  // Pagination logic
-  const ITEMS_PER_PAGE = 24;
-  const filteredAnime = getFilteredAnime();
-  const totalPages = Math.ceil(filteredAnime.length / ITEMS_PER_PAGE);
-  const paginatedAnime = filteredAnime.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  );
-
-  // Reset page when tab changes
-  const handleTabChange = (tab: AnimeListStatus | "all") => {
-    setActiveTab(tab);
-    setCurrentPage(1);
-  };
 
   return (
     <div className="min-h-screen bg-black pt-20 pb-12">
@@ -422,7 +482,7 @@ export function UserProfilePage({ username }: UserProfilePageProps) {
                 {listCounts?.total || 0}
               </span>
             </button>
-            {statuses.map((status) => (
+            {ORDERED_STATUSES.map((status) => (
               <button
                 key={status}
                 onClick={() => handleTabChange(status)}
@@ -451,11 +511,36 @@ export function UserProfilePage({ username }: UserProfilePageProps) {
                 ? "All Anime"
                 : LIST_STATUS_LABELS[activeTab]}
             </h2>
-            {filteredAnime.length > 0 && (
-              <span className="text-xs text-white/40">
-                {filteredAnime.length} anime's
-              </span>
-            )}
+            <div className="flex items-center gap-3">
+              {/* Sort Dropdown */}
+              <div className="flex items-center gap-2">
+                <span className="text-white/40 hidden sm:inline">
+                  {Icons.sort}
+                </span>
+                <select
+                  value={sortOption}
+                  onChange={(e) =>
+                    handleSortChange(e.target.value as SortOption)
+                  }
+                  className="bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white/70 focus:outline-none focus:border-purple-500 cursor-pointer appearance-none pr-6 bg-no-repeat bg-[length:12px] bg-[center_right_6px]"
+                  style={{
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23ffffff60'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+                  }}
+                >
+                  <option value="newest" className="bg-zinc-900">
+                    Newest First
+                  </option>
+                  <option value="oldest" className="bg-zinc-900">
+                    Oldest First
+                  </option>
+                </select>
+              </div>
+              {filteredAnime.length > 0 && (
+                <span className="text-xs text-white/40">
+                  {filteredAnime.length} anime
+                </span>
+              )}
+            </div>
           </div>
 
           {paginatedAnime.length === 0 ? (

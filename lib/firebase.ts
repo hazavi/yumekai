@@ -22,12 +22,16 @@ let auth: Auth | undefined;
 let database: Database | undefined;
 let googleProvider: GoogleAuthProvider | undefined;
 
-// Initialize Firebase only on client side and only if configured
-if (typeof window !== 'undefined' && isFirebaseConfigured()) {
+// Initialize Firebase (both client and server side for API routes)
+if (isFirebaseConfigured()) {
   app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-  auth = getAuth(app);
   database = getDatabase(app);
-  googleProvider = new GoogleAuthProvider();
+  
+  // Auth and Google provider only on client side
+  if (typeof window !== 'undefined') {
+    auth = getAuth(app);
+    googleProvider = new GoogleAuthProvider();
+  }
 }
 
 export { app, auth, database, googleProvider, isFirebaseConfigured };

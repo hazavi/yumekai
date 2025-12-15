@@ -49,6 +49,7 @@ interface AnimeListTemplateProps {
   };
   genresData?: Genre[];
   basePath: string;
+  badgeType?: "latest" | "recent" | "upcoming";
 }
 
 export function AnimeListTemplate({
@@ -58,6 +59,7 @@ export function AnimeListTemplate({
   topAnimeCategoriesData,
   genresData,
   basePath,
+  badgeType = "latest",
 }: AnimeListTemplateProps) {
   const { results = [], pagination = [], page = 1 } = data || {};
   const [showPopup, setShowPopup] = useState(false);
@@ -248,7 +250,7 @@ export function AnimeListTemplate({
                       key={index + 4}
                       anime={animeCardData}
                       showMeta={true}
-                      badgeType="latest"
+                      badgeType={badgeType}
                     />
                   );
                 })}
@@ -276,7 +278,7 @@ export function AnimeListTemplate({
                       key={index}
                       anime={animeCardData}
                       showMeta={true}
-                      badgeType="latest"
+                      badgeType={badgeType}
                     />
                   );
                 })}
@@ -355,6 +357,7 @@ export function AnimeListTemplate({
             slug={currentAnime.link}
             isVisible={showPopup}
             position={popupPosition}
+            badgeType={badgeType}
             onMouseEnter={handlePopupMouseEnter}
             onMouseLeave={handlePopupMouseLeave}
           />

@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect, ReactNode } from "react";
+import { ref, get } from "firebase/database";
+import { database } from "@/lib/firebase";
 
 const STORAGE_KEY = "yumekai_site_unlocked";
 const LOCK_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
@@ -14,32 +16,85 @@ export function SiteLock({ children }: SiteLockProps) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isShaking, setIsShaking] = useState(false);
+  const [adminSettings, setAdminSettings] = useState<{
+    sitePassword?: string;
+    sitePasswordVersion?: number;
+  } | null>(null);
+
+  // Fetch admin settings (site password from database)
+  useEffect(() => {
+    const fetchAdminSettings = async () => {
+      if (!database) {
+        setAdminSettings({});
+        return;
+      }
+
+      try {
+        const settingsRef = ref(database, "adminSettings/public");
+        const snapshot = await get(settingsRef);
+        if (snapshot.exists()) {
+          setAdminSettings(snapshot.val());
+        } else {
+          setAdminSettings({});
+        }
+      } catch (error) {
+        // Permission denied or other error - use defaults
+        console.warn("Could not fetch admin settings, using defaults");
+        setAdminSettings({});
+      }
+    };
+
+    fetchAdminSettings();
+  }, []);
 
   useEffect(() => {
+    // Wait for admin settings to load
+    if (adminSettings === null) return;
+
     // Check if user has previously unlocked the site
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
-      const { timestamp } = JSON.parse(stored);
-      const now = Date.now();
-      if (now - timestamp < LOCK_DURATION) {
-        setIsUnlocked(true);
-        return;
+      try {
+        const { timestamp, version } = JSON.parse(stored);
+        const now = Date.now();
+        const currentVersion = adminSettings?.sitePasswordVersion || 1;
+
+        // Check if session is expired or password version changed
+        if (
+          now - timestamp < LOCK_DURATION &&
+          (!version || version >= currentVersion)
+        ) {
+          setIsUnlocked(true);
+          return;
+        }
+      } catch {
+        // Invalid stored data
       }
-      // Expired, remove from storage
+      // Expired or version mismatch, remove from storage
       localStorage.removeItem(STORAGE_KEY);
     }
     setIsUnlocked(false);
-  }, []);
+  }, [adminSettings]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const sitePassword = process.env.NEXT_PUBLIC_SITE_PASSWORD || "yumekai2024";
+    // Use database password (required - no env fallback)
+    const sitePassword = adminSettings?.sitePassword;
+
+    if (!sitePassword) {
+      setError("Site password not configured");
+      return;
+    }
 
     if (password === sitePassword) {
+      const currentVersion = adminSettings?.sitePasswordVersion || 1;
       localStorage.setItem(
         STORAGE_KEY,
-        JSON.stringify({ timestamp: Date.now() })
+        JSON.stringify({
+          timestamp: Date.now(),
+          version: currentVersion,
+        })
       );
       setIsUnlocked(true);
       setError("");

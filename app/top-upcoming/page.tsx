@@ -61,6 +61,7 @@ export default async function TopUpcomingPage() {
       topAnimeCategoriesData={topAnimeCategoriesData}
       genresData={genresData}
       basePath="/top-upcoming"
+      badgeType="upcoming"
     />
   );
 }

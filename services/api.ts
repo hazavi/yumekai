@@ -109,7 +109,9 @@ async function fetchJSON<T>(
         if (existing) return existing;
 
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+        // Longer timeouts for heavy endpoints: 25s for watch, 15s for search, 10s for others
+        const timeout = path.includes('/watch/') ? 25000 : path.includes('/search') ? 15000 : 10000;
+        const timeoutId = setTimeout(() => controller.abort('Request timeout'), timeout);
 
         const promise = (async () => {
           try {
@@ -139,6 +141,12 @@ async function fetchJSON<T>(
           const json = await promise;
           setInCache(key, json, ttlMs);
           return json;
+        } catch (err) {
+          // Don't cache or retry abort errors
+          if (err instanceof Error && err.name === 'AbortError') {
+            throw err;
+          }
+          throw err;
         } finally {
           removeInflight(inflightKey);
         }
@@ -146,7 +154,9 @@ async function fetchJSON<T>(
 
       // Non-GET requests with timeout
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      // Longer timeouts for heavy endpoints: 25s for watch, 15s for search, 10s for others
+      const timeout = path.includes('/watch/') ? 25000 : path.includes('/search') ? 15000 : 10000;
+      const timeoutId = setTimeout(() => controller.abort('Request timeout'), timeout);
       
       try {
         const res = await fetch(buildUrl(path), {
@@ -324,7 +334,8 @@ export const api = {
   scheduleWeek: () => 
     fetchJSON<WeeklyScheduleResponse>('/api/schedule/week'),
 
-  // Search
+  // Search - use internal API route (proxy) for CORS compatibility
+  // Uses 1 retry and 15s timeout for better reliability
   search: (query: string) => 
-    fetchJSON<{ results: BasicAnime[] }>(`/api/search?keyword=${encodeURIComponent(query)}`),
+    fetchJSON<{ results: BasicAnime[] }>(`/api/search?keyword=${encodeURIComponent(query)}`, undefined, DEFAULT_TTL_MS, { retries: 1 }),
 };

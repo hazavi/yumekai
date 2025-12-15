@@ -264,7 +264,61 @@ const Icons = {
       />
     </svg>
   ),
+  key: (
+    <svg
+      className="w-5 h-5"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.5}
+        d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
+      />
+    </svg>
+  ),
+  userGroup: (
+    <svg
+      className="w-5 h-5"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.5}
+        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+      />
+    </svg>
+  ),
+  cog: (
+    <svg
+      className="w-5 h-5"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.5}
+        d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+      />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.5}
+        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+      />
+    </svg>
+  ),
 };
+
+// Import admin UIDs
+import { ADMIN_UIDS } from "@/constants/config";
 
 export function SettingsPage({ username }: SettingsPageProps) {
   const {
@@ -292,8 +346,16 @@ export function SettingsPage({ username }: SettingsPageProps) {
   } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Admin settings state
+  const [newSitePassword, setNewSitePassword] = useState("");
+  const [confirmSitePassword, setConfirmSitePassword] = useState("");
+  const [showAdminPassword, setShowAdminPassword] = useState(false);
+
   const isAuthorized =
     user && userProfile?.username?.toLowerCase() === username.toLowerCase();
+
+  // Check if current user is an admin
+  const isAdmin = user && ADMIN_UIDS.includes(user.uid);
 
   useEffect(() => {
     if (userProfile) {
@@ -401,6 +463,96 @@ export function SettingsPage({ username }: SettingsPageProps) {
       showMessage("success", "Profile photo removed");
     } else {
       showMessage("error", result.error || "Failed to remove profile photo");
+    }
+    setLoading(null);
+  };
+
+  // Admin: Change site password
+  const handleChangeSitePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newSitePassword.trim() || !user) return;
+
+    if (newSitePassword !== confirmSitePassword) {
+      showMessage("error", "Passwords do not match");
+      return;
+    }
+
+    if (newSitePassword.length < 4) {
+      showMessage("error", "Password must be at least 4 characters");
+      return;
+    }
+
+    setLoading("sitePassword");
+    try {
+      const response = await fetch("/api/admin", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-user-uid": user.uid,
+        },
+        body: JSON.stringify({
+          action: "changePassword",
+          newPassword: newSitePassword,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        showMessage(
+          "success",
+          data.message || "Site password changed successfully"
+        );
+        setNewSitePassword("");
+        setConfirmSitePassword("");
+      } else {
+        showMessage("error", data.error || "Failed to change password");
+      }
+    } catch (error) {
+      console.error("Error changing site password:", error);
+      showMessage("error", "Failed to change site password");
+    }
+    setLoading(null);
+  };
+
+  // Admin: Logout all users
+  const handleLogoutAllUsers = async () => {
+    if (!user) return;
+
+    if (
+      !confirm(
+        "Are you sure you want to log out all users? They will need to re-enter the site password."
+      )
+    ) {
+      return;
+    }
+
+    setLoading("logoutAll");
+    try {
+      const response = await fetch("/api/admin", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-user-uid": user.uid,
+        },
+        body: JSON.stringify({
+          action: "logoutAll",
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        showMessage(
+          "success",
+          data.message || "All users have been logged out"
+        );
+      } else {
+        showMessage("error", data.error || "Failed to logout users");
+      }
+    } catch (error) {
+      console.error("Error logging out users:", error);
+      showMessage("error", "Failed to logout all users");
     }
     setLoading(null);
   };
@@ -729,6 +881,101 @@ export function SettingsPage({ username }: SettingsPageProps) {
             </button>
           </form>
         </section>
+
+        {/* Admin Settings Section - Only visible to admins */}
+        {isAdmin && (
+          <section className="glass rounded-2xl p-6 border border-amber-500/20">
+            <div className="flex items-center gap-3 mb-5">
+              <span className="text-amber-500">{Icons.cog}</span>
+              <h2 className="text-lg font-medium text-white">Admin Settings</h2>
+              <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400">
+                Admin Only
+              </span>
+            </div>
+
+            {/* Change Site Password */}
+            <form
+              onSubmit={handleChangeSitePassword}
+              className="space-y-4 mb-6"
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <span className="text-white/60">{Icons.key}</span>
+                <h3 className="text-sm font-medium text-white">
+                  Change Site Password
+                </h3>
+              </div>
+
+              <div className="relative">
+                <input
+                  type={showAdminPassword ? "text" : "password"}
+                  value={newSitePassword}
+                  onChange={(e) => setNewSitePassword(e.target.value)}
+                  placeholder="New site password"
+                  autoComplete="new-password"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-amber-500/50 transition-colors pr-12"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowAdminPassword(!showAdminPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/60 transition-colors"
+                >
+                  {showAdminPassword ? Icons.eyeOff : Icons.eye}
+                </button>
+              </div>
+
+              <input
+                type={showAdminPassword ? "text" : "password"}
+                value={confirmSitePassword}
+                onChange={(e) => setConfirmSitePassword(e.target.value)}
+                placeholder="Confirm new password"
+                autoComplete="new-password"
+                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-amber-500/50 transition-colors"
+              />
+
+              <p className="text-xs text-white/40">
+                Changing the site password will require all users to re-enter
+                the new password.
+              </p>
+
+              <button
+                type="submit"
+                disabled={loading === "sitePassword" || !newSitePassword.trim()}
+                className="w-full py-3 rounded-xl bg-amber-500/20 border border-amber-500/30 text-amber-400 font-medium hover:cursor-pointer hover:bg-amber-500/30 transition-all disabled:opacity-40 flex items-center justify-center gap-2"
+              >
+                {Icons.key}
+                {loading === "sitePassword"
+                  ? "Changing..."
+                  : "Change Site Password"}
+              </button>
+            </form>
+
+            {/* Logout All Users */}
+            <div className="pt-4 border-t border-white/10">
+              <div className="flex items-center gap-3 mb-3">
+                <span className="text-white/60">{Icons.userGroup}</span>
+                <h3 className="text-sm font-medium text-white">
+                  Session Management
+                </h3>
+              </div>
+
+              <p className="text-xs text-white/40 mb-4">
+                Force all users to re-authenticate by invalidating their site
+                access sessions.
+              </p>
+
+              <button
+                onClick={handleLogoutAllUsers}
+                disabled={loading === "logoutAll"}
+                className="w-full py-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 font-medium hover:cursor-pointer hover:bg-red-500/20 transition-all disabled:opacity-40 flex items-center justify-center gap-2"
+              >
+                {Icons.logout}
+                {loading === "logoutAll"
+                  ? "Logging out..."
+                  : "Logout All Users"}
+              </button>
+            </div>
+          </section>
+        )}
 
         {/* Account Info Section */}
         <section className="glass rounded-2xl p-6">

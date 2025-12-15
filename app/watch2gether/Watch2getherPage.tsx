@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "@/contexts";
-import { ref, onValue, push, set, get } from "firebase/database";
+import { ref, onValue, push, set, get, remove } from "firebase/database";
 import { database } from "@/lib/firebase";
 import { api } from "@/services/api";
 import type {
@@ -78,6 +78,7 @@ export function Watch2getherPage() {
   const [password, setPassword] = useState("");
   const [maxParticipants, setMaxParticipants] = useState(10);
   const [creating, setCreating] = useState(false);
+  const [existingRoomWarning, setExistingRoomWarning] = useState(false);
 
   // Pre-selected anime from URL params
   const [preSelectedAnime, setPreSelectedAnime] = useState<{
@@ -165,9 +166,27 @@ export function Watch2getherPage() {
 
     setCreating(true);
     setError("");
+    setExistingRoomWarning(false);
 
     try {
-      const roomsRef = ref(database, "watch2gether/rooms");
+      const db = database;
+      const roomsRef = ref(db, "watch2gether/rooms");
+
+      // Check if user already hosts a room and delete it
+      const snapshot = await get(roomsRef);
+      if (snapshot.exists()) {
+        const allRooms = snapshot.val();
+        for (const [existingRoomId, roomData] of Object.entries(allRooms)) {
+          const existingRoom = roomData as Watch2getherRoom;
+          if (existingRoom.hostId === user.uid) {
+            // Delete the existing room
+            await remove(ref(db, `watch2gether/rooms/${existingRoomId}`));
+            setExistingRoomWarning(true);
+            break;
+          }
+        }
+      }
+
       const newRoomRef = push(roomsRef);
       const roomId = newRoomRef.key;
 
@@ -324,7 +343,7 @@ export function Watch2getherPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black pt-24 pb-12">
+    <div className="min-h-screen bg-black pt-20 sm:pt-24 pb-8 sm:pb-12">
       {/* Background */}
       <div className="fixed inset-0 -z-10">
         <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-black to-pink-900/20" />
@@ -332,37 +351,31 @@ export function Watch2getherPage() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(255,119,198,0.15),transparent_50%)]" />
       </div>
 
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto px-3 sm:px-4">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-6 sm:mb-8">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-white flex items-center gap-3">
-              <svg
-                className="w-8 h-8 text-purple-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                />
-              </svg>
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-white flex items-center gap-2 sm:gap-3">
+              <Image
+                src="/stream.svg"
+                alt="Watch2gether"
+                width={32}
+                height={32}
+                className="w-6 h-6 sm:w-8 sm:h-8"
+              />
               Watch2gether
             </h1>
-            <p className="text-white/60 text-sm mt-1">
+            <p className="text-white/60 text-xs sm:text-sm mt-1">
               Watch anime together with friends in real-time
             </p>
           </div>
           {user ? (
             <button
               onClick={() => setShowCreateModal(true)}
-              className="flex items-center gap-2 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-xl transition-colors cursor-pointer"
+              className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-purple-600 hover:bg-purple-700 text-white text-sm sm:text-base font-medium rounded-lg sm:rounded-xl transition-colors cursor-pointer"
             >
               <svg
-                className="w-5 h-5"
+                className="w-4 h-4 sm:w-5 sm:h-5"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -379,7 +392,7 @@ export function Watch2getherPage() {
           ) : (
             <Link
               href="/login"
-              className="flex items-center gap-2 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-xl transition-colors"
+              className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-purple-600 hover:bg-purple-700 text-white text-sm sm:text-base font-medium rounded-lg sm:rounded-xl transition-colors"
             >
               Sign in to Create Room
             </Link>
@@ -388,17 +401,17 @@ export function Watch2getherPage() {
 
         {/* Rooms Grid */}
         {loadingRooms ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
             {Array.from({ length: 8 }).map((_, i) => (
               <div
                 key={i}
-                className="bg-white/5 border border-white/10 rounded-2xl p-4 animate-pulse"
+                className="bg-white/5 border border-white/10 rounded-xl sm:rounded-2xl p-3 sm:p-4 animate-pulse"
               >
-                <div className="flex gap-3">
-                  <div className="w-16 h-24 bg-white/10 rounded-lg" />
+                <div className="flex gap-2 sm:gap-3">
+                  <div className="w-12 h-18 sm:w-16 sm:h-24 bg-white/10 rounded-lg" />
                   <div className="flex-1">
-                    <div className="h-5 bg-white/10 rounded w-3/4 mb-2" />
-                    <div className="h-4 bg-white/10 rounded w-1/2 mb-3" />
+                    <div className="h-4 sm:h-5 bg-white/10 rounded w-3/4 mb-2" />
+                    <div className="h-3 sm:h-4 bg-white/10 rounded w-1/2 mb-2 sm:mb-3" />
                     <div className="h-3 bg-white/10 rounded w-2/3" />
                   </div>
                 </div>
@@ -406,9 +419,9 @@ export function Watch2getherPage() {
             ))}
           </div>
         ) : rooms.length === 0 ? (
-          <div className="text-center py-16">
+          <div className="text-center py-12 sm:py-16">
             <svg
-              className="w-16 h-16 text-white/20 mx-auto mb-4"
+              className="w-12 h-12 sm:w-16 sm:h-16 text-white/20 mx-auto mb-3 sm:mb-4"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -420,19 +433,19 @@ export function Watch2getherPage() {
                 d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
               />
             </svg>
-            <h3 className="text-xl font-semibold text-white mb-2">
+            <h3 className="text-lg sm:text-xl font-semibold text-white mb-2">
               No active rooms
             </h3>
-            <p className="text-white/50 mb-6">
+            <p className="text-white/50 mb-4 sm:mb-6 text-sm sm:text-base">
               Be the first to create a watch party!
             </p>
             {user && (
               <button
                 onClick={() => setShowCreateModal(true)}
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-xl transition-colors cursor-pointer"
+                className="inline-flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 bg-purple-600 hover:bg-purple-700 text-white text-sm sm:text-base font-medium rounded-lg sm:rounded-xl transition-colors cursor-pointer"
               >
                 <svg
-                  className="w-5 h-5"
+                  className="w-4 h-4 sm:w-5 sm:h-5"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -449,15 +462,15 @@ export function Watch2getherPage() {
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
             {rooms.map((room) => (
               <div
                 key={room.id}
-                className="bg-white/5 border border-white/10 rounded-2xl p-4 hover:bg-white/10 transition-colors group"
+                className="bg-white/5 border border-white/10 rounded-xl sm:rounded-2xl p-3 sm:p-4 hover:bg-white/10 transition-colors group"
               >
-                <div className="flex gap-3">
+                <div className="flex gap-2 sm:gap-3">
                   {/* Anime Poster or Placeholder */}
-                  <div className="w-16 h-24 bg-white/10 rounded-sm overflow-hidden flex-shrink-0">
+                  <div className="w-12 h-18 sm:w-16 sm:h-24 bg-white/10 rounded-sm overflow-hidden flex-shrink-0">
                     {room.anime ? (
                       <Image
                         src={room.anime.poster}
@@ -469,7 +482,7 @@ export function Watch2getherPage() {
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
                         <svg
-                          className="w-8 h-8 text-white/20"
+                          className="w-6 h-6 sm:w-8 sm:h-8 text-white/20"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -488,12 +501,12 @@ export function Watch2getherPage() {
                   {/* Room Info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
-                      <h3 className="font-semibold text-white truncate">
+                      <h3 className="font-semibold text-sm sm:text-base text-white truncate">
                         {room.name}
                       </h3>
                       {room.isPrivate && (
                         <svg
-                          className="w-4 h-4 text-yellow-400 flex-shrink-0"
+                          className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-yellow-400 flex-shrink-0"
                           fill="currentColor"
                           viewBox="0 0 24 24"
                         >
@@ -501,17 +514,17 @@ export function Watch2getherPage() {
                         </svg>
                       )}
                     </div>
-                    <p className="text-white/50 text-sm">
+                    <p className="text-white/50 text-xs sm:text-sm">
                       Host: {room.hostName}
                     </p>
                     {room.anime && (
-                      <p className="text-purple-400 text-xs mt-1 truncate">
+                      <p className="text-purple-400 text-[10px] sm:text-xs mt-1 truncate">
                         {room.anime.title} - Ep {room.anime.currentEpisode}
                       </p>
                     )}
-                    <div className="flex items-center gap-2 mt-2 text-xs text-white/40">
+                    <div className="flex items-center gap-1.5 sm:gap-2 mt-1.5 sm:mt-2 text-[10px] sm:text-xs text-white/40">
                       <svg
-                        className="w-4 h-4"
+                        className="w-3.5 h-3.5 sm:w-4 sm:h-4"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -531,7 +544,7 @@ export function Watch2getherPage() {
                 {/* Join Button */}
                 <button
                   onClick={() => handleJoinRoom(room)}
-                  className="w-full mt-4 py-2 bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 font-medium rounded-lg transition-colors text-sm cursor-pointer"
+                  className="w-full mt-3 sm:mt-4 py-1.5 sm:py-2 bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 font-medium rounded-lg transition-colors text-xs sm:text-sm cursor-pointer"
                 >
                   Join Room
                 </button>
@@ -548,6 +561,23 @@ export function Watch2getherPage() {
             <h2 className="text-xl font-bold text-white mb-4">
               Create Watch Party
             </h2>
+
+            {/* Warning about existing room */}
+            {existingRoomWarning && (
+              <div className="mb-4 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-xl text-yellow-400 text-sm flex items-start gap-2">
+                <svg
+                  className="w-5 h-5 flex-shrink-0 mt-0.5"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
+                </svg>
+                <span>
+                  You can only host one active room. Your previous room was
+                  automatically closed.
+                </span>
+              </div>
+            )}
 
             {error && (
               <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
@@ -644,6 +674,7 @@ export function Watch2getherPage() {
                   setIsPrivate(false);
                   setPassword("");
                   setPreSelectedAnime(null);
+                  setExistingRoomWarning(false);
                   // Clear URL params
                   router.replace("/watch2gether");
                 }}

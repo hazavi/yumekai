@@ -3,6 +3,14 @@
  */
 
 /**
+ * Admin user UIDs - these users have access to admin settings
+ * Loaded from environment variable NEXT_PUBLIC_ADMIN_UIDS (comma-separated)
+ */
+export const ADMIN_UIDS: string[] = (
+  process.env.NEXT_PUBLIC_ADMIN_UIDS || ''
+).split(',').map(uid => uid.trim()).filter(Boolean);
+
+/**
  * Default number of items per page for paginated lists
  */
 export const DEFAULT_PAGE_SIZE = 24;

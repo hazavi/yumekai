@@ -263,19 +263,23 @@ export function AnimeInfoPage({ animeInfo, topAnimeData }: AnimeInfoPageProps) {
 
                 {/* Action Buttons */}
                 <div className="flex flex-wrap gap-3 mb-6">
-                  <a
-                    href={animeInfo.watch_link || "#"}
-                    className="inline-flex items-center gap-2 px-6 h-11 rounded-full bg-white text-black font-medium text-sm hover:bg-white/90 transition shadow"
-                  >
-                    <svg
-                      className="w-4 h-4"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
+                  {/* Hide Watch Now button for upcoming anime */}
+                  {animeInfo.info?.Status?.toLowerCase() !==
+                    "not yet aired" && (
+                    <a
+                      href={animeInfo.watch_link || "#"}
+                      className="inline-flex items-center gap-2 px-6 h-11 rounded-full bg-white text-black font-medium text-sm hover:bg-white/90 transition shadow"
                     >
-                      <path d="M8 5v10l8-5z" />
-                    </svg>
-                    Watch Now
-                  </a>
+                      <svg
+                        className="w-4 h-4"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path d="M8 5v10l8-5z" />
+                      </svg>
+                      Watch Now
+                    </a>
+                  )}
                   <AddToListButton
                     anime={{
                       animeId:

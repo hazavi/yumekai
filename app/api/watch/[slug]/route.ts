@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 const API_URL = process.env.ANISCRAPER_API_URL;
-const TIMEOUT_MS = 10000; // 10 second timeout for watch data
+const TIMEOUT_MS = 20000; // 20 second timeout for watch data (external API can be slow)
 
 export const revalidate = 120; // Cache for 2 minutes
 

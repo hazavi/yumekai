@@ -212,6 +212,7 @@ function AnimeCardComponent({
         slug={slug}
         isVisible={showPopup}
         position={popupPosition}
+        badgeType={badgeType}
         onMouseEnter={handlePopupMouseEnter}
         onMouseLeave={handlePopupMouseLeave}
       />

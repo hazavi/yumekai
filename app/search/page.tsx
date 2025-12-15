@@ -2,6 +2,13 @@ import { AnimeGrid } from "@/components/AnimeGrid";
 import { SectionHeader } from "@/components/SectionHeader";
 import { SearchPagination } from "@/components/SearchPagination";
 
+// Get external API URL for server-side calls
+const getExternalApiUrl = () => {
+  return (
+    process.env.ANISCRAPER_API_URL || process.env.NEXT_PUBLIC_ANISCRAPER_API_URL
+  );
+};
+
 export default async function SearchPage({
   searchParams,
 }: {
@@ -28,15 +35,17 @@ export default async function SearchPage({
     );
   }
 
-  // Fetch search results through internal API route
+  // Fetch search results directly from external API (avoids self-referential fetch on Vercel)
   let searchData;
   try {
-    const baseUrl = process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : "http://localhost:3000";
+    const apiUrl = getExternalApiUrl();
+
+    if (!apiUrl) {
+      throw new Error("API URL not configured");
+    }
 
     const response = await fetch(
-      `${baseUrl}/api/search?keyword=${encodeURIComponent(query)}&page=${page}`,
+      `${apiUrl}/search?keyword=${encodeURIComponent(query)}&page=${page}`,
       {
         next: { revalidate: 60 },
         headers: {

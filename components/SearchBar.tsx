@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -24,8 +24,12 @@ interface UserResult {
 
 type SearchTab = "anime" | "users";
 
+// Debounce delay in ms
+const DEBOUNCE_DELAY = 400;
+
 export function SearchBar() {
   const [query, setQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
   const [activeTab, setActiveTab] = useState<SearchTab>("anime");
   const [animeResults, setAnimeResults] = useState<SearchResult[]>([]);
   const [userResults, setUserResults] = useState<UserResult[]>([]);
@@ -34,7 +38,7 @@ export function SearchBar() {
   const [isMobile, setIsMobile] = useState(false);
   const router = useRouter();
   const searchRef = useRef<HTMLDivElement>(null);
-  const debounceRef = useRef<NodeJS.Timeout | undefined>(undefined);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   // Check if mobile on mount and resize
   useEffect(() => {
@@ -58,62 +62,104 @@ export function SearchBar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Debounced search
+  // Debounce the query
   useEffect(() => {
-    if (query.trim().length < 2) {
+    const trimmedQuery = query.trim();
+
+    if (trimmedQuery.length < 2) {
+      setDebouncedQuery("");
       setAnimeResults([]);
       setUserResults([]);
       setShowResults(false);
       return;
     }
 
-    // Clear previous timeout
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
-    }
+    const timer = setTimeout(() => {
+      setDebouncedQuery(trimmedQuery);
+    }, DEBOUNCE_DELAY);
 
-    // Set new timeout
-    debounceRef.current = setTimeout(async () => {
+    return () => clearTimeout(timer);
+  }, [query]);
+
+  // Perform search when debounced query changes
+  useEffect(() => {
+    if (!debouncedQuery) return;
+
+    // Cancel any in-flight request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    abortControllerRef.current = new AbortController();
+
+    const performSearch = async () => {
       setIsLoading(true);
       try {
         // Search both anime and users in parallel
         const [animeData, usersData] = await Promise.all([
-          api.search(query.trim()),
-          searchUsers(query.trim()),
+          api.search(debouncedQuery),
+          searchUsers(debouncedQuery),
         ]);
 
-        setAnimeResults(animeData.results?.slice(0, 5) || []);
-        setUserResults(usersData.slice(0, 5));
-        setShowResults(true);
+        // Only update if this request wasn't aborted
+        if (!abortControllerRef.current?.signal.aborted) {
+          setAnimeResults(animeData.results?.slice(0, 5) || []);
+          setUserResults(usersData.slice(0, 5));
+          setShowResults(true);
+        }
       } catch (error) {
+        // Ignore aborted requests
+        if (error instanceof Error && error.name === "AbortError") return;
         console.error("Search error:", error);
         setAnimeResults([]);
         setUserResults([]);
       } finally {
-        setIsLoading(false);
-      }
-    }, 300);
-
-    return () => {
-      if (debounceRef.current) {
-        clearTimeout(debounceRef.current);
+        if (!abortControllerRef.current?.signal.aborted) {
+          setIsLoading(false);
+        }
       }
     };
-  }, [query]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!query.trim()) return;
+    performSearch();
 
-    // Navigate to search results page with full results
-    router.push(`/search?q=${encodeURIComponent(query.trim())}`);
-    setShowResults(false);
-  };
+    return () => {
+      abortControllerRef.current?.abort();
+    };
+  }, [debouncedQuery]);
 
-  const handleResultClick = () => {
+  const handleSubmit = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
+      const trimmedQuery = query.trim();
+      if (!trimmedQuery) return;
+
+      // Cancel any pending search
+      abortControllerRef.current?.abort();
+
+      // Navigate to search results page with full results
+      router.push(`/search?q=${encodeURIComponent(trimmedQuery)}`);
+      setShowResults(false);
+    },
+    [query, router]
+  );
+
+  const handleResultClick = useCallback(() => {
+    abortControllerRef.current?.abort();
     setShowResults(false);
     setQuery("");
-  };
+    setDebouncedQuery("");
+  }, []);
+
+  // Memoize whether we have any results
+  const hasResults = useMemo(
+    () => animeResults.length > 0 || userResults.length > 0,
+    [animeResults.length, userResults.length]
+  );
+
+  const handleInputFocus = useCallback(() => {
+    if (query.trim().length >= 2 && hasResults) {
+      setShowResults(true);
+    }
+  }, [query, hasResults]);
 
   return (
     <div ref={searchRef} className="relative">
@@ -125,11 +171,7 @@ export function SearchBar() {
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          onFocus={() =>
-            query.length >= 2 &&
-            (animeResults.length > 0 || userResults.length > 0) &&
-            setShowResults(true)
-          }
+          onFocus={handleInputFocus}
           placeholder={isMobile ? "Search..." : "Search anime or user..."}
           className="w-full h-11 pl-4 pr-12 rounded-full bg-black/1 outline-none text-sm placeholder:text-white/60 backdrop-blur-xs text-white focus:border-white/40 focus:ring-0 transition"
         />

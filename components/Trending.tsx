@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useRef, useMemo, useEffect } from "react";
+import { useState, useRef, useMemo, useEffect, useCallback, memo } from "react";
 import type { TrendingItem } from "@/types";
 import { AnimeInfoPopup } from "./AnimeInfoPopup";
 
@@ -10,20 +10,20 @@ interface TrendingProps {
   title?: string;
 }
 
-export function Trending({ items, title = "Trending" }: TrendingProps) {
+function TrendingComponent({ items, title = "Trending" }: TrendingProps) {
   const [showPopup, setShowPopup] = useState(false);
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
   const [currentAnime, setCurrentAnime] = useState<TrendingItem | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const hideTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const showTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
-      if (hideTimeoutRef.current) {
-        clearTimeout(hideTimeoutRef.current);
-      }
+      if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current);
+      if (showTimeoutRef.current) clearTimeout(showTimeoutRef.current);
     };
   }, []);
 
@@ -86,56 +86,70 @@ export function Trending({ items, title = "Trending" }: TrendingProps) {
   const itemsPerView = 6;
   const maxIndex = Math.max(0, processedItems.length - itemsPerView);
 
-  const handleMouseEnter = (e: React.MouseEvent, anime: TrendingItem) => {
-    if (!anime.qtip) return;
+  const handleMouseEnter = useCallback(
+    (e: React.MouseEvent, anime: TrendingItem) => {
+      if (!anime.qtip) return;
 
-    // Soft validation: log mismatches but still show popup (previously we blocked which hid rank 10 popup)
-    if (anime.qtip.title && anime.title) {
-      const qtipTitle = anime.qtip.title.toLowerCase().trim();
-      const animeTitle = anime.title.toLowerCase().trim();
-      if (qtipTitle !== animeTitle) {
-        console.debug(
-          `[Trending] qtip/title mismatch: card="${anime.title}" qtip.title="${anime.qtip.title}"`
-        );
+      // Soft validation: log mismatches but still show popup (previously we blocked which hid rank 10 popup)
+      if (anime.qtip.title && anime.title) {
+        const qtipTitle = anime.qtip.title.toLowerCase().trim();
+        const animeTitle = anime.title.toLowerCase().trim();
+        if (qtipTitle !== animeTitle) {
+          console.debug(
+            `[Trending] qtip/title mismatch: card="${anime.title}" qtip.title="${anime.qtip.title}"`
+          );
+        }
       }
-    }
 
-    // Clear any pending hide timeout
-    if (hideTimeoutRef.current) {
-      clearTimeout(hideTimeoutRef.current);
-      hideTimeoutRef.current = null;
-    }
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = rect.left + rect.width / 2;
-    const y = rect.top + rect.height / 2;
-    setPopupPosition({ x, y });
-    setCurrentAnime(anime);
-    setShowPopup(true);
-  };
+      // Clear any pending timeouts
+      if (hideTimeoutRef.current) {
+        clearTimeout(hideTimeoutRef.current);
+        hideTimeoutRef.current = null;
+      }
+      if (showTimeoutRef.current) {
+        clearTimeout(showTimeoutRef.current);
+        showTimeoutRef.current = null;
+      }
+      const rect = e.currentTarget.getBoundingClientRect();
+      const x = rect.left + rect.width / 2;
+      const y = rect.top + rect.height / 2;
+      setPopupPosition({ x, y });
+      setCurrentAnime(anime);
+      // Small delay before showing
+      showTimeoutRef.current = setTimeout(() => {
+        setShowPopup(true);
+      }, 150);
+    },
+    []
+  );
 
-  const handleMouseLeave = () => {
+  const handleMouseLeave = useCallback(() => {
+    if (showTimeoutRef.current) {
+      clearTimeout(showTimeoutRef.current);
+      showTimeoutRef.current = null;
+    }
     // Add a delay before hiding to allow moving to popup
     hideTimeoutRef.current = setTimeout(() => {
       setShowPopup(false);
       setCurrentAnime(null);
-    }, 100);
-  };
+    }, 150);
+  }, []);
 
-  const handlePopupMouseEnter = () => {
+  const handlePopupMouseEnter = useCallback(() => {
     // Keep popup visible when hovering over it
     if (hideTimeoutRef.current) {
       clearTimeout(hideTimeoutRef.current);
       hideTimeoutRef.current = null;
     }
-  };
+  }, []);
 
-  const handlePopupMouseLeave = () => {
+  const handlePopupMouseLeave = useCallback(() => {
     // Hide popup when leaving popup area
     setShowPopup(false);
     setCurrentAnime(null);
-  };
+  }, []);
 
-  const scrollToIndex = (index: number) => {
+  const scrollToIndex = useCallback((index: number) => {
     if (scrollContainerRef.current) {
       const itemWidth = 210; // card width + gap (200px + 10px gap)
       scrollContainerRef.current.scrollTo({
@@ -143,19 +157,19 @@ export function Trending({ items, title = "Trending" }: TrendingProps) {
         behavior: "smooth",
       });
     }
-  };
+  }, []);
 
-  const handlePrevious = () => {
+  const handlePrevious = useCallback(() => {
     const newIndex = Math.max(0, currentIndex - 1);
     setCurrentIndex(newIndex);
     scrollToIndex(newIndex);
-  };
+  }, [currentIndex, scrollToIndex]);
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     const newIndex = Math.min(maxIndex, currentIndex + 1);
     setCurrentIndex(newIndex);
     scrollToIndex(newIndex);
-  };
+  }, [currentIndex, maxIndex, scrollToIndex]);
 
   if (!processedItems?.length) {
     return (
@@ -288,3 +302,6 @@ export function Trending({ items, title = "Trending" }: TrendingProps) {
     </>
   );
 }
+
+// Memoize to prevent re-renders when parent updates
+export const Trending = memo(TrendingComponent);

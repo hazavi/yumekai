@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo, memo } from "react";
 import type { TopAnimeData, BasicAnime } from "@/types";
 import { AnimeInfoPopup } from "./AnimeInfoPopup";
 
@@ -16,14 +16,15 @@ interface TopAnimeItem extends BasicAnime {
   rank: string;
 }
 
-export function TopAnime({ data, title = "Top Anime" }: TopAnimeProps) {
+function TopAnimeComponent({ data, title = "Top Anime" }: TopAnimeProps) {
   const [activeTab, setActiveTab] = useState<TabType>("today");
   const [showAll, setShowAll] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
   const [currentAnime, setCurrentAnime] = useState<TopAnimeItem | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
-  const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const hideTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const showTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Fix hydration mismatch by ensuring consistent initial render
   useEffect(() => {
@@ -33,50 +34,64 @@ export function TopAnime({ data, title = "Top Anime" }: TopAnimeProps) {
   // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
-      if (hideTimeoutRef.current) {
-        clearTimeout(hideTimeoutRef.current);
-      }
+      if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current);
+      if (showTimeoutRef.current) clearTimeout(showTimeoutRef.current);
     };
   }, []);
 
-  const handleMouseEnter = (e: React.MouseEvent, anime: TopAnimeItem) => {
-    if (!anime.qtip) return;
-    // Clear any pending hide timeout
-    if (hideTimeoutRef.current) {
-      clearTimeout(hideTimeoutRef.current);
-      hideTimeoutRef.current = null;
-    }
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = rect.left;
-    const y = rect.top + rect.height / 2;
-    setPopupPosition({ x, y });
-    setCurrentAnime(anime);
-    setShowPopup(true);
-  };
+  const handleMouseEnter = useCallback(
+    (e: React.MouseEvent, anime: TopAnimeItem) => {
+      if (!anime.qtip) return;
+      // Clear any pending timeouts
+      if (hideTimeoutRef.current) {
+        clearTimeout(hideTimeoutRef.current);
+        hideTimeoutRef.current = null;
+      }
+      if (showTimeoutRef.current) {
+        clearTimeout(showTimeoutRef.current);
+        showTimeoutRef.current = null;
+      }
+      const rect = e.currentTarget.getBoundingClientRect();
+      const x = rect.left;
+      const y = rect.top + rect.height / 2;
+      setPopupPosition({ x, y });
+      setCurrentAnime(anime);
+      // Small delay before showing
+      showTimeoutRef.current = setTimeout(() => {
+        setShowPopup(true);
+      }, 150);
+    },
+    []
+  );
 
-  const handleMouseLeave = () => {
+  const handleMouseLeave = useCallback(() => {
+    if (showTimeoutRef.current) {
+      clearTimeout(showTimeoutRef.current);
+      showTimeoutRef.current = null;
+    }
     // Add a delay before hiding to allow moving to popup
     hideTimeoutRef.current = setTimeout(() => {
       setShowPopup(false);
       setCurrentAnime(null);
-    }, 100);
-  };
+    }, 150);
+  }, []);
 
-  const handlePopupMouseEnter = () => {
+  const handlePopupMouseEnter = useCallback(() => {
     // Keep popup visible when hovering over it
     if (hideTimeoutRef.current) {
       clearTimeout(hideTimeoutRef.current);
       hideTimeoutRef.current = null;
     }
-  };
+  }, []);
 
-  const handlePopupMouseLeave = () => {
+  const handlePopupMouseLeave = useCallback(() => {
     // Hide popup when leaving popup area
     setShowPopup(false);
     setCurrentAnime(null);
-  };
+  }, []);
 
-  const getCurrentData = (): TopAnimeItem[] => {
+  // Memoize current data to prevent recalculation
+  const currentItems = useMemo((): TopAnimeItem[] => {
     switch (activeTab) {
       case "today":
         return data.top_today || [];
@@ -87,10 +102,13 @@ export function TopAnime({ data, title = "Top Anime" }: TopAnimeProps) {
       default:
         return [];
     }
-  };
+  }, [activeTab, data]);
 
-  const currentItems = getCurrentData();
-  const visibleItems = showAll ? currentItems : currentItems.slice(0, 5);
+  const visibleItems = useMemo(
+    () => (showAll ? currentItems : currentItems.slice(0, 5)),
+    [showAll, currentItems]
+  );
+
   const hasMore = currentItems.length > 5;
 
   const tabs = [
@@ -273,3 +291,6 @@ export function TopAnime({ data, title = "Top Anime" }: TopAnimeProps) {
     </>
   );
 }
+
+// Memoize to prevent re-renders when parent updates
+export const TopAnime = memo(TopAnimeComponent);

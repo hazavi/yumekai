@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback, useMemo, memo } from "react";
 import type { SpotlightItem } from "@/types";
 import { PlayIcon, TvIcon, ClockIcon, CalendarIcon } from "./icons";
 
@@ -9,14 +9,21 @@ interface HeroCarouselProps {
   intervalMs?: number;
 }
 
-export function HeroCarousel({ items, intervalMs = 6000 }: HeroCarouselProps) {
-  // Filter out malformed entries to prevent runtime errors
-  const safeItems = (items || []).filter(
-    (it) =>
-      it &&
-      typeof it.detail_link === "string" &&
-      it.detail_link.length > 0 &&
-      typeof it.thumbnail === "string"
+function HeroCarouselComponent({
+  items,
+  intervalMs = 6000,
+}: HeroCarouselProps) {
+  // Memoize filtered items to prevent recalculation on every render
+  const safeItems = useMemo(
+    () =>
+      (items || []).filter(
+        (it) =>
+          it &&
+          typeof it.detail_link === "string" &&
+          it.detail_link.length > 0 &&
+          typeof it.thumbnail === "string"
+      ),
+    [items]
   );
 
   const [index, setIndex] = useState(0);
@@ -39,21 +46,24 @@ export function HeroCarousel({ items, intervalMs = 6000 }: HeroCarouselProps) {
     };
   }, [safeItems, intervalMs, isDragging]);
 
-  // Handle mouse drag
-  const handleMouseDown = (e: React.MouseEvent) => {
+  // Handle mouse drag - memoized for performance
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
     setIsDragging(true);
     setDragStart(e.clientX);
     setDragOffset(0);
     if (intervalRef.current) clearInterval(intervalRef.current);
-  };
+  }, []);
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging) return;
-    const offset = e.clientX - dragStart;
-    setDragOffset(offset);
-  };
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      if (!isDragging) return;
+      const offset = e.clientX - dragStart;
+      setDragOffset(offset);
+    },
+    [isDragging, dragStart]
+  );
 
-  const handleMouseUp = () => {
+  const handleMouseUp = useCallback(() => {
     if (!isDragging) return;
 
     const threshold = 100; // Minimum drag distance to trigger slide change
@@ -70,23 +80,26 @@ export function HeroCarousel({ items, intervalMs = 6000 }: HeroCarouselProps) {
 
     setIsDragging(false);
     setDragOffset(0);
-  };
+  }, [isDragging, dragOffset, safeItems.length]);
 
-  // Handle touch events for mobile
-  const handleTouchStart = (e: React.TouchEvent) => {
+  // Handle touch events for mobile - memoized
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
     setIsDragging(true);
     setDragStart(e.touches[0].clientX);
     setDragOffset(0);
     if (intervalRef.current) clearInterval(intervalRef.current);
-  };
+  }, []);
 
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDragging) return;
-    const offset = e.touches[0].clientX - dragStart;
-    setDragOffset(offset);
-  };
+  const handleTouchMove = useCallback(
+    (e: React.TouchEvent) => {
+      if (!isDragging) return;
+      const offset = e.touches[0].clientX - dragStart;
+      setDragOffset(offset);
+    },
+    [isDragging, dragStart]
+  );
 
-  const handleTouchEnd = () => {
+  const handleTouchEnd = useCallback(() => {
     if (!isDragging) return;
 
     const threshold = 100;
@@ -101,7 +114,7 @@ export function HeroCarousel({ items, intervalMs = 6000 }: HeroCarouselProps) {
 
     setIsDragging(false);
     setDragOffset(0);
-  };
+  }, [isDragging, dragOffset, safeItems.length]);
 
   if (!safeItems.length) {
     return (
@@ -351,3 +364,6 @@ export function HeroCarousel({ items, intervalMs = 6000 }: HeroCarouselProps) {
     </div>
   );
 }
+
+// Memoize to prevent re-renders when parent re-renders
+export const HeroCarousel = memo(HeroCarouselComponent);

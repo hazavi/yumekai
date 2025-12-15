@@ -1,43 +1,29 @@
 import { NextResponse } from 'next/server';
 
-const getApiUrl = () => {
-  const url = process.env.ANISCRAPER_API_URL;
-  if (!url) {
-    console.error('ANISCRAPER_API_URL environment variable is not set');
-    console.error('Available env vars:', Object.keys(process.env).filter(k => k.includes('API')));
-    return null;
-  }
-  return url;
-};
+const API_URL = process.env.ANISCRAPER_API_URL;
+const TIMEOUT_MS = 10000;
+
+export const revalidate = 300; // Cache for 5 minutes
 
 export async function GET() {
-  const BASE_URL = getApiUrl();
-  
-  if (!BASE_URL) {
-    console.error('Weekly Schedule API: Missing environment configuration');
+  if (!API_URL) {
     return NextResponse.json(
-      { 
-        error: 'API configuration missing',
-        details: 'ANISCRAPER_API_URL environment variable not set',
-        help: 'Check Vercel environment variables configuration'
-      },
+      { error: 'API configuration missing' },
       { status: 500 }
     );
   }
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
+
   try {
-    const url = `${BASE_URL}/schedule/week`;
-    
-    console.log('Proxying weekly schedule request to:', url);
-    
-    const response = await fetch(url, {
-      next: { revalidate: 60 },
-      headers: {
-        'Accept': 'application/json',
-      },
+    const response = await fetch(`${API_URL}/schedule/week`, {
+      headers: { Accept: 'application/json' },
+      signal: controller.signal,
     });
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
-      console.error('External API error:', response.status, response.statusText);
       return NextResponse.json(
         { error: 'Failed to fetch weekly schedule data' },
         { status: response.status }
@@ -45,9 +31,21 @@ export async function GET() {
     }
 
     const data = await response.json();
-    return NextResponse.json(data);
+    return NextResponse.json(data, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600'
+      }
+    });
   } catch (error) {
-    console.error('Weekly schedule API error:', error);
+    clearTimeout(timeoutId);
+    
+    if (error instanceof Error && error.name === 'AbortError') {
+      return NextResponse.json(
+        { error: 'Request timeout' },
+        { status: 504 }
+      );
+    }
+    
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

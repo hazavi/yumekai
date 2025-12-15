@@ -94,23 +94,6 @@ export function AnimeInfoPopup({
     }
   }, [isVisible, calculatePosition]);
 
-  // Handle mouse events directly on the popup
-  useEffect(() => {
-    const popup = popupRef.current;
-    if (!popup) return;
-
-    const handleEnter = () => onMouseEnter?.();
-    const handleLeave = () => onMouseLeave?.();
-
-    popup.addEventListener("mouseenter", handleEnter);
-    popup.addEventListener("mouseleave", handleLeave);
-
-    return () => {
-      popup.removeEventListener("mouseenter", handleEnter);
-      popup.removeEventListener("mouseleave", handleLeave);
-    };
-  }, [onMouseEnter, onMouseLeave]);
-
   if (!isVisible || !qtip) return null;
 
   return (
@@ -126,8 +109,9 @@ export function AnimeInfoPopup({
           ? "translateY(calc(-100% - 16px))"
           : "translateY(16px)",
         willChange: "transform, opacity",
-        pointerEvents: isReady ? "auto" : "none",
       }}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
     >
       <div className="w-80 bg-black/90 backdrop-blur-xl rounded-xl shadow-2xl border border-white/10 overflow-hidden">
         {/* Header with title */}

@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { SectionGrid } from "./SectionGrid";
 import type { AnimeCardData } from "@/types";
 
@@ -7,7 +8,7 @@ interface RecentlyAddedProps {
   anime: AnimeCardData[];
 }
 
-export function RecentlyAdded({ anime }: RecentlyAddedProps) {
+function RecentlyAddedComponent({ anime }: RecentlyAddedProps) {
   return (
     <SectionGrid
       title="Recently Added"
@@ -18,3 +19,5 @@ export function RecentlyAdded({ anime }: RecentlyAddedProps) {
     />
   );
 }
+
+export const RecentlyAdded = memo(RecentlyAddedComponent);

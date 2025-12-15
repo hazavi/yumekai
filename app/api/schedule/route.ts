@@ -4,11 +4,12 @@ const getApiUrl = () => {
   const url = process.env.ANISCRAPER_API_URL;
   if (!url) {
     console.error('ANISCRAPER_API_URL environment variable is not set');
-    console.error('Available env vars:', Object.keys(process.env).filter(k => k.includes('API')));
     return null;
   }
   return url;
 };
+
+export const revalidate = 300; // 5 minutes for schedule data
 
 export async function GET(request: NextRequest) {
   const BASE_URL = getApiUrl();
@@ -19,11 +20,15 @@ export async function GET(request: NextRequest) {
       { 
         error: 'API configuration missing',
         details: 'ANISCRAPER_API_URL environment variable not set',
-        help: 'Check Vercel environment variables configuration'
       },
       { status: 500 }
     );
   }
+
+  // Set up timeout
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 8000);
+
   try {
     const { searchParams } = new URL(request.url);
     const date = searchParams.get('date');
@@ -31,14 +36,14 @@ export async function GET(request: NextRequest) {
     const query = date ? `?date=${encodeURIComponent(date)}` : '';
     const url = `${BASE_URL}/schedule${query}`;
     
-    console.log('Proxying schedule request to:', url);
-    
     const response = await fetch(url, {
-      next: { revalidate: 60 },
+      next: { revalidate: 300 },
+      signal: controller.signal,
       headers: {
         'Accept': 'application/json',
       },
     });
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       console.error('External API error:', response.status, response.statusText);
@@ -49,8 +54,21 @@ export async function GET(request: NextRequest) {
     }
 
     const data = await response.json();
-    return NextResponse.json(data);
+    return NextResponse.json(data, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600'
+      }
+    });
   } catch (error) {
+    clearTimeout(timeoutId);
+    
+    if (error instanceof Error && error.name === 'AbortError') {
+      return NextResponse.json(
+        { error: 'Request timeout' },
+        { status: 504 }
+      );
+    }
+    
     console.error('Schedule API error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },

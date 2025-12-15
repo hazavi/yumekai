@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { SectionGrid } from "./SectionGrid";
 import type { AnimeCardData } from "@/types";
 
@@ -11,7 +12,7 @@ interface LatestEpisodeGridProps {
   })[];
 }
 
-export function LatestEpisodeGrid({ anime }: LatestEpisodeGridProps) {
+function LatestEpisodeGridComponent({ anime }: LatestEpisodeGridProps) {
   return (
     <SectionGrid
       title="Latest Episodes"
@@ -22,3 +23,5 @@ export function LatestEpisodeGrid({ anime }: LatestEpisodeGridProps) {
     />
   );
 }
+
+export const LatestEpisodeGrid = memo(LatestEpisodeGridComponent);

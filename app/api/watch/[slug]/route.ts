@@ -1,27 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const getApiUrl = () => {
-  const url = process.env.ANISCRAPER_API_URL;
-  if (!url) {
-    console.error('ANISCRAPER_API_URL environment variable is not set');
-    return null;
-  }
-  return url;
-};
+const API_URL = process.env.ANISCRAPER_API_URL;
+const TIMEOUT_MS = 10000; // 10 second timeout for watch data
 
-export const revalidate = 60; // ISR / caching hint
+export const revalidate = 120; // Cache for 2 minutes
 
-async function fetchExternal(path: string) {
-  const BASE_URL = getApiUrl();
-  
-  if (!BASE_URL) {
+async function fetchExternal(path: string, signal: AbortSignal) {
+  if (!API_URL) {
     throw new Error('API configuration missing');
   }
   
-  const res = await fetch(`${BASE_URL}${path}`, {
-    // Force server-side fetch; Next will handle caching via revalidate export
+  const res = await fetch(`${API_URL}${path}`, {
     headers: { Accept: 'application/json' },
-    // Disable next: { revalidate } here because we expose at route level
+    signal,
   });
   return res;
 }
@@ -31,23 +22,44 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ slug
   const ep = search.get('ep') || '';
   const resolvedParams = await params;
 
-  const externalPath = ep ? `/watch/${resolvedParams.slug}?ep=${encodeURIComponent(ep)}` : `/watch/${resolvedParams.slug}`;
+  const externalPath = ep 
+    ? `/watch/${resolvedParams.slug}?ep=${encodeURIComponent(ep)}` 
+    : `/watch/${resolvedParams.slug}`;
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
   try {
-    const upstream = await fetchExternal(externalPath);
+    const upstream = await fetchExternal(externalPath, controller.signal);
+    clearTimeout(timeoutId);
 
     if (!upstream.ok) {
-      return NextResponse.json({ error: 'Upstream error', status: upstream.status }, { status: upstream.status });
+      return NextResponse.json(
+        { error: 'Upstream error', status: upstream.status }, 
+        { status: upstream.status }
+      );
     }
 
     const data = await upstream.json();
     return NextResponse.json(data, {
       headers: {
-        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=30'
+        'Cache-Control': 'public, s-maxage=120, stale-while-revalidate=300'
       }
     });
   } catch (e: unknown) {
+    clearTimeout(timeoutId);
+    
+    if (e instanceof Error && e.name === 'AbortError') {
+      return NextResponse.json(
+        { error: 'Request timeout' }, 
+        { status: 504 }
+      );
+    }
+    
     const errorMessage = e instanceof Error ? e.message : 'Unknown error';
-    return NextResponse.json({ error: 'Fetch failed', message: errorMessage }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Fetch failed', message: errorMessage }, 
+      { status: 500 }
+    );
   }
 }

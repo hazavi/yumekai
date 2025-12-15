@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, memo, useCallback } from "react";
 import type { AnimeCardData } from "@/types";
 import { AnimeInfoPopup } from "./AnimeInfoPopup";
 
@@ -14,80 +14,90 @@ interface LatestEpisodeProps {
   showMeta?: boolean;
 }
 
-export function LatestEpisode({ anime, showMeta = true }: LatestEpisodeProps) {
+function LatestEpisodeComponent({
+  anime,
+  showMeta = true,
+}: LatestEpisodeProps) {
   const [showPopup, setShowPopup] = useState(false);
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
   const cardRef = useRef<HTMLDivElement>(null);
-  const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const hideTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const showTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const slug = anime.link;
 
   // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
-      if (hideTimeoutRef.current) {
-        clearTimeout(hideTimeoutRef.current);
-      }
+      if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current);
+      if (showTimeoutRef.current) clearTimeout(showTimeoutRef.current);
     };
   }, []);
 
-  const handleMouseEnter = (e: React.MouseEvent) => {
-    if (!anime.qtip) return;
-    // Clear any pending hide timeout
-    if (hideTimeoutRef.current) {
-      clearTimeout(hideTimeoutRef.current);
-      hideTimeoutRef.current = null;
-    }
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = rect.left + rect.width / 2;
-    const y = rect.top + rect.height / 2;
-    setPopupPosition({ x, y });
-    setShowPopup(true);
-  };
+  const handleMouseEnter = useCallback(
+    (e: React.MouseEvent) => {
+      if (!anime.qtip) return;
+      // Clear any pending timeouts
+      if (hideTimeoutRef.current) {
+        clearTimeout(hideTimeoutRef.current);
+        hideTimeoutRef.current = null;
+      }
+      if (showTimeoutRef.current) {
+        clearTimeout(showTimeoutRef.current);
+        showTimeoutRef.current = null;
+      }
+      const rect = e.currentTarget.getBoundingClientRect();
+      const x = rect.left + rect.width / 2;
+      const y = rect.top + rect.height / 2;
+      setPopupPosition({ x, y });
+      // Small delay before showing
+      showTimeoutRef.current = setTimeout(() => {
+        setShowPopup(true);
+      }, 150);
+    },
+    [anime.qtip]
+  );
 
-  const handleMouseLeave = () => {
+  const handleMouseLeave = useCallback(() => {
+    if (showTimeoutRef.current) {
+      clearTimeout(showTimeoutRef.current);
+      showTimeoutRef.current = null;
+    }
     // Add a delay before hiding to allow moving to popup
     hideTimeoutRef.current = setTimeout(() => {
       setShowPopup(false);
-    }, 100);
-  };
+    }, 150);
+  }, []);
 
-  const handlePopupMouseEnter = () => {
+  const handlePopupMouseEnter = useCallback(() => {
     // Keep popup visible when hovering over it
     if (hideTimeoutRef.current) {
       clearTimeout(hideTimeoutRef.current);
       hideTimeoutRef.current = null;
     }
-  };
+  }, []);
 
-  const handlePopupMouseLeave = () => {
+  const handlePopupMouseLeave = useCallback(() => {
     // Hide popup when leaving popup area
     setShowPopup(false);
-  };
-
-  const handleImageMouseEnter = (e: React.MouseEvent) => {
-    handleMouseEnter(e);
-  };
-
-  const handleImageMouseLeave = () => {
-    handleMouseLeave();
-  };
+  }, []);
 
   return (
     <>
       <div ref={cardRef} className="relative">
         <div
           className="relative overflow-hidden bg-black/20 backdrop-blur-sm group"
-          onMouseEnter={handleImageMouseEnter}
-          onMouseLeave={handleImageMouseLeave}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
         >
           <a href={slug} className="block aspect-[3/4] relative">
             <Image
               src={anime.thumbnail}
               alt={anime.title}
               fill
-              sizes="(max-width:768px) 40vw, (max-width:1200px) 20vw, 15vw"
+              sizes="(max-width:640px) 33vw, (max-width:768px) 25vw, (max-width:1024px) 16vw, 12vw"
               className="object-cover transition-all duration-300 group-hover:blur-sm"
+              loading="lazy"
             />
 
             {/* Play button overlay on hover */}
@@ -170,3 +180,16 @@ export function LatestEpisode({ anime, showMeta = true }: LatestEpisodeProps) {
     </>
   );
 }
+
+// Memoize to prevent re-renders when parent updates
+export const LatestEpisode = memo(
+  LatestEpisodeComponent,
+  (prevProps, nextProps) => {
+    return (
+      prevProps.anime.link === nextProps.anime.link &&
+      prevProps.anime.title === nextProps.anime.title &&
+      prevProps.anime.thumbnail === nextProps.anime.thumbnail &&
+      prevProps.showMeta === nextProps.showMeta
+    );
+  }
+);

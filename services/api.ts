@@ -15,11 +15,14 @@ import type {
 import {
   getCacheKey,
   getFromCache,
+  getStaleFromCache,
   setInCache,
   getInflight,
   setInflight,
   removeInflight,
-  DEFAULT_TTL_MS
+  DEFAULT_TTL_MS,
+  STATIC_TTL_MS,
+  LONG_TTL_MS
 } from './cache';
 
 /**
@@ -71,6 +74,7 @@ function buildUrl(path: string): string {
 
 /**
  * Core fetch function with caching, retries, and deduplication
+ * Optimized with stale-while-revalidate pattern
  */
 async function fetchJSON<T>(
   path: string,
@@ -81,7 +85,7 @@ async function fetchJSON<T>(
   const method = init?.method || 'GET';
   const isGet = method === 'GET' && !init?.body;
   const key = getCacheKey(path, init);
-  const retries = options?.retries ?? 2;
+  const retries = options?.retries ?? 1; // Reduced default retries for faster failures
   
   if (options?.ttlMs) ttlMs = options.ttlMs;
   if (options?.once) ttlMs = 24 * 60 * 60 * 1000; // 24 hours for "once" requests
@@ -104,21 +108,29 @@ async function fetchJSON<T>(
         const existing = getInflight<T>(inflightKey);
         if (existing) return existing;
 
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+
         const promise = (async () => {
-          const res = await fetch(finalUrl, {
-            next: { revalidate: 60 },
-            ...init,
-            headers: {
-              ...(init?.headers || {}),
-              Accept: 'application/json',
-            },
-          });
+          try {
+            const res = await fetch(finalUrl, {
+              next: { revalidate: 60 },
+              signal: controller.signal,
+              ...init,
+              headers: {
+                ...(init?.headers || {}),
+                Accept: 'application/json',
+              },
+            });
 
-          if (!res.ok) {
-            throw new Error(`API ${path} failed: ${res.status}`);
+            if (!res.ok) {
+              throw new Error(`API ${path} failed: ${res.status}`);
+            }
+
+            return res.json() as Promise<T>;
+          } finally {
+            clearTimeout(timeoutId);
           }
-
-          return res.json() as Promise<T>;
         })();
 
         setInflight(inflightKey, promise);
@@ -132,41 +144,49 @@ async function fetchJSON<T>(
         }
       }
 
-      // Non-GET requests
-      const res = await fetch(buildUrl(path), {
-        next: { revalidate: 60 },
-        ...init,
-        headers: {
-          ...(init?.headers || {}),
-          Accept: 'application/json',
-        },
-      });
+      // Non-GET requests with timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      
+      try {
+        const res = await fetch(buildUrl(path), {
+          next: { revalidate: 60 },
+          signal: controller.signal,
+          ...init,
+          headers: {
+            ...(init?.headers || {}),
+            Accept: 'application/json',
+          },
+        });
 
-      if (!res.ok) {
-        lastError = new Error(`API ${path} failed: ${res.status}`);
-        if (attempt < retries) {
-          await new Promise(r => setTimeout(r, 150 * Math.pow(2, attempt)));
-          continue;
+        if (!res.ok) {
+          lastError = new Error(`API ${path} failed: ${res.status}`);
+          if (attempt < retries) {
+            await new Promise(r => setTimeout(r, 100 * Math.pow(2, attempt))); // Faster retry
+            continue;
+          }
+          throw lastError;
         }
-        throw lastError;
-      }
 
-      const json = await res.json() as T;
-      if (isGet) {
-        setInCache(key, json, ttlMs);
+        const json = await res.json() as T;
+        if (isGet) {
+          setInCache(key, json, ttlMs);
+        }
+        return json;
+      } finally {
+        clearTimeout(timeoutId);
       }
-      return json;
     } catch (e: unknown) {
       lastError = e instanceof Error ? e : new Error(String(e));
       if (attempt < retries) {
-        await new Promise(r => setTimeout(r, 150 * Math.pow(2, attempt)));
+        await new Promise(r => setTimeout(r, 100 * Math.pow(2, attempt))); // Faster retry
         continue;
       }
     }
   }
 
-  // Return stale data if available
-  const stale = getFromCache<T>(key);
+  // Return stale data if available (stale-while-revalidate pattern)
+  const stale = getStaleFromCache<T>(key);
   if (stale) return stale;
 
   throw lastError || new Error(`API ${path} failed`);
@@ -174,11 +194,12 @@ async function fetchJSON<T>(
 
 /**
  * API service with all available endpoints
+ * Optimized with appropriate TTLs for each data type
  */
 export const api = {
-  // Spotlight/Featured
+  // Spotlight/Featured - changes frequently, short TTL
   spotlightSlider: async (): Promise<SpotlightItem[]> => {
-    const data = await fetchJSON<unknown>('/spotlight-slider');
+    const data = await fetchJSON<unknown>('/spotlight-slider', undefined, STATIC_TTL_MS);
     
     if (Array.isArray(data)) {
       return data as SpotlightItem[];
@@ -189,45 +210,45 @@ export const api = {
     return [];
   },
 
-  // Trending
-  trending: () => fetchJSON<TrendingItem[]>('/trending', undefined, undefined, { once: true }),
+  // Trending - changes infrequently, longer TTL
+  trending: () => fetchJSON<TrendingItem[]>('/trending', undefined, LONG_TTL_MS, { once: true }),
 
-  // Recently Updated/Added
+  // Recently Updated/Added - changes frequently
   recentlyUpdated: (page = 1) => 
-    fetchJSON<PaginatedResult<UpdatedAnime>>(`/recently-updated?page=${page}`),
+    fetchJSON<PaginatedResult<UpdatedAnime>>(`/recently-updated?page=${page}`, undefined, DEFAULT_TTL_MS),
   recentlyAdded: (page = 1) => 
-    fetchJSON<PaginatedResult<BasicAnime>>(`/recently-added?page=${page}`),
+    fetchJSON<PaginatedResult<BasicAnime>>(`/recently-added?page=${page}`, undefined, DEFAULT_TTL_MS),
 
-  // Top Lists
+  // Top Lists - relatively static data, use longer TTL
   topUpcoming: () => 
-    fetchJSON<{ results: BasicAnime[] }>('/top-upcoming', undefined, undefined, { once: true }),
+    fetchJSON<{ results: BasicAnime[] }>('/top-upcoming', undefined, LONG_TTL_MS, { once: true }),
   topAiring: (page = 1) => 
-    fetchJSON<PaginatedResult<BasicAnime>>(`/top-airing?page=${page}`),
+    fetchJSON<PaginatedResult<BasicAnime>>(`/top-airing?page=${page}`, undefined, STATIC_TTL_MS),
   mostPopular: (page = 1) => 
-    fetchJSON<PaginatedResult<BasicAnime>>(`/most-popular?page=${page}`),
+    fetchJSON<PaginatedResult<BasicAnime>>(`/most-popular?page=${page}`, undefined, STATIC_TTL_MS),
   mostFavorite: (page = 1) => 
-    fetchJSON<PaginatedResult<BasicAnime>>(`/most-favorite?page=${page}`),
+    fetchJSON<PaginatedResult<BasicAnime>>(`/most-favorite?page=${page}`, undefined, STATIC_TTL_MS),
   completed: (page = 1) => 
-    fetchJSON<PaginatedResult<BasicAnime>>(`/completed?page=${page}`),
+    fetchJSON<PaginatedResult<BasicAnime>>(`/completed?page=${page}`, undefined, STATIC_TTL_MS),
   topAnime: () => 
-    fetchJSON<TopAnimeData>('/top-anime', undefined, undefined, { once: true }),
+    fetchJSON<TopAnimeData>('/top-anime', undefined, LONG_TTL_MS, { once: true }),
 
-  // Genres
+  // Genres - very static, long TTL
   genres: () => 
-    fetchJSON<{ genres: Genre[] }>('/genres', undefined, undefined, { once: true }),
+    fetchJSON<{ genres: Genre[] }>('/genres', undefined, LONG_TTL_MS, { once: true }),
   genreAnime: (genre: string, page = 1) => 
-    fetchJSON<PaginatedResult<BasicAnime>>(`/genre/${encodeURIComponent(genre)}?page=${page}`),
+    fetchJSON<PaginatedResult<BasicAnime>>(`/genre/${encodeURIComponent(genre)}?page=${page}`, undefined, STATIC_TTL_MS),
 
-  // Type-based listings
-  tv: (page = 1) => fetchJSON<PaginatedResult<BasicAnime>>(`/tv?page=${page}`),
-  movie: (page = 1) => fetchJSON<PaginatedResult<BasicAnime>>(`/movie?page=${page}`),
-  ova: (page = 1) => fetchJSON<PaginatedResult<BasicAnime>>(`/ova?page=${page}`),
-  ona: (page = 1) => fetchJSON<PaginatedResult<BasicAnime>>(`/ona?page=${page}`),
-  special: (page = 1) => fetchJSON<PaginatedResult<BasicAnime>>(`/special?page=${page}`),
+  // Type-based listings - moderate TTL
+  tv: (page = 1) => fetchJSON<PaginatedResult<BasicAnime>>(`/tv?page=${page}`, undefined, STATIC_TTL_MS),
+  movie: (page = 1) => fetchJSON<PaginatedResult<BasicAnime>>(`/movie?page=${page}`, undefined, STATIC_TTL_MS),
+  ova: (page = 1) => fetchJSON<PaginatedResult<BasicAnime>>(`/ova?page=${page}`, undefined, STATIC_TTL_MS),
+  ona: (page = 1) => fetchJSON<PaginatedResult<BasicAnime>>(`/ona?page=${page}`, undefined, STATIC_TTL_MS),
+  special: (page = 1) => fetchJSON<PaginatedResult<BasicAnime>>(`/special?page=${page}`, undefined, STATIC_TTL_MS),
 
-  // Details
+  // Details - moderate TTL as anime details don't change often
   details: (slug: string) => 
-    fetchJSON<AnimeDetailsInfo>(`${slug.startsWith('/') ? '' : '/'}${slug}`),
+    fetchJSON<AnimeDetailsInfo>(`${slug.startsWith('/') ? '' : '/'}${slug}`, undefined, STATIC_TTL_MS),
 
   // Watch
   watch: (slug: string, ep?: string) => {

@@ -11,11 +11,30 @@
   --ease-soft: cubic-bezier(.4,.0,.2,1);
 }
 
+/* Performance optimizations */
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* Optimize paint for fixed elements */
+.fixed {
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
 /* Typography base */
 body {
   font-family: var(--font-inter), var(--font-poppins), system-ui, sans-serif;
   font-feature-settings: "liga" 1, "kern" 1;
   text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Scrollbar theming (WebKit) */

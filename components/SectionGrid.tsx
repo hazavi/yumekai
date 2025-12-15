@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { AnimeGrid } from "./AnimeGrid";
 import type { AnimeCardData } from "@/types";
 
@@ -11,7 +12,7 @@ interface SectionGridProps {
   emptyLabel?: string;
 }
 
-export function SectionGrid({
+function SectionGridComponent({
   title,
   href,
   anime,
@@ -36,3 +37,5 @@ export function SectionGrid({
     </section>
   );
 }
+
+export const SectionGrid = memo(SectionGridComponent);

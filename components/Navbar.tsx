@@ -1,6 +1,6 @@
 "use client";
 // Using plain anchor tags for hard reload navigation
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { SearchBar, NavItem } from ".";
@@ -94,18 +94,25 @@ export function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Optimized scroll handler with requestAnimationFrame throttling
+  const ticking = useRef(false);
+
+  const handleScroll = useCallback(() => {
+    if (!ticking.current) {
+      requestAnimationFrame(() => {
+        const shouldScroll = window.scrollY > 32;
+        setScrolled((prev) => (prev !== shouldScroll ? shouldScroll : prev));
+        ticking.current = false;
+      });
+      ticking.current = true;
+    }
+  }, []);
+
   useEffect(() => {
-    const onScroll = () => {
-      if (window.scrollY > 32) {
-        if (!scrolled) setScrolled(true);
-      } else {
-        if (scrolled) setScrolled(false);
-      }
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
-    return () => window.removeEventListener("scroll", onScroll);
-  }, [scrolled]);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll(); // Check initial position
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [handleScroll]);
 
   return (
     <header

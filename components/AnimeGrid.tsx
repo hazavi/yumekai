@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { AnimeCard } from "./AnimeCard";
 import type { AnimeCardData } from "@/types";
 
@@ -8,7 +9,7 @@ interface AnimeGridProps<T extends AnimeCardData> {
   badgeType?: "latest" | "recent" | "upcoming";
 }
 
-export function AnimeGrid<T extends AnimeCardData>({
+function AnimeGridComponent<T extends AnimeCardData>({
   items,
   emptyLabel = "No anime found",
   className = "",
@@ -27,3 +28,6 @@ export function AnimeGrid<T extends AnimeCardData>({
     </div>
   );
 }
+
+// Memoize with generic support
+export const AnimeGrid = memo(AnimeGridComponent) as typeof AnimeGridComponent;

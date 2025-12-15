@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, memo, useCallback } from "react";
 import type { AnimeCardData } from "@/types";
 import { AnimeInfoPopup } from "./AnimeInfoPopup";
 
@@ -15,7 +15,7 @@ interface AnimeCardProps {
   badgeType?: "latest" | "recent" | "upcoming";
 }
 
-export function AnimeCard({
+function AnimeCardComponent({
   anime,
   showMeta = true,
   badgeType = "latest",
@@ -23,8 +23,8 @@ export function AnimeCard({
   const [showPopup, setShowPopup] = useState(false);
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
   const cardRef = useRef<HTMLDivElement>(null);
-  const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const showTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const hideTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const showTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const slug = anime.link;
 
@@ -36,33 +36,36 @@ export function AnimeCard({
     };
   }, []);
 
-  const handleMouseEnter = (e: React.MouseEvent) => {
-    if (!anime.qtip) return;
+  const handleMouseEnter = useCallback(
+    (e: React.MouseEvent) => {
+      if (!anime.qtip) return;
 
-    // Clear any pending hide timeout
-    if (hideTimeoutRef.current) {
-      clearTimeout(hideTimeoutRef.current);
-      hideTimeoutRef.current = null;
-    }
+      // Clear any pending hide timeout
+      if (hideTimeoutRef.current) {
+        clearTimeout(hideTimeoutRef.current);
+        hideTimeoutRef.current = null;
+      }
 
-    // Clear any pending show timeout
-    if (showTimeoutRef.current) {
-      clearTimeout(showTimeoutRef.current);
-      showTimeoutRef.current = null;
-    }
+      // Clear any pending show timeout
+      if (showTimeoutRef.current) {
+        clearTimeout(showTimeoutRef.current);
+        showTimeoutRef.current = null;
+      }
 
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = rect.left + rect.width / 2;
-    const y = rect.top + rect.height / 2;
-    setPopupPosition({ x, y });
+      const rect = e.currentTarget.getBoundingClientRect();
+      const x = rect.left + rect.width / 2;
+      const y = rect.top + rect.height / 2;
+      setPopupPosition({ x, y });
 
-    // Small delay before showing to prevent flickering on quick hover
-    showTimeoutRef.current = setTimeout(() => {
-      setShowPopup(true);
-    }, 150);
-  };
+      // Small delay before showing to prevent flickering on quick hover
+      showTimeoutRef.current = setTimeout(() => {
+        setShowPopup(true);
+      }, 150);
+    },
+    [anime.qtip]
+  );
 
-  const handleMouseLeave = () => {
+  const handleMouseLeave = useCallback(() => {
     // Clear show timeout if still pending
     if (showTimeoutRef.current) {
       clearTimeout(showTimeoutRef.current);
@@ -72,45 +75,38 @@ export function AnimeCard({
     // Add a delay before hiding to allow moving to popup
     hideTimeoutRef.current = setTimeout(() => {
       setShowPopup(false);
-    }, 150);
-  };
+    }, 300);
+  }, []);
 
-  const handlePopupMouseEnter = () => {
+  const handlePopupMouseEnter = useCallback(() => {
     // Keep popup visible when hovering over it
     if (hideTimeoutRef.current) {
       clearTimeout(hideTimeoutRef.current);
       hideTimeoutRef.current = null;
     }
-  };
+  }, []);
 
-  const handlePopupMouseLeave = () => {
+  const handlePopupMouseLeave = useCallback(() => {
     // Hide popup when leaving popup area
     setShowPopup(false);
-  };
-
-  const handleImageMouseEnter = (e: React.MouseEvent) => {
-    handleMouseEnter(e);
-  };
-
-  const handleImageMouseLeave = () => {
-    handleMouseLeave();
-  };
+  }, []);
 
   return (
     <>
       <div ref={cardRef} className="relative">
         <div
           className="relative overflow-hidden bg-black/20 backdrop-blur-sm group"
-          onMouseEnter={handleImageMouseEnter}
-          onMouseLeave={handleImageMouseLeave}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
         >
           <a href={slug} className="block aspect-[3/4] relative">
             <Image
               src={anime.thumbnail}
               alt={anime.title}
               fill
-              sizes="(max-width:768px) 40vw, (max-width:1200px) 20vw, 15vw"
+              sizes="(max-width:640px) 33vw, (max-width:768px) 25vw, (max-width:1024px) 16vw, 12vw"
               className="object-cover transition-all duration-300 group-hover:blur-sm"
+              loading="lazy"
             />
 
             {/* Play button overlay on hover */}
@@ -222,3 +218,14 @@ export function AnimeCard({
     </>
   );
 }
+
+// Memoize to prevent re-renders when parent re-renders with same props
+export const AnimeCard = memo(AnimeCardComponent, (prevProps, nextProps) => {
+  return (
+    prevProps.anime.link === nextProps.anime.link &&
+    prevProps.anime.title === nextProps.anime.title &&
+    prevProps.anime.thumbnail === nextProps.anime.thumbnail &&
+    prevProps.badgeType === nextProps.badgeType &&
+    prevProps.showMeta === nextProps.showMeta
+  );
+});

@@ -1,6 +1,23 @@
+import { Metadata } from "next";
 import { AnimeListTemplate } from "@/components";
 import { mapAnimeListResults } from "@/utils/mappers";
 import { api } from "@/services/api";
+
+type Props = {
+  params: Promise<{ genre: string }>;
+};
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const resolvedParams = await params;
+  const genre = decodeURIComponent(resolvedParams.genre)
+    .split("-")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+  return {
+    title: `${genre} Anime`,
+    description: `Browse ${genre} anime on Yumekai`,
+  };
+}
 
 async function getGenreData(genre: string, page: number = 1) {
   try {

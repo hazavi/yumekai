@@ -11,7 +11,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return {
     title: `${username}'s Profile`,
-    description: `View ${username}'s anime lists and top 10 rankings on YumeKai`,
+    description: `View ${username}'s anime lists and top 10 rankings on Yumekai`,
   };
 }
 

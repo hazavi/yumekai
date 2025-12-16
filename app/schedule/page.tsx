@@ -4,7 +4,7 @@ import type { DailyScheduleResponse, WeeklyScheduleResponse } from "@/types";
 import SchedulePage from "./SchedulePage";
 
 export const metadata: Metadata = {
-  title: "Anime Schedule - YumeKai",
+  title: "Anime Schedule",
   description:
     "Check the daily and weekly anime release schedule with air times and episodes.",
 };

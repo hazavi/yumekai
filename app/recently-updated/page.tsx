@@ -1,6 +1,12 @@
+import { Metadata } from "next";
 import { AnimeListTemplate } from "@/components";
 import { mapAnimeListResults } from "@/utils/mappers";
 import { api } from "@/services/api";
+
+export const metadata: Metadata = {
+  title: "Recently Updated",
+  description: "Browse recently updated anime episodes",
+};
 
 async function getRecentlyUpdatedData(page: number = 1) {
   try {

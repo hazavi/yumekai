@@ -1,6 +1,12 @@
+import { Metadata } from "next";
 import { AnimeListTemplate } from "@/components";
 import { mapAnimeListResults } from "@/utils/mappers";
 import { api } from "@/services/api";
+
+export const metadata: Metadata = {
+  title: "Recently Added",
+  description: "Browse recently added anime on Yumekai",
+};
 
 async function getRecentlyAddedData(page: number = 1) {
   try {

@@ -3,7 +3,7 @@ import { SignupPage } from "./SignupPage";
 
 export const metadata: Metadata = {
   title: "Sign Up",
-  description: "Create a YumeKai account to track your anime and create lists",
+  description: "Create a Yumekai account to track your anime and create lists",
 };
 
 export default function Page() {

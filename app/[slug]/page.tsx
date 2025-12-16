@@ -31,8 +31,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const resolvedParams = await params;
   const title = slugToTitle(resolvedParams.slug);
   return {
-    title: `${title}`,
-    description: "Watch anime online",
+    title: title,
+    description: `Watch ${title} online on Yumekai`,
   };
 }
 

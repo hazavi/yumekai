@@ -23,8 +23,8 @@ const poppins = Poppins({
 
 export const metadata: Metadata = {
   title: {
-    default: "Yumekai",
-    template: "%s | Yumekai",
+    default: "Yumekai - Anime Streaming Platform",
+    template: "%s - Yumekai",
   },
   description: "Stream trending, top airing, and newly added anime.",
   keywords: ["anime", "streaming", "trending anime", "top airing", "yumekai"],

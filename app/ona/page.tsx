@@ -1,6 +1,12 @@
+import { Metadata } from "next";
 import { AnimeListTemplate } from "@/components";
 import { mapAnimeListResults } from "@/utils/mappers";
 import { api } from "@/services/api";
+
+export const metadata: Metadata = {
+  title: "ONA",
+  description: "Browse anime ONAs (Original Net Animation)",
+};
 
 async function getOnaData(page: number = 1) {
   try {

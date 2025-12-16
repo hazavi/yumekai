@@ -1,8 +1,8 @@
 import { RoomPage } from "./RoomPage";
 
 export const metadata = {
-  title: "Watch Party Room",
-  description: "Watch anime together in real-time",
+  title: "Watch Party",
+  description: "Watch anime together in real-time on Yumekai",
 };
 
 export default function Page() {

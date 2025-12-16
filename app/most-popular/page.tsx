@@ -1,6 +1,12 @@
+import { Metadata } from "next";
 import { AnimeListTemplate } from "@/components";
 import { mapAnimeListResults } from "@/utils/mappers";
 import { api } from "@/services/api";
+
+export const metadata: Metadata = {
+  title: "Most Popular",
+  description: "Browse the most popular anime of all time",
+};
 
 async function getMostPopularData(page: number = 1) {
   try {

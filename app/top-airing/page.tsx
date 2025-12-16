@@ -1,6 +1,12 @@
+import { Metadata } from "next";
 import { AnimeListTemplate } from "@/components";
 import { mapAnimeListResults } from "@/utils/mappers";
 import { api } from "@/services/api";
+
+export const metadata: Metadata = {
+  title: "Top Airing",
+  description: "Browse the top airing anime currently on air",
+};
 
 async function getTopAiringData(page: number = 1) {
   try {

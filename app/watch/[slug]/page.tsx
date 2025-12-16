@@ -23,6 +23,22 @@ const AnimeCard = lazy(() =>
   import("@/components/AnimeCard").then((m) => ({ default: m.AnimeCard }))
 );
 
+// Helper function to extract title from slug for page title
+function slugToTitle(raw: string): string {
+  const cleaned = decodeURIComponent(raw.replace(/^\/+/, ""));
+  const parts = cleaned.split("-").filter(Boolean);
+  if (parts.length > 1 && /^\d+$/.test(parts[parts.length - 1])) {
+    parts.pop();
+  }
+  const words = parts.map((w) => w.replace(/[^a-zA-Z0-9]/g, " "));
+  const joined = words.join(" ").replace(/\s+/g, " ").trim();
+  const titleCased = joined
+    .split(" ")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+  return titleCased;
+}
+
 /**
  * Watch Page Security / Ad Mitigation Notes
  * ----------------------------------------
@@ -151,6 +167,18 @@ export default function WatchPage() {
       localStorage.setItem("episodeSortOrder", episodeSortOrder);
     }
   }, [episodeSortOrder]);
+
+  // Update document title when data loads
+  useEffect(() => {
+    if (data?.watch_detail?.title) {
+      const epNum = ep ? parseInt(ep) : 1;
+      document.title = `${data.watch_detail.title} Episode ${epNum} - Yumekai`;
+    } else if (slug) {
+      const title = slugToTitle(slug);
+      const epNum = ep ? parseInt(ep) : 1;
+      document.title = `Watch ${title} Episode ${epNum} - Yumekai`;
+    }
+  }, [data, slug, ep]);
 
   // Save to continue watching when user watches an episode
   useEffect(() => {

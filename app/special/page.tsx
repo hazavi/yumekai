@@ -1,6 +1,12 @@
+import { Metadata } from "next";
 import { AnimeListTemplate } from "@/components";
 import { mapAnimeListResults } from "@/utils/mappers";
 import { api } from "@/services/api";
+
+export const metadata: Metadata = {
+  title: "Specials",
+  description: "Browse anime specials and bonus episodes",
+};
 
 async function getSpecialData(page: number = 1) {
   try {

@@ -1,6 +1,12 @@
+import { Metadata } from "next";
 import { AnimeGrid } from "@/components/AnimeGrid";
 import { SectionHeader } from "@/components/SectionHeader";
 import { SearchPagination } from "@/components/SearchPagination";
+
+export const metadata: Metadata = {
+  title: "Search",
+  description: "Search for your favorite anime on Yumekai",
+};
 
 // Get external API URL for server-side calls
 const getExternalApiUrl = () => {

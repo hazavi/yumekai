@@ -22,6 +22,9 @@ import type { WatchData, Episode, ServerItem, SimpleServer } from "@/types";
 const AnimeCard = lazy(() =>
   import("@/components/AnimeCard").then((m) => ({ default: m.AnimeCard }))
 );
+const AdBlockerTip = lazy(() =>
+  import("@/components/AdBlockerTip").then((m) => ({ default: m.AdBlockerTip }))
+);
 
 // Helper function to extract title from slug for page title
 function slugToTitle(raw: string): string {
@@ -1199,6 +1202,11 @@ export default function WatchPage() {
           </div>
         )}
       </div>
+
+      {/* AdBlocker Tip - Recommends users install adblocker */}
+      <Suspense fallback={null}>
+        <AdBlockerTip />
+      </Suspense>
     </div>
   );
 }

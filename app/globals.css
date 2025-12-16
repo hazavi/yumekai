@@ -260,3 +260,91 @@ body {
   box-shadow: 0 0 0 1px rgba(147,51,234,0.4) inset;
   color: white;
 }
+
+/* =============================================
+   AD BLOCKING CSS - Hide common ad overlays
+   Note: This targets common ad patterns from video embeds.
+   May not block all ads but helps reduce popups and overlays.
+   ============================================= */
+
+/* Hide common popup/overlay containers */
+iframe[src*="ads"],
+iframe[src*="banner"],
+iframe[src*="popup"],
+div[class*="ad-overlay"],
+div[class*="ad-container"],
+div[class*="popup-ad"],
+div[class*="video-ad"],
+div[id*="ad-overlay"],
+div[id*="ad-container"],
+div[id*="popup-ad"],
+a[href*="click."],
+a[href*="tracking."],
+a[target="_blank"][onclick],
+[class*="sponsor"],
+[class*="popunder"],
+[id*="sponsor"],
+[id*="popunder"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Hide overlay elements that commonly contain ads */
+div[style*="z-index: 9999"],
+div[style*="z-index:9999"],
+div[style*="z-index: 99999"],
+div[style*="z-index:99999"],
+div[style*="position: fixed"][style*="top: 0"][style*="left: 0"][style*="width: 100%"][style*="height: 100%"]:not(.fixed) {
+  /* Only hide if it looks like an ad overlay, be careful not to break legit UI */
+}
+
+/* Prevent clickjacking overlays on video */
+.video-player-container > div[style*="position: absolute"]:not([class]) {
+  pointer-events: none !important;
+}
+
+/* Block common ad scripts injection targets */
+div[data-ad],
+div[data-ads],
+div[data-adunit],
+aside[class*="ad"],
+section[class*="ad-"] {
+  display: none !important;
+}
+
+/* Hide floating/sticky ad containers */
+div[style*="position: fixed"]:not(.fixed):not([class*="modal"]):not([class*="toast"]):not([class*="notification"]):has(> a[target="_blank"]) {
+  display: none !important;
+}
+
+/* Slide-in animation for adblocker tip */
+@keyframes slide-in-from-bottom-5 {
+  from {
+    transform: translateY(1.25rem);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-in {
+  animation-duration: 0.3s;
+  animation-fill-mode: both;
+}
+
+.slide-in-from-bottom-5 {
+  animation-name: slide-in-from-bottom-5;
+}
+
+.fade-in {
+  animation-name: fade-in;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

@@ -292,12 +292,13 @@ a[target="_blank"][onclick],
 }
 
 /* Hide overlay elements that commonly contain ads */
-div[style*="z-index: 9999"],
-div[style*="z-index:9999"],
-div[style*="z-index: 99999"],
-div[style*="z-index:99999"],
-div[style*="position: fixed"][style*="top: 0"][style*="left: 0"][style*="width: 100%"][style*="height: 100%"]:not(.fixed) {
-  /* Only hide if it looks like an ad overlay, be careful not to break legit UI */
+div[style*="z-index: 9999"]:not(.site-lock-overlay),
+div[style*="z-index:9999"]:not(.site-lock-overlay),
+div[style*="z-index: 99999"]:not(.site-lock-overlay),
+div[style*="z-index:99999"]:not(.site-lock-overlay) {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
 }
 
 /* Prevent clickjacking overlays on video */

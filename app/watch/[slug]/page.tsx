@@ -1,6 +1,6 @@
 "use client";
 
-import { notFound, useParams, useSearchParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { api } from "@/services/api";
@@ -17,6 +17,7 @@ import {
 } from "react";
 import { decodeHtmlEntities } from "@/utils/html";
 import type { WatchData, Episode, ServerItem, SimpleServer } from "@/types";
+import WatchPageSkeleton from "@/components/WatchPageSkeleton";
 
 // Lazy load heavy components
 const AnimeCard = lazy(() =>
@@ -265,57 +266,7 @@ export default function WatchPage() {
   }, [slug, ep]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-black pt-20">
-        {/* Simple background */}
-        <div className="fixed inset-0 -z-10 bg-gradient-to-br from-purple-900/20 via-black to-pink-900/20" />
-
-        {/* Minimal Breadcrumb Skeleton */}
-        <div className="py-4 px-6 bg-black/40">
-          <div className="container mx-auto">
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-4 bg-white/10 rounded" />
-              <div className="w-4 h-4 bg-white/10 rounded" />
-              <div className="w-24 h-4 bg-white/10 rounded" />
-            </div>
-          </div>
-        </div>
-
-        <div className="container mx-auto px-3 md:px-6 py-4">
-          <div className="grid grid-cols-1 xl:grid-cols-12 gap-4">
-            {/* Episodes Skeleton - hidden on mobile initially */}
-            <div className="hidden xl:block xl:col-span-3 order-2 xl:order-1">
-              <div className="space-y-1">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <div key={i} className="h-10 bg-white/5 rounded-lg" />
-                ))}
-              </div>
-            </div>
-
-            {/* Video Player Skeleton - Priority */}
-            <div className="xl:col-span-6 order-1">
-              <div className="aspect-video bg-white/5 rounded-xl flex items-center justify-center">
-                <div className="w-12 h-12 border-2 border-white/20 border-t-purple-500 rounded-full animate-spin" />
-              </div>
-              <div className="mt-3 h-10 bg-white/5 rounded-lg" />
-            </div>
-
-            {/* Anime Info Skeleton */}
-            <div className="xl:col-span-3 order-3">
-              <div className="bg-black/40 rounded-xl p-4">
-                <div className="flex gap-3">
-                  <div className="w-20 h-28 bg-white/10 rounded" />
-                  <div className="flex-1 space-y-2">
-                    <div className="h-4 bg-white/10 rounded w-3/4" />
-                    <div className="h-3 bg-white/10 rounded w-1/2" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    return <WatchPageSkeleton />;
   }
 
   // Show error state with retry option

@@ -5,13 +5,46 @@ import type { SpotlightItem } from "@/types";
 import { PlayIcon, TvIcon, ClockIcon, CalendarIcon } from "./icons";
 
 interface HeroCarouselProps {
-  items: SpotlightItem[];
+  items: SpotlightItem[] | null | undefined;
   intervalMs?: number;
+  loading?: boolean;
+}
+
+// Skeleton component for loading state
+function HeroCarouselSkeleton() {
+  return (
+    <div className="relative w-full h-[480px] md:h-[540px] bg-gradient-to-b from-gray-900/30 to-black overflow-hidden">
+      <div className="absolute inset-0 bg-white/5 animate-pulse" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
+
+      {/* Content skeleton */}
+      <div className="absolute bottom-0 left-0 right-0 p-6 md:p-12 space-y-4">
+        <div className="h-4 w-24 bg-white/10 rounded animate-pulse" />
+        <div className="h-10 w-3/4 max-w-xl bg-white/10 rounded animate-pulse" />
+        <div className="space-y-2 max-w-2xl">
+          <div className="h-4 w-full bg-white/10 rounded animate-pulse" />
+          <div className="h-4 w-5/6 bg-white/10 rounded animate-pulse" />
+          <div className="h-4 w-2/3 bg-white/10 rounded animate-pulse" />
+        </div>
+        <div className="flex gap-3 pt-2">
+          <div className="h-12 w-32 bg-white/10 rounded-full animate-pulse" />
+          <div className="h-12 w-32 bg-white/10 rounded-full animate-pulse" />
+        </div>
+        {/* Dots skeleton */}
+        <div className="flex gap-2 pt-4">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="h-2 w-2 bg-white/20 rounded-full" />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function HeroCarouselComponent({
   items,
   intervalMs = 6000,
+  loading = false,
 }: HeroCarouselProps) {
   // Memoize filtered items to prevent recalculation on every render
   const safeItems = useMemo(
@@ -45,6 +78,18 @@ function HeroCarouselComponent({
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, [safeItems, intervalMs, isDragging]);
+
+  // Show skeleton when loading or no items
+  if (loading || !safeItems.length) {
+    if (loading || !items) {
+      return <HeroCarouselSkeleton />;
+    }
+    return (
+      <div className="h-[410px] md:h-[480px] flex items-center justify-center text-sm text-white/50 glass rounded-2xl">
+        No featured anime available.
+      </div>
+    );
+  }
 
   // Handle mouse drag - memoized for performance
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -115,14 +160,6 @@ function HeroCarouselComponent({
     setIsDragging(false);
     setDragOffset(0);
   }, [isDragging, dragOffset, safeItems.length]);
-
-  if (!safeItems.length) {
-    return (
-      <div className="h-[410px] md:h-[480px] flex items-center justify-center text-sm text-white/50 glass rounded-2xl">
-        No featured anime available.
-      </div>
-    );
-  }
 
   return (
     <div

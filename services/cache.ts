@@ -17,19 +17,19 @@ const inflight: Map<string, Promise<unknown>> = new Map();
 const MAX_CACHE_SIZE = 500;
 
 /**
- * Default cache TTL in milliseconds (60 seconds)
+ * Default cache TTL in milliseconds (2 minutes - balanced freshness)
  */
-export const DEFAULT_TTL_MS = 60_000;
+export const DEFAULT_TTL_MS = 120_000;
 
 /**
- * Extended TTL for static/rarely changing data (5 minutes)
+ * Extended TTL for static/rarely changing data (10 minutes)
  */
-export const STATIC_TTL_MS = 300_000;
+export const STATIC_TTL_MS = 600_000;
 
 /**
- * Long TTL for data that changes daily (1 hour)
+ * Long TTL for data that changes daily (2 hours)
  */
-export const LONG_TTL_MS = 3600_000;
+export const LONG_TTL_MS = 7200_000;
 
 /**
  * Gets a cache key for a request

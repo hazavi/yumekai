@@ -2,14 +2,17 @@
 
 import { memo } from "react";
 import { AnimeGrid } from "./AnimeGrid";
+import { SectionHeaderSkeleton, AnimeGridSkeleton } from "./Skeletons";
 import type { AnimeCardData } from "@/types";
 
 interface SectionGridProps {
   title: string;
   href: string;
-  anime: AnimeCardData[];
+  anime: AnimeCardData[] | null | undefined;
   badgeType?: "latest" | "recent" | "upcoming";
   emptyLabel?: string;
+  loading?: boolean;
+  skeletonCount?: number;
 }
 
 function SectionGridComponent({
@@ -18,7 +21,19 @@ function SectionGridComponent({
   anime,
   badgeType = "latest",
   emptyLabel,
+  loading = false,
+  skeletonCount = 6,
 }: SectionGridProps) {
+  // Show skeleton when loading
+  if (loading || anime === null || anime === undefined) {
+    return (
+      <section>
+        <SectionHeaderSkeleton />
+        <AnimeGridSkeleton count={skeletonCount} />
+      </section>
+    );
+  }
+
   return (
     <section>
       {/* Section Header */}

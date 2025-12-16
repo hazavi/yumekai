@@ -6,11 +6,40 @@ import type { TrendingItem } from "@/types";
 import { AnimeInfoPopup } from "./AnimeInfoPopup";
 
 interface TrendingProps {
-  items: TrendingItem[];
+  items: TrendingItem[] | null | undefined;
   title?: string;
+  loading?: boolean;
 }
 
-function TrendingComponent({ items, title = "Trending" }: TrendingProps) {
+// Skeleton component for loading state
+function TrendingSkeleton() {
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="h-8 w-32 bg-white/10 rounded animate-pulse" />
+        <div className="flex gap-2">
+          <div className="h-8 w-8 bg-white/10 rounded-full animate-pulse" />
+          <div className="h-8 w-8 bg-white/10 rounded-full animate-pulse" />
+        </div>
+      </div>
+      <div className="flex gap-4 overflow-hidden">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="flex-shrink-0 w-40 space-y-2">
+            <div className="aspect-[2/3] bg-white/10 rounded-lg animate-pulse" />
+            <div className="h-4 w-full bg-white/10 rounded animate-pulse" />
+            <div className="h-3 w-2/3 bg-white/10 rounded animate-pulse" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function TrendingComponent({
+  items,
+  title = "Trending",
+  loading = false,
+}: TrendingProps) {
   const [showPopup, setShowPopup] = useState(false);
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
   const [currentAnime, setCurrentAnime] = useState<TrendingItem | null>(null);
@@ -26,6 +55,11 @@ function TrendingComponent({ items, title = "Trending" }: TrendingProps) {
       if (showTimeoutRef.current) clearTimeout(showTimeoutRef.current);
     };
   }, []);
+
+  // Show skeleton when loading or no items
+  if (loading || !items) {
+    return <TrendingSkeleton />;
+  }
 
   // Pre-process items: group all candidates per rank (1..10) then pick the best for each rank.
   // "Best" means: exact qtip.title match (case-insensitive) > has qtip with description > any qtip > fallback first.
@@ -276,7 +310,7 @@ function TrendingComponent({ items, title = "Trending" }: TrendingProps) {
                       fill
                       priority={idx < 3}
                       sizes="160px"
-                      className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      className="object-cover transition-transform duration-300"
                     />
                   </a>
                 </div>

@@ -1,35 +1,87 @@
 "use client";
 
-import { useState, useEffect, ReactNode, useCallback } from "react";
+import { useState, useEffect, ReactNode, useCallback, useRef } from "react";
+
+const AUTH_CACHE_KEY = "yumekai_auth_cache";
+const AUTH_CACHE_TTL = 60 * 1000; // 1 minute client-side cache
 
 interface SiteLockProps {
   children: ReactNode;
 }
 
 export function SiteLock({ children }: SiteLockProps) {
-  const [isUnlocked, setIsUnlocked] = useState<boolean | null>(null);
+  // Use ref to track mount state
+  const isMounted = useRef(false);
+
+  // Start with "checking" state
+  const [authState, setAuthState] = useState<
+    "checking" | "locked" | "unlocked"
+  >("checking");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [isShaking, setIsShaking] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Check authentication status on mount
+  // Check auth on mount (client-side only)
   useEffect(() => {
+    isMounted.current = true;
+
     const checkAuth = async () => {
+      // Check sessionStorage cache first for instant unlock
+      try {
+        const cached = sessionStorage.getItem(AUTH_CACHE_KEY);
+        if (cached) {
+          const { authenticated, timestamp } = JSON.parse(cached);
+          if (Date.now() - timestamp < AUTH_CACHE_TTL && authenticated) {
+            setAuthState("unlocked");
+            // Still verify in background
+            fetch("/api/auth/check", { method: "GET", credentials: "include" })
+              .then((res) => res.json())
+              .then((data) => {
+                if (isMounted.current && data.authenticated !== true) {
+                  setAuthState("locked");
+                  sessionStorage.removeItem(AUTH_CACHE_KEY);
+                }
+              })
+              .catch(() => {});
+            return;
+          }
+        }
+      } catch {
+        // Ignore cache errors
+      }
+
+      // No valid cache, check server
       try {
         const response = await fetch("/api/auth/check", {
           method: "GET",
-          credentials: "include", // Include cookies
+          credentials: "include",
         });
         const data = await response.json();
-        setIsUnlocked(data.authenticated === true);
+        const authenticated = data.authenticated === true;
+        if (isMounted.current) {
+          setAuthState(authenticated ? "unlocked" : "locked");
+        }
+
+        if (authenticated) {
+          sessionStorage.setItem(
+            AUTH_CACHE_KEY,
+            JSON.stringify({ authenticated: true, timestamp: Date.now() })
+          );
+        }
       } catch {
-        setIsUnlocked(false);
+        if (isMounted.current) {
+          setAuthState("locked");
+        }
       }
     };
 
     checkAuth();
+
+    return () => {
+      isMounted.current = false;
+    };
   }, []);
 
   const handleSubmit = useCallback(
@@ -47,15 +99,19 @@ export function SiteLock({ children }: SiteLockProps) {
           headers: {
             "Content-Type": "application/json",
           },
-          credentials: "include", // Include cookies
+          credentials: "include",
           body: JSON.stringify({ password }),
         });
 
         const data = await response.json();
 
         if (response.ok && data.success) {
-          setIsUnlocked(true);
-          setPassword(""); // Clear password from memory
+          sessionStorage.setItem(
+            AUTH_CACHE_KEY,
+            JSON.stringify({ authenticated: true, timestamp: Date.now() })
+          );
+          setAuthState("unlocked");
+          setPassword("");
         } else {
           setError(data.error || "Incorrect password");
           setIsShaking(true);
@@ -72,20 +128,34 @@ export function SiteLock({ children }: SiteLockProps) {
     [password, isLoading]
   );
 
-  // Loading state
-  if (isUnlocked === null) {
-    return (
-      <div className="fixed inset-0 bg-black flex items-center justify-center z-[9999]">
+  return (
+    <>
+      {/* Main content - always rendered */}
+      {children}
+
+      {/* Loading overlay - CSS controlled visibility */}
+      <div
+        className={`fixed inset-0 bg-black flex items-center justify-center z-[9999] transition-opacity duration-200 ${
+          authState === "checking"
+            ? "opacity-100 pointer-events-auto"
+            : "opacity-0 pointer-events-none"
+        }`}
+        aria-hidden={authState !== "checking"}
+        suppressHydrationWarning
+      >
         <div className="w-8 h-8 border-2 border-white/20 border-t-white/60 rounded-full animate-spin" />
       </div>
-    );
-  }
 
-  // Locked state - show password form
-  if (!isUnlocked) {
-    return (
-      <div className="fixed inset-0 bg-black flex items-center justify-center z-[9999] p-4">
-        {/* Dark liquid glass card */}
+      {/* Lock screen overlay - CSS controlled visibility */}
+      <div
+        className={`fixed inset-0 bg-black flex items-center justify-center z-[9999] p-4 transition-opacity duration-200 ${
+          authState === "locked"
+            ? "opacity-100 pointer-events-auto"
+            : "opacity-0 pointer-events-none"
+        }`}
+        aria-hidden={authState !== "locked"}
+        suppressHydrationWarning
+      >
         <div
           className={`relative w-full max-w-sm ${
             isShaking ? "animate-shake" : ""
@@ -207,9 +277,6 @@ export function SiteLock({ children }: SiteLockProps) {
           </div>
         </div>
       </div>
-    );
-  }
-
-  // Unlocked - render children
-  return <>{children}</>;
+    </>
+  );
 }

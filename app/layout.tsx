@@ -2,8 +2,8 @@
 import { Inter, Poppins } from "next/font/google";
 import { Navbar } from "@/components/Navbar";
 import { ScrollToTop } from "@/components/ScrollToTop";
-import { SiteLock } from "@/components/SiteLock";
 import { AuthProvider } from "@/contexts";
+import { SiteLock } from "@/components/SiteLock";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
@@ -36,14 +36,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark bg-black">
+    <html lang="en" className="dark bg-black" data-scroll-behavior="smooth">
       <body
         className={`${inter.variable} ${poppins.variable} font-sans antialiased bg-black min-h-screen text-white selection:bg-fuchsia-500/30 selection:text-white`}
       >
         <AuthProvider>
+          <Analytics />
           <SiteLock>
-            <Analytics />
-
             {/* Pure black canvas for seamless hero blend */}
             <div className="fixed inset-0 -z-10 bg-black" />
             <Navbar />
@@ -57,7 +56,7 @@ export default function RootLayout({
                     Yumekai does not store any files on our server, we only
                     linked to the media which is hosted on 3rd party services.
                   </p>
-                  © {new Date().getFullYear()} Yumekai. All rights reserved.
+                  © 2025 Yumekai. All rights reserved.
                 </div>
               </div>
             </footer>

@@ -2,8 +2,9 @@
 
 import Image from "next/image";
 import { useState, useRef, useEffect, memo, useCallback } from "react";
-import type { AnimeCardData } from "@/types";
+import type { AnimeCardData, QtipData } from "@/types";
 import { AnimeInfoPopup } from "./AnimeInfoPopup";
+import { api } from "@/services/api";
 
 interface AnimeCardProps {
   anime: AnimeCardData & {
@@ -22,11 +23,20 @@ function AnimeCardComponent({
 }: AnimeCardProps) {
   const [showPopup, setShowPopup] = useState(false);
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
+  const [qtipData, setQtipData] = useState<QtipData | null>(anime.qtip || null);
+  const [isLoadingQtip, setIsLoadingQtip] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   const hideTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const showTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const fetchedRef = useRef(false);
 
   const slug = anime.link;
+
+  // Extract anime ID from slug (e.g., "/gachiakuta-19785" -> "19785")
+  const getAnimeId = useCallback((link: string): string | null => {
+    const match = link.match(/-(\d+)$/);
+    return match ? match[1] : null;
+  }, []);
 
   // Cleanup timeouts on unmount
   useEffect(() => {
@@ -36,9 +46,39 @@ function AnimeCardComponent({
     };
   }, []);
 
+  // Update qtipData if anime.qtip changes
+  useEffect(() => {
+    if (anime.qtip) {
+      setQtipData(anime.qtip);
+    }
+  }, [anime.qtip]);
+
+  const fetchQtipData = useCallback(async () => {
+    if (fetchedRef.current || qtipData || isLoadingQtip) return;
+
+    const animeId = getAnimeId(slug);
+    if (!animeId) return;
+
+    fetchedRef.current = true;
+    setIsLoadingQtip(true);
+
+    try {
+      const data = await api.qtip(animeId);
+      setQtipData(data);
+    } catch (error) {
+      console.error("Failed to fetch qtip data:", error);
+      fetchedRef.current = false; // Allow retry on error
+    } finally {
+      setIsLoadingQtip(false);
+    }
+  }, [slug, qtipData, isLoadingQtip, getAnimeId]);
+
   const handleMouseEnter = useCallback(
     (e: React.MouseEvent) => {
-      if (!anime.qtip) return;
+      // Fetch qtip data if not available
+      if (!qtipData && !isLoadingQtip) {
+        fetchQtipData();
+      }
 
       // Clear any pending hide timeout
       if (hideTimeoutRef.current) {
@@ -59,11 +99,20 @@ function AnimeCardComponent({
 
       // Small delay before showing to prevent flickering on quick hover
       showTimeoutRef.current = setTimeout(() => {
-        setShowPopup(true);
+        if (qtipData || isLoadingQtip) {
+          setShowPopup(true);
+        }
       }, 150);
     },
-    [anime.qtip]
+    [qtipData, isLoadingQtip, fetchQtipData]
   );
+
+  // Show popup once qtip data is loaded
+  useEffect(() => {
+    if (qtipData && showTimeoutRef.current === null && popupPosition.x !== 0) {
+      setShowPopup(true);
+    }
+  }, [qtipData, popupPosition]);
 
   const handleMouseLeave = useCallback(() => {
     // Clear show timeout if still pending
@@ -196,8 +245,8 @@ function AnimeCardComponent({
                       {anime.type}
                     </span>
                   )}
-                  {anime.type && anime.qtip?.eps && <span>•</span>}
-                  {anime.qtip?.eps && <span>{anime.qtip.eps} episodes</span>}
+                  {anime.type && qtipData?.eps && <span>•</span>}
+                  {qtipData?.eps && <span>{qtipData.eps} episodes</span>}
                 </>
               )}
             </div>
@@ -206,16 +255,18 @@ function AnimeCardComponent({
       </div>
 
       {/* Anime Info Popup */}
-      <AnimeInfoPopup
-        qtip={anime.qtip!}
-        poster={anime.thumbnail}
-        slug={slug}
-        isVisible={showPopup}
-        position={popupPosition}
-        badgeType={badgeType}
-        onMouseEnter={handlePopupMouseEnter}
-        onMouseLeave={handlePopupMouseLeave}
-      />
+      {qtipData && (
+        <AnimeInfoPopup
+          qtip={qtipData}
+          poster={anime.thumbnail}
+          slug={slug}
+          isVisible={showPopup}
+          position={popupPosition}
+          badgeType={badgeType}
+          onMouseEnter={handlePopupMouseEnter}
+          onMouseLeave={handlePopupMouseLeave}
+        />
+      )}
     </>
   );
 }

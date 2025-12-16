@@ -109,8 +109,14 @@ async function fetchJSON<T>(
         if (existing) return existing;
 
         const controller = new AbortController();
-        // Longer timeouts for heavy endpoints: 25s for watch, 15s for search, 10s for others
-        const timeout = path.includes('/watch/') ? 25000 : path.includes('/search') ? 15000 : 10000;
+        // Longer timeouts for heavy endpoints: 25s for watch, 15s for list pages, 12s for others
+        const timeout = path.includes('/watch/') ? 25000 : 
+          (path.includes('/search') || path.includes('/ona') || path.includes('/ova') || 
+           path.includes('/movie') || path.includes('/tv') || path.includes('/special') ||
+           path.includes('/top-airing') || path.includes('/most-popular') || 
+           path.includes('/most-favorite') || path.includes('/completed') ||
+           path.includes('/recently-added') || path.includes('/recently-updated') ||
+           path.includes('/top-upcoming') || path.includes('/genre')) ? 15000 : 12000;
         const timeoutId = setTimeout(() => controller.abort('Request timeout'), timeout);
 
         const promise = (async () => {
@@ -154,8 +160,14 @@ async function fetchJSON<T>(
 
       // Non-GET requests with timeout
       const controller = new AbortController();
-      // Longer timeouts for heavy endpoints: 25s for watch, 15s for search, 10s for others
-      const timeout = path.includes('/watch/') ? 25000 : path.includes('/search') ? 15000 : 10000;
+      // Longer timeouts for heavy endpoints: 25s for watch, 15s for search/list pages, 12s for others
+      const timeout = path.includes('/watch/') ? 25000 : 
+        (path.includes('/search') || path.includes('/ona') || path.includes('/ova') || 
+         path.includes('/movie') || path.includes('/tv') || path.includes('/special') ||
+         path.includes('/top-airing') || path.includes('/most-popular') || 
+         path.includes('/most-favorite') || path.includes('/completed') ||
+         path.includes('/recently-added') || path.includes('/recently-updated') ||
+         path.includes('/top-upcoming')) ? 15000 : 12000;
       const timeoutId = setTimeout(() => controller.abort('Request timeout'), timeout);
       
       try {
@@ -248,6 +260,25 @@ export const api = {
     fetchJSON<{ genres: Genre[] }>('/genres', undefined, LONG_TTL_MS, { once: true }),
   genreAnime: (genre: string, page = 1) => 
     fetchJSON<PaginatedResult<BasicAnime>>(`/genre/${encodeURIComponent(genre)}?page=${page}`, undefined, STATIC_TTL_MS),
+
+  // Qtip (tooltip) data - fetched on hover via proxy API route
+  qtip: (animeId: string) => 
+    fetchJSON<{
+      aired: string | null;
+      description: string | null;
+      dub: string | null;
+      eps: string | null;
+      genres: string[];
+      japanese: string | null;
+      quality: string | null;
+      rating: string | null;
+      status: string | null;
+      sub: string | null;
+      synonyms: string | null;
+      title: string | null;
+      type: string | null;
+      watch_url: string | null;
+    }>(`/api/qtip/${encodeURIComponent(animeId)}`, undefined, STATIC_TTL_MS),
 
   // Type-based listings - moderate TTL
   tv: (page = 1) => fetchJSON<PaginatedResult<BasicAnime>>(`/tv?page=${page}`, undefined, STATIC_TTL_MS),

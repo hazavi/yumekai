@@ -82,10 +82,16 @@ async function fetchHomeData() {
       .catch(() => []),
   ]);
   const spotlight = ensureArray<SpotlightItem>(spotlightRaw);
-  // Handle trending data - it might be wrapped in { trending: [...] }
+  // Handle trending data - it might be wrapped in { results: [...] } or { trending: [...] }
   let trending: TrendingItem[] = [];
   if (Array.isArray(trendingRaw)) {
     trending = trendingRaw as TrendingItem[];
+  } else if (
+    trendingRaw &&
+    typeof trendingRaw === "object" &&
+    Array.isArray((trendingRaw as { results?: TrendingItem[] }).results)
+  ) {
+    trending = (trendingRaw as { results: TrendingItem[] }).results;
   } else if (
     trendingRaw &&
     typeof trendingRaw === "object" &&

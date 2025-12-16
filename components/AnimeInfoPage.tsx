@@ -463,7 +463,7 @@ export function AnimeInfoPage({ animeInfo, topAnimeData }: AnimeInfoPageProps) {
                       type: rec.qtip?.type || "TV",
                       qtip: rec.qtip,
                       latest_episode: rec.qtip?.eps || undefined,
-                      dub: rec.qtip?.dub,
+                      dub: rec.qtip?.dub || undefined,
                       duration: "24m", // Default duration
                     };
 

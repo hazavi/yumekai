@@ -147,7 +147,7 @@ export function AnimeInfoPopup({
             )}
 
             {/* Sub badge */}
-            {qtip.sub && (
+            {qtip.sub && qtip.sub !== "0" && (
               <span className="badge badge-purple px-2 py-1 text-[10px]">
                 <Image
                   src="/cc.svg"

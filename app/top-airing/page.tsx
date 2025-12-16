@@ -10,15 +10,7 @@ export const metadata: Metadata = {
 
 async function getTopAiringData(page: number = 1) {
   try {
-    const [
-      listData,
-      topAnimeData,
-      genresResponse,
-      topAiringData,
-      mostPopularData,
-      mostFavoriteData,
-      completedData,
-    ] = await Promise.all([
+    const results = await Promise.allSettled([
       api.topAiring(page),
       api.topAnime(),
       api.genres(),
@@ -27,6 +19,26 @@ async function getTopAiringData(page: number = 1) {
       api.mostFavorite(1),
       api.completed(1),
     ]);
+
+    // Extract values with fallbacks for rejected promises
+    const listData =
+      results[0].status === "fulfilled"
+        ? results[0].value
+        : { page: 1, pagination: [], results: [] };
+    const topAnimeData =
+      results[1].status === "fulfilled"
+        ? results[1].value
+        : { top_today: [], top_week: [], top_month: [] };
+    const genresResponse =
+      results[2].status === "fulfilled" ? results[2].value : { genres: [] };
+    const topAiringData =
+      results[3].status === "fulfilled" ? results[3].value : { results: [] };
+    const mostPopularData =
+      results[4].status === "fulfilled" ? results[4].value : { results: [] };
+    const mostFavoriteData =
+      results[5].status === "fulfilled" ? results[5].value : { results: [] };
+    const completedData =
+      results[6].status === "fulfilled" ? results[6].value : { results: [] };
 
     return {
       listData: mapAnimeListResults(listData),

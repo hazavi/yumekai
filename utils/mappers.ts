@@ -19,6 +19,25 @@ export interface AnimeInfoMapped {
     url: string;
     qtip?: QtipData;
   }>;
+  more_seasons?: Array<{
+    is_current: boolean;
+    link: string;
+    poster: string;
+    season_title: string;
+    title: string;
+  }>;
+  related_anime?: Array<{
+    dub?: string;
+    episodes?: string;
+    id: string;
+    jname: string;
+    link: string;
+    poster: string;
+    qtip?: QtipData;
+    sub?: string;
+    title: string;
+    type: string;
+  }>;
 }
 
 /**
@@ -67,7 +86,9 @@ export function mapAnimeDetails(apiData: AnimeDetailsInfo): AnimeInfoMapped {
         url,
         qtip: rec.qtip
       };
-    })
+    }),
+    more_seasons: apiData.more_seasons,
+    related_anime: apiData.related_anime
   };
 }
 

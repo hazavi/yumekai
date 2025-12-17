@@ -5,7 +5,7 @@ import { memo } from "react";
 // Episode Item Skeleton
 const EpisodeItemSkeleton = memo(function EpisodeItemSkeleton() {
   return (
-    <div className="flex items-center gap-2 md:gap-3 px-2 md:px-3 py-2 md:py-2.5 rounded-lg bg-[#1a1a1a]">
+    <div className="flex items-center gap-2 md:gap-3 px-2 md:px-3 py-2 md:py-2.5 rounded-lg md:rounded-xl bg-white/[0.03] border border-white/[0.05]">
       {/* Episode Number Badge */}
       <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-white/10 animate-pulse flex-shrink-0" />
       {/* Episode Title */}
@@ -29,9 +29,16 @@ const AnimeCardSkeleton = memo(function AnimeCardSkeleton() {
 // Main WatchPage Skeleton Component
 export default function WatchPageSkeleton() {
   return (
-    <div className="min-h-screen bg-[#0a0a0a] pt-20">
+    <div className="min-h-screen bg-black pt-20">
+      {/* Animated background - matching watch page */}
+      <div className="fixed inset-0 -z-10">
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-black to-pink-900/20" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,rgba(120,119,198,0.3),transparent_50%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(255,119,198,0.3),transparent_50%)]" />
+      </div>
+
       {/* Breadcrumb Skeleton */}
-      <div className="py-4 md:py-6 px-3 md:px-6">
+      <div className="py-4 md:py-6 px-3 md:px-6 bg-black/40 backdrop-blur-md">
         <div className="container mx-auto px-3 md:px-4">
           <div className="flex items-center gap-2">
             <div className="w-10 h-4 bg-white/10 rounded animate-pulse" />
@@ -49,7 +56,7 @@ export default function WatchPageSkeleton() {
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 md:gap-6">
           {/* Left Sidebar - Episodes List */}
           <div className="xl:col-span-3 order-2 xl:order-1">
-            <div className="bg-[#1a1a1a] rounded-lg p-3 md:p-4">
+            <div className="p-3 md:p-4">
               {/* Header */}
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-3">
                 <div>
@@ -74,12 +81,18 @@ export default function WatchPageSkeleton() {
           {/* Main Content - Video Player */}
           <div className="xl:col-span-6 order-1">
             {/* Video Player */}
-            <div className="aspect-video bg-[#1a1a1a] rounded-lg flex items-center justify-center">
-              <div className="w-12 h-12 border-2 border-white/20 border-t-white/50 rounded-full animate-spin" />
+            <div className="relative group">
+              <div className="bg-black shadow-2xl overflow-hidden">
+                <div className="relative aspect-video">
+                  <div className="w-full h-full flex items-center justify-center bg-black">
+                    <div className="w-12 h-12 border-2 border-purple-500/30 border-t-purple-500 rounded-full animate-spin" />
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Video Control Bar Skeleton */}
-            <div className="bg-[#1a1a1a] rounded-lg p-2 md:p-3 mt-3 md:mt-4">
+            <div className="bg-black/40 backdrop-blur-md border border-white/10 rounded-xl p-2 md:p-3 shadow-2xl mt-3 md:mt-4">
               <div className="flex flex-row items-center justify-between">
                 {/* Left Side - Expand and Lights Controls */}
                 <div className="hidden sm:flex items-center gap-2 md:gap-3">
@@ -95,7 +108,7 @@ export default function WatchPageSkeleton() {
             </div>
 
             {/* Server Selection Panel Skeleton */}
-            <div className="bg-[#1a1a1a] rounded-lg p-3 md:p-4 mt-3 md:mt-4">
+            <div className="bg-black/40 backdrop-blur-md border border-white/10 rounded-xl p-3 md:p-4 shadow-2xl mt-3 md:mt-4">
               <div className="flex flex-col md:grid md:grid-cols-3 gap-3 md:gap-6">
                 {/* Left Column - Episode Info */}
                 <div className="md:col-span-1">
@@ -128,7 +141,7 @@ export default function WatchPageSkeleton() {
 
           {/* Right Sidebar - Anime Details */}
           <div className="xl:col-span-3 order-3">
-            <div className="bg-[#1a1a1a] rounded-lg p-3 md:p-4">
+            <div className="bg-black rounded-xl md:rounded-2xl p-3 md:p-4 shadow-2xl">
               {/* Anime Poster and Title */}
               <div className="mb-3 md:mb-4">
                 <div className="flex md:flex-col gap-3 md:gap-0 mb-3 md:mb-4">
@@ -151,11 +164,15 @@ export default function WatchPageSkeleton() {
               </div>
 
               {/* Description */}
-              <div className="space-y-2">
-                <div className="h-3 w-full bg-white/10 rounded animate-pulse" />
-                <div className="h-3 w-full bg-white/10 rounded animate-pulse" />
-                <div className="h-3 w-5/6 bg-white/10 rounded animate-pulse" />
-                <div className="h-3 w-3/4 bg-white/10 rounded animate-pulse" />
+              <div>
+                <div className="bg-black/80 rounded-lg p-2 md:p-3">
+                  <div className="space-y-2">
+                    <div className="h-3 w-full bg-white/10 rounded animate-pulse" />
+                    <div className="h-3 w-full bg-white/10 rounded animate-pulse" />
+                    <div className="h-3 w-5/6 bg-white/10 rounded animate-pulse" />
+                    <div className="h-3 w-3/4 bg-white/10 rounded animate-pulse" />
+                  </div>
+                </div>
               </div>
 
               {/* Other Seasons */}
@@ -163,7 +180,10 @@ export default function WatchPageSkeleton() {
                 <div className="h-4 w-24 bg-white/10 rounded animate-pulse mb-2 md:mb-3" />
                 <div className="space-y-2">
                   {Array.from({ length: 2 }).map((_, i) => (
-                    <div key={i} className="flex items-center gap-3 p-2 rounded-lg bg-[#222]">
+                    <div
+                      key={i}
+                      className="flex items-center gap-3 p-2 rounded-lg bg-black/60 border border-white/5"
+                    >
                       <div className="w-8 h-12 bg-white/10 rounded animate-pulse flex-shrink-0" />
                       <div className="flex-1 min-w-0">
                         <div className="h-3 w-full bg-white/10 rounded animate-pulse mb-1" />

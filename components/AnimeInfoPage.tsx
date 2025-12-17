@@ -1,6 +1,7 @@
 "use client";
+import React from "react";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
 import { TopAnime } from "./TopAnime";
 import { AnimeCard } from "./AnimeCard";
@@ -30,6 +31,25 @@ interface AnimeInfo {
   watch_link?: string;
   link?: string;
   type?: string;
+  more_seasons?: Array<{
+    is_current: boolean;
+    link: string;
+    poster: string;
+    season_title: string;
+    title: string;
+  }>;
+  related_anime?: Array<{
+    dub?: string;
+    episodes?: string;
+    id: string;
+    jname: string;
+    link: string;
+    poster: string;
+    qtip?: QtipData;
+    sub?: string;
+    title: string;
+    type: string;
+  }>;
   recommendations?: Array<{
     title: string;
     poster: string; // fully qualified or relative image URL
@@ -50,6 +70,23 @@ interface AnimeInfoPageProps {
 
 export function AnimeInfoPage({ animeInfo, topAnimeData }: AnimeInfoPageProps) {
   const [showFullDescription, setShowFullDescription] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const seasonsScrollRef = useRef<HTMLDivElement>(null);
+
+  // Handle client-side mounting to prevent hydration issues with responsive classes
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const scrollSeasons = (direction: "left" | "right") => {
+    if (seasonsScrollRef.current) {
+      const scrollAmount = 300;
+      seasonsScrollRef.current.scrollBy({
+        left: direction === "left" ? -scrollAmount : scrollAmount,
+        behavior: "smooth",
+      });
+    }
+  };
 
   // Skeleton loading state
   if (!animeInfo) {
@@ -141,12 +178,12 @@ export function AnimeInfoPage({ animeInfo, topAnimeData }: AnimeInfoPageProps) {
   ];
 
   return (
-    <div className="relative min-h-screen pt-20">
+    <div className="relative min-h-screen pt-20" suppressHydrationWarning>
       <div className="container mx-auto px-4 py-8">
         {/* Breadcrumbs */}
         <nav className="flex items-center text-sm text-white/60 mb-8">
           {breadcrumbs.map((breadcrumb, index) => (
-            <div key={index} className="flex items-center">
+            <div key={index} className="flex items-center gap-3">
               {index > 0 && (
                 <span className="mx-2">
                   <svg
@@ -338,7 +375,9 @@ export function AnimeInfoPage({ animeInfo, topAnimeData }: AnimeInfoPageProps) {
               <div className="space-y-3">
                 {animeInfo.info?.Japanese && (
                   <div className="text-sm">
-                    <span className="text-white/60">Japanese: </span>
+                    <span className="text-white/60 font-medium">
+                      Japanese:{" "}
+                    </span>
                     <span className="text-white">
                       {animeInfo.info.Japanese}
                     </span>
@@ -346,7 +385,9 @@ export function AnimeInfoPage({ animeInfo, topAnimeData }: AnimeInfoPageProps) {
                 )}
                 {animeInfo.info?.Synonyms && (
                   <div className="text-sm">
-                    <span className="text-white/60">Synonyms: </span>
+                    <span className="text-white/60 font-medium">
+                      Synonyms:{" "}
+                    </span>
                     <span className="text-white">
                       {animeInfo.info.Synonyms}
                     </span>
@@ -354,14 +395,16 @@ export function AnimeInfoPage({ animeInfo, topAnimeData }: AnimeInfoPageProps) {
                 )}
                 {animeInfo.info?.Aired && (
                   <div className="text-sm">
-                    <span className="text-white/60">Aired: </span>
+                    <span className="text-white/60 font-medium">Aired: </span>
                     <span className="text-white">{animeInfo.info.Aired}</span>
                   </div>
                 )}
 
                 {animeInfo.info?.Premiered && (
                   <div className="text-sm">
-                    <span className="text-white/60">Premiered: </span>
+                    <span className="text-white/60 font-medium">
+                      Premiered:{" "}
+                    </span>
                     <span className="text-white">
                       {animeInfo.info.Premiered}
                     </span>
@@ -370,7 +413,9 @@ export function AnimeInfoPage({ animeInfo, topAnimeData }: AnimeInfoPageProps) {
 
                 {animeInfo.info?.Duration && (
                   <div className="text-sm">
-                    <span className="text-white/60">Duration: </span>
+                    <span className="text-white/60 font-medium">
+                      Duration:{" "}
+                    </span>
                     <span className="text-white">
                       {animeInfo.info.Duration}
                     </span>
@@ -379,14 +424,16 @@ export function AnimeInfoPage({ animeInfo, topAnimeData }: AnimeInfoPageProps) {
 
                 {animeInfo.info?.Status && (
                   <div className="text-sm">
-                    <span className="text-white/60">Status: </span>
+                    <span className="text-white/60 font-medium">Status: </span>
                     <span className="text-white">{animeInfo.info.Status}</span>
                   </div>
                 )}
 
                 {animeInfo.info?.["MAL Score"] && (
                   <div className="text-sm">
-                    <span className="text-white/60">MAL Score: </span>
+                    <span className="text-white/60 font-medium">
+                      MAL Score:{" "}
+                    </span>
                     <span className="text-white">
                       {animeInfo.info["MAL Score"]}
                     </span>
@@ -395,8 +442,8 @@ export function AnimeInfoPage({ animeInfo, topAnimeData }: AnimeInfoPageProps) {
 
                 {animeInfo.genres && animeInfo.genres.length > 0 && (
                   <div className="text-sm">
-                    <span className="text-white/60">Genres: </span>
-                    <div className="inline-flex flex-wrap gap-1.5 mt-1">
+                    <span className="text-white/60 font-medium">Genres: </span>
+                    <span className="inline-flex flex-wrap gap-1.5">
                       {animeInfo.genres.map((genre, index) => (
                         <a
                           key={index}
@@ -408,14 +455,16 @@ export function AnimeInfoPage({ animeInfo, topAnimeData }: AnimeInfoPageProps) {
                           {genre}
                         </a>
                       ))}
-                    </div>
+                    </span>
                   </div>
                 )}
 
                 {animeInfo.info?.Studios &&
                   animeInfo.info.Studios.length > 0 && (
                     <div className="text-sm">
-                      <span className="text-white/60">Studios: </span>
+                      <span className="text-white/60 font-medium">
+                        Studios:{" "}
+                      </span>
                       <span className="text-white">
                         {animeInfo.info.Studios.join(", ")}
                       </span>
@@ -425,7 +474,9 @@ export function AnimeInfoPage({ animeInfo, topAnimeData }: AnimeInfoPageProps) {
                 {animeInfo.info?.Producers &&
                   animeInfo.info.Producers.length > 0 && (
                     <div className="text-sm">
-                      <span className="text-white/60">Producers: </span>
+                      <span className="text-white/60 font-medium">
+                        Producers:{" "}
+                      </span>
                       <span className="text-white">
                         {animeInfo.info.Producers.join(", ")}
                       </span>
@@ -438,7 +489,7 @@ export function AnimeInfoPage({ animeInfo, topAnimeData }: AnimeInfoPageProps) {
 
         {/* Recommendations */}
         {animeInfo.recommendations && animeInfo.recommendations.length > 0 && (
-          <div className="mt-12 grid grid-cols-1 xl:grid-cols-12 gap-8">
+          <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 mt-8">
             <div className="xl:col-span-8">
               <h2 className="text-2xl font-bold text-white mb-6">
                 You might also like

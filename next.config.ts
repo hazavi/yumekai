@@ -5,6 +5,9 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   compress: true,
   
+  // Suppress hydration warnings
+  reactStrictMode: false,
+  
   // Experimental optimizations
   experimental: {
     optimizeCss: true,

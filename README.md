@@ -1,5 +1,7 @@
 <div align="center">
 
+![Yumekai](public/yumekai_mockup3.svg)
+
 # Yumekai
 
 A modern anime streaming platform built with Next.js 16.
@@ -27,35 +29,10 @@ Yumekai is a full-featured anime streaming platform that combines elegant design
 
 ## Features
 
-### User Interface
-
-- Dark atmospheric gradient background with layered radial glows
-- Frosted glass navigation with responsive mobile menu
-- Auto-playing hero carousel with glass overlay panels
-- Responsive anime card grid (2-6 columns based on viewport)
-- SUB/DUB indicator badges with neon hover effects
-
-### Watch Experience
-
-- Integrated video player with multiple server options
-- Episode navigation with search and jump functionality
-- Expandable video mode and "lights off" immersive viewing
-- Season navigation and related anime recommendations
-- Continue watching progress tracking
-
-### Social Features
-
-- User profiles with anime list management
-- Custom rankings and favorites
-- Watch2gether synchronized viewing rooms
-- User search and discovery
-
-### Schedule and Discovery
-
-- Daily and weekly anime schedule views
-- Multiple category pages (Top Airing, Most Popular, Completed, etc.)
-- Genre-based filtering with pagination
-- Advanced search functionality
+- **Modern UI** - Dark gradient design with frosted glass navigation and responsive hero carousel
+- **Smart Player** - Multi-server support, episode navigation, expandable mode, and "lights off" viewing
+- **Social** - User profiles, custom lists, Watch2gether rooms, and rankings
+- **Discovery** - Daily schedules, genre filtering, advanced search, and curated categories
 
 ---
 
@@ -69,18 +46,6 @@ Yumekai is a full-featured anime streaming platform that combines elegant design
 | Tailwind CSS | 4.x     | Utility-first styling              |
 | Firebase     | 11.x    | Authentication and Realtime DB     |
 | Turbopack    | -       | Development builds                 |
-
----
-
-## Browser Support
-
-| Browser        | Support           |
-| -------------- | ----------------- |
-| Chrome/Edge    | Latest 2 versions |
-| Firefox        | Latest 2 versions |
-| Safari         | Latest 2 versions |
-| Mobile Safari  | iOS 14+           |
-| Chrome Android | Latest            |
 
 ---
 
